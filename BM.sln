@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BM.API", "BM.API\BM.API.csproj", "{540A0136-DE2F-40C6-B389-BA3C595FC647}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BM.Web", "BM.Web\BM.Web.csproj", "{AFCE361B-6FBF-4AB7-A900-6D2807998174}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BM.Models", "BM.Models\BM.Models.csproj", "{63E1C87E-34AC-406C-A796-87EFDEEB6826}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{540A0136-DE2F-40C6-B389-BA3C595FC647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{540A0136-DE2F-40C6-B389-BA3C595FC647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{540A0136-DE2F-40C6-B389-BA3C595FC647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{540A0136-DE2F-40C6-B389-BA3C595FC647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFCE361B-6FBF-4AB7-A900-6D2807998174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFCE361B-6FBF-4AB7-A900-6D2807998174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFCE361B-6FBF-4AB7-A900-6D2807998174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFCE361B-6FBF-4AB7-A900-6D2807998174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63E1C87E-34AC-406C-A796-87EFDEEB6826}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63E1C87E-34AC-406C-A796-87EFDEEB6826}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63E1C87E-34AC-406C-A796-87EFDEEB6826}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63E1C87E-34AC-406C-A796-87EFDEEB6826}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {56821E32-2739-4537-9CC2-82035D69B7F5}
+	EndGlobalSection
+EndGlobal
