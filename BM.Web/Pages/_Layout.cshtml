@@ -8,14 +8,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <link href="css/site.css" rel="stylesheet" />
-    <link href="BM.Web.styles.css" rel="stylesheet" />
+    <!-- CSS files -->
+    <link href="css/layout.css" rel="stylesheet"/>
+     <!-- NProgress -->
+    <link href="css/nprogress.css" rel="stylesheet">
+    <!-- Telerik Kendo UI Scripts -->
+    <link rel="stylesheet" href="_content/Telerik.UI.for.Blazor/css/kendo-theme-default/all.css" />
+    <link href="css/kendo.style.css" rel="stylesheet"/>
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <title>Trang Kim</title>
 </head>
-<body>
-    @RenderBody()
-
+<body class="body-bg">
     <div id="blazor-error-ui">
         <environment include="Staging,Production">
             An error has occurred. This application may no longer respond until reloaded.
@@ -27,6 +32,16 @@
         <a class="dismiss">🗙</a>
     </div>
 
+    <div class="page">
+        @RenderBody()
+    </div>
+
     <script src="_framework/blazor.server.js"></script>
+    <!-- Tabler Core -->
+    <script src="~/js/tabler.min.js" defer></script>
+    <!-- NProgress -->
+    <script src="~/js/nprogress.js"></script>
+    <!-- Telerik Kendo UI Scripts -->
+    <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js" defer></script>
 </body>
 </html>
