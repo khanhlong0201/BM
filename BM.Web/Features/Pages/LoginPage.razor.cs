@@ -2,7 +2,7 @@
 using BM.Web.Models;
 using Microsoft.AspNetCore.Components;
 
-namespace BM.Web.Features
+namespace BM.Web.Features.Pages
 {
     public partial class LoginPage
     {

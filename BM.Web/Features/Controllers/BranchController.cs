@@ -3,9 +3,9 @@ using BM.Web.Models;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 
-namespace BM.Web.Features
+namespace BM.Web.Features.Controllers
 {
-    public  class BranchController : BMControllerBase
+    public class BranchController : BMControllerBase
     {
         #region Dependency Injection
         [Inject] private ILogger<BranchController>? _logger { get; init; }
