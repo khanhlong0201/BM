@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 
 namespace BM.API.Infrastructure;
 
@@ -12,6 +14,7 @@ public interface IBMDbContext
     Task<T> GetDataByIdAsync<T>(string commandText, Func<IDataReader, T> dataFunc, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<DataSet> GetDataSetAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<DataTable> AddOrUpdateAsync(string commandText, IEnumerable<SqlParameter> sqlParameters, CommandType commandType = CommandType.StoredProcedure);
+    Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -156,12 +159,56 @@ public class BMDbContext : IBMDbContext
         sqlCommand.CommandType = commandType;
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
         DataTable dt = new DataTable();
-        using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter())
+        if (commandType == CommandType.StoredProcedure)
         {
-            sqlDataAdapter.SelectCommand = sqlCommand;
-            sqlDataAdapter.Fill(dt);
-            await sqlCommand.DisposeAsync(); // giải phóng tài nguyên
+            using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter())
+            {
+                sqlDataAdapter.SelectCommand = sqlCommand;
+                sqlDataAdapter.Fill(dt);
+                await sqlCommand.DisposeAsync(); // giải phóng tài nguyên
+                return dt;
+            }
+        } 
+        else
+        {
+            DataColumn column = new DataColumn("StatusCode", typeof(string));
+            dt.Columns.Add(column);
+            column = new DataColumn("ErrorMessage", typeof(string));
+            dt.Columns.Add(column);
+            // Thêm dòng mới
+            DataRow row = dt.NewRow();
+            // Thực hiện truy vấn UPDATE
+            int rowsAffected = sqlCommand.ExecuteNonQuery();
+            if(rowsAffected > 0)
+            {
+                row["StatusCode"] = 0;
+                row["ErrorMessage"] = "Success";
+                dt.Rows.Add(row);
+            } 
+            else
+            {
+                row["StatusCode"] = -1;
+                row["ErrorMessage"] = "Error";
+                dt.Rows.Add(row);
+            }    
             return dt;
-        }
+        }    
+        
     }
+
+    public async Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null)
+    {
+        sqlCommand = new SqlCommand();
+        sqlCommand.Connection = sqlConnection;
+        sqlCommand.CommandTimeout = 500;
+        sqlCommand.CommandText = commandText;
+        sqlCommand.CommandType = CommandType.StoredProcedure;
+        if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+        var result = await sqlCommand.ExecuteScalarAsync();
+        Debug.Print(JsonConvert.SerializeObject(result));
+        return result;
+    }
+
+
+
 }

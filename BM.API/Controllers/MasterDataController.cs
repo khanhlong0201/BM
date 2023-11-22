@@ -1,4 +1,6 @@
 ﻿using BM.API.Services;
+using BM.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,6 +35,33 @@ namespace BM.API.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
 
+        }
+
+        [HttpPost]
+        [Route("UpdateBranch")]
+        public async Task<IActionResult> UpdateBranch([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.UpdateBranchs(request);
+                
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PersonalSpendingController", "Update");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
         }
     }
 }
