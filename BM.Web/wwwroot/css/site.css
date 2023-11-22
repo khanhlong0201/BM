@@ -1,4 +1,4 @@
-.validation-message {
+﻿.validation-message {
     color: red;
 }
 
@@ -40,3 +40,248 @@
     font-size: 1rem;
     font-weight: 500;
 }
+
+/* Reload page tự động */
+.my-reconnect-modal > div {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1090;
+    display: block;
+    overflow: hidden;
+    background-color: rgb(255, 255, 255);
+    opacity: 0.8;
+    text-align: center;
+    font-weight: bold;
+    transition: visibility 0s linear 500ms;
+    visibility: visible;
+}
+
+.components-reconnect-hide > div {
+    display: none;
+}
+
+.components-reconnect-show > div {
+    display: none;
+}
+
+.components-reconnect-show > .show {
+    display: block;
+}
+
+.components-reconnect-failed > div {
+    display: none;
+}
+
+.components-reconnect-failed > .failed {
+    display: block;
+}
+
+.components-reconnect-rejected > div {
+    display: none;
+}
+
+.components-reconnect-rejected > .rejected {
+    display: block;
+}
+
+.m1-custom-failed {
+    color: black;
+}
+
+    .m1-custom-failed h1 {
+        font-size: 7.5rem;
+    }
+
+    .m1-custom-failed h2 {
+        font-size: 1.5rem;
+        font-weight: normal;
+    }
+
+    .m1-custom-failed .gears {
+        position: relative;
+        margin: 0 auto;
+        width: auto;
+        height: 0;
+    }
+
+    .m1-custom-failed .gear {
+        position: relative;
+        z-index: 1051;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: black;
+    }
+
+        .m1-custom-failed .gear:before {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            right: 5px;
+            bottom: 5px;
+            z-index: 2;
+            content: "";
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .m1-custom-failed .gear:after {
+            position: absolute;
+            left: 25px;
+            top: 25px;
+            z-index: 3;
+            content: "";
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 5px solid black;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .m1-custom-failed .gear.one {
+            left: -130px;
+        }
+
+        .m1-custom-failed .gear.two {
+            top: -75px;
+        }
+
+        .m1-custom-failed .gear.three {
+            top: -235px;
+            left: 130px;
+        }
+
+        .m1-custom-failed .gear .bar {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            z-index: 0;
+            width: 150px;
+            height: 30px;
+            margin-top: -15px;
+            border-radius: 5px;
+            background: black;
+        }
+
+            .m1-custom-failed .gear .bar:before {
+                position: absolute;
+                left: 5px;
+                top: 5px;
+                right: 5px;
+                bottom: 5px;
+                z-index: 1;
+                content: "";
+                border-radius: 2px;
+                background: #fff;
+            }
+
+            .m1-custom-failed .gear .bar:nth-child(2) {
+                transform: rotate(60deg);
+                transform: rotate(60deg);
+            }
+
+            .m1-custom-failed .gear .bar:nth-child(3) {
+                transform: rotate(120deg);
+                transform: rotate(120deg);
+            }
+
+@keyframes clockwise {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes anticlockwise {
+    0% {
+        -webkit-transform: rotate(360deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(0deg);
+    }
+}
+
+@keyframes clockwiseError {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    20% {
+        -webkit-transform: rotate(30deg);
+    }
+
+    40% {
+        -webkit-transform: rotate(25deg);
+    }
+
+    60% {
+        -webkit-transform: rotate(30deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(0deg);
+    }
+}
+
+@keyframes anticlockwiseErrorStop {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    20% {
+        -webkit-transform: rotate(-30deg);
+    }
+
+    60% {
+        -webkit-transform: rotate(-30deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(0deg);
+    }
+}
+
+@keyframes anticlockwiseError {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    20% {
+        -webkit-transform: rotate(-30deg);
+    }
+
+    40% {
+        -webkit-transform: rotate(-25deg);
+    }
+
+    60% {
+        -webkit-transform: rotate(-30deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(0deg);
+    }
+}
+
+.m1-custom-failed .gear.one {
+    animation: anticlockwiseErrorStop 2s linear infinite;
+}
+
+.m1-custom-failed .gear.two {
+    animation: anticlockwiseError 2s linear infinite;
+}
+
+.m1-custom-failed .gear.three {
+    animation: clockwiseError 2s linear infinite;
+}
+
+/*End reload page tự động*/

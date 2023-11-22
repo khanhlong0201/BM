@@ -31,6 +31,62 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    <div id="components-reconnect-modal" class="my-reconnect-modal components-reconnect-hide">
+        <div class="show">
+            <p>Mất kết nối tới máy chủ. Vui lòng chờ 30s để dược kết nối tự động</p>
+            <div class="spinner-border"></div>
+        </div>
+        <div class="failed">
+            <div class="m1-custom-failed">
+                <h1>:(</h1>
+                <br />
+                <h2>Mất kết nối tới máy chủ. Vui lòng chờ đến khi server được ổn định</h2>
+                <br />
+                <div class="gears">
+                    <div class="gear one">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="gear two">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="gear three">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="rejected">
+            <div class="m1-custom-failed">
+                <h1>:(</h1>
+                <br />
+                <h2>Đã ngắt kết nối đến máy chủ. Vui lòng liên hệ bộ phận IT để được hổ trợ!</h2>
+                <br />
+                <div class="gears">
+                    <div class="gear one">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="gear two">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="gear three">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="page">
         @RenderBody()
@@ -43,5 +99,7 @@
     <script src="~/js/nprogress.js"></script>
     <!-- Telerik Kendo UI Scripts -->
     <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js" defer></script>
+    <!-- Script -->
+    <script src="~/js/myscript.js"></script>
 </body>
 </html>
