@@ -51,7 +51,15 @@ public class MasterDataService : IMasterDataService
             BranchModel oBranch = JsonConvert.DeserializeObject<BranchModel>(pRequest.Json + "")!;
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@Type", "Branchs");
-            oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
+            if (pRequest.Type == nameof(EnumType.Add))
+            {
+                oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
+                queryString = "Insert into [dbo].[Branchs] values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, getDate(), @UserId , null, null )";
+            }
+            else
+            {
+                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = getDate() , UserUpdate = @UserId where BranchId = @BranchId";
+            }
             sqlParameters = new SqlParameter[6];
             sqlParameters[0] = new SqlParameter("@BranchId", oBranch.BranchId);
             sqlParameters[1] = new SqlParameter("@BranchName", oBranch.BranchName);
@@ -60,21 +68,12 @@ public class MasterDataService : IMasterDataService
             sqlParameters[4] = new SqlParameter("@PhoneNumber", oBranch.PhoneNumber + "");
             sqlParameters[5] = new SqlParameter("@UserId", pRequest.UserId + "");
 
-            if (pRequest.Type == nameof(EnumType.Add))
-            {
-                queryString = "Insert into [dbo].[Branchs] values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, null, @UserId , null, null )";
-            }
-            else
-            {
-                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber";
-            }
             var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
             if (data != null && data.Rows.Count > 0)
             {
                 response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
                 response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
             }
-
         }
         catch (Exception ex)
         {

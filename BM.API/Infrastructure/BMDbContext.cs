@@ -204,9 +204,10 @@ public class BMDbContext : IBMDbContext
         sqlCommand.CommandText = commandText;
         sqlCommand.CommandType = CommandType.StoredProcedure;
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
-        var result = await sqlCommand.ExecuteScalarAsync();
-        Debug.Print(JsonConvert.SerializeObject(result));
-        return result;
+        SqlParameter returnValue = sqlCommand.Parameters.Add("@RETURN_VALUE", SqlDbType.VarChar);
+        returnValue.Direction = ParameterDirection.ReturnValue;
+        await sqlCommand.ExecuteNonQueryAsync();
+        return returnValue.Value;
     }
 
 
