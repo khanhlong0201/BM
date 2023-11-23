@@ -67,7 +67,7 @@
 <HDialog @bind-IsVisible="@IsShowDialog"
     SaveAndClosed="@(()=> SaveDataHandler())"
     SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
-    Title="Thêm mới chi tiêu">
+    Title="@(IsCreate ? "Thêm mới chi nhánh" : $"Cập nhật chi nhánh {BranchUpdate!.BranchId}")">
     <EditForm EditContext="@_EditContext" >
         <DataAnnotationsValidator />
         <div>

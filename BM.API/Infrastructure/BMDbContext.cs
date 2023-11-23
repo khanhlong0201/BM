@@ -15,6 +15,7 @@ public interface IBMDbContext
     Task<DataSet> GetDataSetAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<DataTable> AddOrUpdateAsync(string commandText, IEnumerable<SqlParameter> sqlParameters, CommandType commandType = CommandType.StoredProcedure);
     Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
+    Task<int> GetIdIdentityAsync(string commandText);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -209,6 +210,17 @@ public class BMDbContext : IBMDbContext
         await sqlCommand.ExecuteNonQueryAsync();
         return returnValue.Value;
     }
+
+    public async Task<int> GetIdIdentityAsync(string commandText)
+    {
+        sqlCommand = new SqlCommand();
+        sqlCommand.Connection = sqlConnection;
+        sqlCommand.CommandTimeout = 500;
+        sqlCommand.CommandText = commandText;
+        sqlCommand.CommandType = CommandType.Text;
+        int scopeIdentity = Convert.ToInt32(await sqlCommand.ExecuteScalarAsync());
+        return scopeIdentity;
+    }    
 
 
 

@@ -35,8 +35,8 @@ namespace BM.Web.Features.Controllers
                 await base.OnInitializedAsync();
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
-                    new BreadcrumbModel() { Text = "Home", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
-                    new BreadcrumbModel() { Text = "Cấu hình" },
+                    new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                    new BreadcrumbModel() { Text = "Hệ thống" },
                     new BreadcrumbModel() { Text = "Chi nhánh" }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
@@ -90,7 +90,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "ReceiptController", "ReLoadDataHandler");
+                _logger!.LogError(ex, "BranchController", "ReLoadDataHandler");
                 ShowError(ex.Message);
             }
             finally
@@ -123,7 +123,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "OnOpenDialogHandler", "OnOpenDialogHandler");
+                _logger!.LogError(ex, "BranchController", "OnOpenDialogHandler");
                 ShowError(ex.Message);
             }
         }
