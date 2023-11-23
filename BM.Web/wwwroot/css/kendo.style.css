@@ -274,6 +274,10 @@ html {
     border-color: var(--tblr-border-color);
 }
 
+.k-window.k-dialog {
+    max-height: 94%;
+}
+
 .k-window-titlebar {
     padding-block: 8px;
     padding-inline: 10px;

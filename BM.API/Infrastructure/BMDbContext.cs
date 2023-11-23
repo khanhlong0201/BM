@@ -15,6 +15,7 @@ public interface IBMDbContext
     Task<DataSet> GetDataSetAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<DataTable> AddOrUpdateAsync(string commandText, IEnumerable<SqlParameter> sqlParameters, CommandType commandType = CommandType.StoredProcedure);
     Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
+    Task<int> ExecuteScalarAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -196,6 +197,12 @@ public class BMDbContext : IBMDbContext
         
     }
 
+    /// <summary>
+    /// call funtion 
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="sqlParameters"></param>
+    /// <returns></returns>
     public async Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null)
     {
         sqlCommand = new SqlCommand();
@@ -209,6 +216,23 @@ public class BMDbContext : IBMDbContext
         await sqlCommand.ExecuteNonQueryAsync();
         return returnValue.Value;
     }
+
+    /// <summary>
+    /// call ra một cột
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <returns></returns>
+    public async Task<int> ExecuteScalarAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null)
+    {
+        sqlCommand = new SqlCommand();
+        sqlCommand.Connection = sqlConnection;
+        sqlCommand.CommandTimeout = 500;
+        sqlCommand.CommandText = commandText;
+        sqlCommand.CommandType = CommandType.Text;
+        if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+        int scopeIdentity = Convert.ToInt32(await sqlCommand.ExecuteScalarAsync());
+        return scopeIdentity;
+    }    
 
 
 

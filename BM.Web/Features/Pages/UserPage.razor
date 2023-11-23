@@ -1,0 +1,151 @@
+﻿@page "/user"
+@inherits UserController;
+
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/remove_grid.png">Xóa dòng</ToolBarButton>
+</TelerikToolBar>
+<div class="h-table-content" style=" height: calc(100vh - 170px);">
+    <TelerikLoaderContainer OverlayThemeColor="light"
+                            Visible="@(!IsInitialDataLoadComplete)"
+                            Text="@null" Class="grid-initial-data-loader">
+        <Template>
+            <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                           Size="@(ThemeConstants.Loader.Size.Medium)">
+            </TelerikLoader>
+        </Template>
+    </TelerikLoaderContainer>
+
+    <TelerikGrid Data="@ListUsers"
+                 Height="100%"
+                 Width="100%"
+                 RowHeight="25"
+                 Pageable="true"
+                 PageSize="@DefaultConstants.PAGE_SIZE"
+                 Sortable="true"
+                 Resizable="true"
+                 FilterMode="@GridFilterMode.FilterMenu"
+                 SelectionMode="@GridSelectionMode.Multiple"
+                 ScrollMode="@GridScrollMode.Scrollable"
+                 OnRowDoubleClick="@OnRowDoubleClickHandler"
+                 @bind-SelectedItems="@SelectedUsers">
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(UserModel.EmpNo) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(UserModel.EmpNo) Width="130px" MaxResizableWidth="150" Title="Mã nhân viên">
+                <Template>
+                    @{
+                        var model = (context as UserModel);
+                        <span class="h-link">@model!.EmpNo</span>
+                    }
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(UserModel.FullName) Width="270px" Title="Tên nhân viên"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.IsAdmin) Width="140px" Title="Admin ?">
+                <Template>
+                    @{
+                        var model = (context as UserModel);
+                        <TelerikCheckBox @bind-Value="@model!.IsAdmin" Enabled="false" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(UserModel.PhoneNumber) Width="140px" Title="Số điện thoại"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.Address) Width="240px" Title="Địa chỉ"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.Email) Width="120px" Title="Email"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.BranchId) Width="120px" Title="Chi nhánh"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.DateOfWork) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Ngày vào làm"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.DateOfBirth) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="120px" Title="Ngày sinh"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+<HDialog @bind-IsVisible="@IsShowDialog"
+         SaveAndClosed="@(()=> SaveDataHandler())"
+         SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+         Title="@(IsCreate ? "Thêm mới nhân viên" : $"Cập nhật nhân viên {UserUpdate!.EmpNo}")">
+    <EditForm EditContext="@_EditContext">
+        <DataAnnotationsValidator />
+        <div>
+            <HLabel Value="Mã nhân viên:" />
+            <TelerikTextBox @bind-Value="@UserUpdate!.EmpNo" Class="h-link" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtFullName" Value="Tên nhân viên:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@UserUpdate.FullName" Id="txtFullName" />
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.FullName)" Id="txtFullName" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtUserName" Value="Tên đăng nhập:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@UserUpdate.UserName" Id="txtUserName" />
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.UserName)" Id="txtUserName" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtPassWord" Value="Mật khẩu:" IsRequired="true" />
+            <TelerikTextBox Password="true" @bind-Value="@UserUpdate.Password" Id="txtPassWord" />
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.Password)" Id="txtPassWord" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="cbbBranch" Value="Chi nhánh:" IsRequired="true" />
+            <TelerikComboBox Data="@ListBranchs"
+                Value="@UserUpdate.BranchId"
+                ValueExpression="@(() => UserUpdate.BranchId)"
+                ValueChanged="@((string value) => UserUpdate.BranchId = value)"
+                Placeholder="Chọn chi nhánh"
+                TextField="@nameof(BranchModel.BranchName)"
+                ValueField="@nameof(BranchModel.BranchId)"
+                Filterable="true"
+                ClearButton="false"
+                Id="cbbBranch"
+                Class="btn-noborder-radius-left"
+                Width="100%">
+            </TelerikComboBox>
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.BranchId)" Id="cbbBranch" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtPhoneNumber" Value="Số điện thoại:" />
+            <TelerikTextBox @bind-Value="@UserUpdate.PhoneNumber" Id="txtPhoneNumber" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtEmail" Value="Email:" />
+            <TelerikTextBox @bind-Value="@UserUpdate.Email" Id="txtEmail" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtAddress" Value="Địa chỉ:" />
+            <TelerikTextBox @bind-Value="@UserUpdate.Address" Id="txtAddress" />
+        </div>
+        <div class="mt-2 row">
+            <div class="col-6">
+                <HLabel For="txtUserName" Value="Ngày sinh:" />
+                <TelerikDatePicker @bind-Value="@UserUpdate.DateOfBirth"
+                    Placeholder=""
+                    Format="dd/MM/yyyy"
+                    Class="btn-noborder-radius-left">
+                </TelerikDatePicker>
+            </div>
+            <div class="col-6">
+                <HLabel For="txtUserName" Value="Ngày vào làm:" />
+                <TelerikDatePicker @bind-Value="@UserUpdate.DateOfWork"
+                    Placeholder=""
+                    Format="dd/MM/yyyy"
+                    Class="btn-noborder-radius-left">
+                </TelerikDatePicker>
+            </div>
+        </div>
+        <div class="mt-2">
+            <TelerikCheckBox @bind-Value="@UserUpdate.IsAdmin" Id="ckbIsAdmin" />
+            <HLabel Value="Supper Admin?" For="ckbIsAdmin" />
+        </div>
+    </EditForm>
+</HDialog>
+
+
+<HConfirm @ref="@_rDialogs" />

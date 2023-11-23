@@ -23,4 +23,7 @@ public static class EndpointConstants
 {
     public const string URL_MASTERDATA_GETBRANCH = "MasterData/GetBranchs";
     public const string URL_MASTERDATA_UPDATE_BRANCH = "MasterData/UpdateBranch";
+
+    public const string URL_MASTERDATA_GET_USER = "MasterData/GetUsers";
+    public const string URL_MASTERDATA_UPDATE_USER = "MasterData/UpdateUser";
 }
