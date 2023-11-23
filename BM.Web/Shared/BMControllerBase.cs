@@ -17,6 +17,8 @@ public class BMControllerBase : ComponentBase
     public EventCallback<List<BreadcrumbModel>> NotifyBreadcrumb { get; set; }
     public List<BreadcrumbModel>? ListBreadcrumbs { get; set; }
 
+    public int pUserId { get; set; }
+
     #endregion Properties
 
     protected override async Task OnInitializedAsync()

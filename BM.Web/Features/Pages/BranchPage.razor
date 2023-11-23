@@ -2,8 +2,8 @@
 @inherits BranchController;
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/refresh.png" >Làm mới</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/add-new-icon.png" >Thêm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/remove_grid.png" >Xóa dòng</ToolBarButton>
 </TelerikToolBar>
 <div class="h-table-content" style=" height: calc(100vh - 170px);">
@@ -28,6 +28,7 @@
                  FilterMode="@GridFilterMode.FilterMenu"
                  SelectionMode="@GridSelectionMode.Multiple"
                  ScrollMode="@GridScrollMode.Scrollable"
+                 OnRowDoubleClick="@OnRowDoubleClickHandler"
                  @bind-SelectedItems="@SelectedBranchs">
         <GridSettings>
             <GridPagerSettings InputType="PagerInputType.Input" />
@@ -49,7 +50,7 @@
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(BranchModel.BranchName) Width="270px" Title="Tên chi nhánh"></GridColumn>
-            <GridColumn Field=@nameof(BranchModel.IsActive) Width="140px" Title="Còn hoạt động ?">
+            <GridColumn Field=@nameof(BranchModel.IsActive) Width="140px" Title="Đang hoạt động ?">
                 <Template>
                     @{
                         var model = (context as BranchModel);
@@ -62,3 +63,37 @@
         </GridColumns>
     </TelerikGrid>
 </div>
+
+<HDialog @bind-IsVisible="@IsShowDialog"
+    SaveAndClosed="@(()=> SaveDataHandler())"
+    SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+    Title="Thêm mới chi tiêu">
+    <EditForm EditContext="@_EditContext" >
+        <DataAnnotationsValidator />
+        <div>
+            <HLabel Value="Mã chi nhánh:" />
+            <TelerikTextBox @bind-Value="@BranchUpdate!.BranchId" Class="h-link" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtBranchName" Value="Tên chi nhánh:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@BranchUpdate.BranchName" Id="txtBranchName" />
+            <HValidationTooltip ValidationFor="@(()=> BranchUpdate.BranchName)" Id="txtBranchName" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtPhoneNumber" Value="Số điện thoại:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@BranchUpdate.PhoneNumber" Id="txtPhoneNumber" />
+            <HValidationTooltip ValidationFor="@(()=> BranchUpdate.PhoneNumber)" Id="txtPhoneNumber" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtAddress" Value="Địa chỉ:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@BranchUpdate.Address" Id="txtAddress" />
+            <HValidationTooltip ValidationFor="@(()=> BranchUpdate.Address)" Id="txtAddress" />
+        </div>
+        <div class="mt-2">
+            <TelerikCheckBox @bind-Value="@BranchUpdate.IsActive" Id="ckbIsActive" />
+            <HLabel Value="Hoạt động?" For="ckbIsActive" />
+        </div>
+    </EditForm>
+</HDialog>
+
+<HConfirm @ref="@_rDialogs" />

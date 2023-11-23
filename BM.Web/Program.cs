@@ -15,12 +15,26 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedUICultures = new List<CultureInfo> { new CultureInfo("vi-VN") };
 });
 
+// config url api
+string apiUrl = builder.Configuration.GetSection("appSettings:ApiUrl").Value + "";
+string tokenKey = builder.Configuration.GetSection("appSettings:TokenKey").Value + "";
+string tokenValue = builder.Configuration.GetSection("appSettings:TokenValue").Value + "";
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddTelerikBlazor();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddRegisterComponents();
+
+builder.Services.AddClientScopeService();
+builder.Services.AddHttpClient("api", m =>
+{
+    m.BaseAddress = new Uri(apiUrl);
+    m.Timeout = TimeSpan.FromMinutes(10);
+    m.DefaultRequestHeaders.Add(tokenKey, tokenValue);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

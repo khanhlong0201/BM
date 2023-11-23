@@ -32,5 +32,8 @@ public enum EnumType
 {
     @Add,
     @Update, 
-    @Delete
+    @Delete,
+    @SaveAndClose,
+    @SaveAndCreate,
+    @Report
 }

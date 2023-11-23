@@ -11,4 +11,16 @@ public static class DefaultConstants
     public const string FORMAT_GRID_DATE_TIME = "{0: HH:mm dd/MM/yyyy}";
     public const string FORMAT_DATE_TIME = "HH:mm dd/MM/yyyy";
     public const int PAGE_SIZE = 1000;
+
+    public const string MESSAGE_INVALID_DATA = "Không đúng định dạng dữ liệu!";
+    public const string MESSAGE_LOGIN_EXPIRED = "Hết phiên đăng nhập!";
+    public const string MESSAGE_INSERT = "Đã tạo mới";
+    public const string MESSAGE_UPDATE = "Đã cập nhât";
+}
+
+
+public static class EndpointConstants
+{
+    public const string URL_MASTERDATA_GETBRANCH = "MasterData/GetBranchs";
+    public const string URL_MASTERDATA_UPDATE_BRANCH = "MasterData/UpdateBranch";
 }

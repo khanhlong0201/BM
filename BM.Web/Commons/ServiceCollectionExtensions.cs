@@ -11,5 +11,11 @@ namespace BM.Web.Commons
             services.AddScoped<ToastService>();
             return services;
         }
+
+        public static IServiceCollection AddClientScopeService(this IServiceCollection services)
+        {
+            services.AddScoped<ICliMasterDataService, CliMasterDataService>();
+            return services;
+        }
     }
 }
