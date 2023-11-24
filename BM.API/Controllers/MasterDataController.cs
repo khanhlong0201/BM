@@ -54,7 +54,7 @@ namespace BM.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PersonalSpendingController", "Update");
+                _logger.LogError(ex, "MasterDataController", "Update");
                 return StatusCode(StatusCodes.Status400BadRequest, new
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
@@ -75,7 +75,7 @@ namespace BM.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "MasterDataController", "GetBranchs");
+                _logger.LogError(ex, "MasterDataController", "GetDataUsers");
                 return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
 
@@ -97,7 +97,49 @@ namespace BM.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PersonalSpendingController", "Update");
+                _logger.LogError(ex, "MasterDataController", "UpdateUser");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
+        [HttpGet]
+        [Route("GetEnumsByType")]
+        public async Task<IActionResult> GetEnumsByType([FromQuery] string pType)
+        {
+            try
+            {
+                var data = await _masterService.GetEnumsAsync(pType);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetEnumsByType");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateEnum")]
+        public async Task<IActionResult> UpdateEnum([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.UpdateEnums(request);
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "UpdateEnum");
                 return StatusCode(StatusCodes.Status400BadRequest, new
                 {
                     StatusCode = StatusCodes.Status400BadRequest,

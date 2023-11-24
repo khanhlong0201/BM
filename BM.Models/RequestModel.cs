@@ -28,6 +28,12 @@ public class ResponseModel
     }
 }
 
+public class ComboboxModel
+{
+    public string? Code { get; set; }
+    public string? Name { get; set; }
+}
+
 public enum EnumType
 {
     @Add,
@@ -35,5 +41,7 @@ public enum EnumType
     @Delete,
     @SaveAndClose,
     @SaveAndCreate,
-    @Report
+    @Report,
+    @ServiceType,
+    @SkinType
 }

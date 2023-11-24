@@ -1,5 +1,6 @@
 ﻿using BM.API.Infrastructure;
 using BM.Models;
+using Microsoft.AspNetCore.Components.Routing;
 using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
@@ -13,6 +14,8 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateBranchs(RequestModel pRequest);
     Task<IEnumerable<UserModel>> GetUsersAsync();
     Task<ResponseModel> UpdateUsers(RequestModel pRequest);
+    Task<IEnumerable<EnumModel>> GetEnumsAsync(string pEnumType);
+    Task<ResponseModel> UpdateEnums(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -216,6 +219,95 @@ public class MasterDataService : IMasterDataService
         }
         return response;
     }
+    
+    /// <summary>
+    /// lấy danh sách Enum theo loại Enum
+    /// </summary>
+    /// <param name="pEnumType"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<EnumModel>> GetEnumsAsync(string pEnumType)
+    {
+        IEnumerable<EnumModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@EnumType", $"{pEnumType}");
+            data = await _context.GetDataAsync(@"select [EnumId],[EnumType],[EnumName],[Description],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate]
+                    from [dbo].[Enums] where [IsDelete] = 0 and [EnumType] = @EnumType"
+                    , DataRecordToEnumModel, sqlParameters , commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    public async Task<ResponseModel> UpdateEnums(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            EnumModel oEnum = JsonConvert.DeserializeObject<EnumModel>(pRequest.Json + "")!;
+            SqlParameter[] sqlParameters;
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@Type", "Enums");
+                    sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
+                    oEnum.EnumId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã loại
+                    queryString = @"Insert into [dbo].[Enums] ([EnumId], [EnumType], [EnumName], [Description], [DateCreate], [UserCreate], [IsDelete]) 
+                                    values (@EnumId, @EnumType, @EnumName, @Description, getdate(), @UserId, 0)";
+                    sqlParameters = new SqlParameter[5];
+                    sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
+                    sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
+                    sqlParameters[2] = new SqlParameter("@EnumName", oEnum.EnumName);
+                    sqlParameters[3] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
+                    sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    queryString = @"Update [dbo].[Enums]
+                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                     where [EnumId] = @EnumId";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
+                    sqlParameters[1] = new SqlParameter("@EnumName", oEnum.EnumName);
+                    sqlParameters[2] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
+                    sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    await ExecQuery();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }    
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }    
     #endregion Public Functions
 
     /// <summary>
@@ -266,4 +358,20 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserUpdate"])) user.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
         return user;
     }
+
+    private EnumModel DataRecordToEnumModel(IDataRecord record)
+    {
+        EnumModel model = new EnumModel();
+        if (!Convert.IsDBNull(record["EnumId"])) model.EnumId = Convert.ToString(record["EnumId"]);
+        if (!Convert.IsDBNull(record["EnumType"])) model.EnumType = Convert.ToString(record["EnumType"]);
+        if (!Convert.IsDBNull(record["EnumName"])) model.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["Description"])) model.Description = Convert.ToString(record["Description"]);
+        //if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        return model;
+    }    
 }
