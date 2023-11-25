@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BM.Models;
+
 public static class EncryptHelper
 {
     private static string key { get; set; } = "efba80fa15dff0d2817f5244ce399187"; // BMSystem123@a

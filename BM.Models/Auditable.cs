@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BM.Models
+﻿namespace BM.Models
 {
     public interface IAuditable
     {
@@ -15,6 +9,7 @@ namespace BM.Models
         bool IsDeleted { get; set; }
         string? ReasonDelete { get; set; }
     }
+
     public abstract class Auditable : IAuditable
     {
         public DateTime? DateCreate { get; set; }

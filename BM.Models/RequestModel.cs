@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BM.Models;
 
-namespace BM.Models;
 public class RequestModel
 {
     public int UserId { get; set; }
@@ -16,11 +11,13 @@ public class ResponseModel
 {
     public int StatusCode { get; set; }
     public string? Message { get; set; }
+
     public ResponseModel()
     {
         StatusCode = -1;
         Message = string.Empty;
     }
+
     public ResponseModel(int status, string? message)
     {
         StatusCode = status;
@@ -37,7 +34,7 @@ public class ComboboxModel
 public enum EnumType
 {
     @Add,
-    @Update, 
+    @Update,
     @Delete,
     @SaveAndClose,
     @SaveAndCreate,

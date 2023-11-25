@@ -11,7 +11,7 @@ using Telerik.Blazor.Components;
 
 namespace BM.Web.Features.Controllers
 {
-    public class EnumController : BMControllerBase
+    public class EnumController : BMControllerBase, IDisposable
     {
         #region Dependency Injection
         [Inject] private ILogger<EnumController>? _logger { get; init; }
@@ -29,6 +29,7 @@ namespace BM.Web.Features.Controllers
         public bool IsCreate { get; set; } = true;
         public HConfirm? _rDialogs { get; set; }
         public string pEnumType = "";
+        private string currentLocation = "";
         #endregion
 
         #region Override Functions
@@ -62,7 +63,8 @@ namespace BM.Web.Features.Controllers
                     new BreadcrumbModel() { Text = ListTypeEnums.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
-                    
+                _navManager.LocationChanged += LocationChanged;
+
             }
             catch (Exception ex)
             {
@@ -100,6 +102,25 @@ namespace BM.Web.Features.Controllers
             ListEnums = new List<EnumModel>();
             SelectedEnums = new List<EnumModel>();
             ListEnums = await _masterDataService!.GetDataEnumsAsync(pEnumType);
+        }
+
+        void LocationChanged(object sender, LocationChangedEventArgs e)
+        {
+            // Cập nhật giá trị khi location thay đổi
+            currentLocation = e.Location;
+            if(currentLocation == "/service-type")
+            {
+
+            }
+            else if (currentLocation == "/skin-type")
+            { 
+            }    
+        }
+
+        void IDisposable.Dispose()
+        {
+            // Unsubscribe from the event when our component is disposed
+            _navManager!.LocationChanged -= LocationChanged;
         }
         #endregion
 
