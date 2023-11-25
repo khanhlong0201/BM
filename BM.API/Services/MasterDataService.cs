@@ -469,6 +469,17 @@ public class MasterDataService : IMasterDataService
                     response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
                 }
             }
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[7];
+                sqlParameters[0] = new SqlParameter("@ServiceCode", oService.ServiceCode);
+                sqlParameters[1] = new SqlParameter("@ServiceName", oService.ServiceName);
+                sqlParameters[2] = new SqlParameter("@EnumId", oService.EnumId);
+                sqlParameters[3] = new SqlParameter("@Description", oService.Description ?? (object)DBNull.Value);
+                sqlParameters[4] = new SqlParameter("@WarrantyPeriod", oService.WarrantyPeriod);
+                sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
+                sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+            }
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
@@ -477,14 +488,7 @@ public class MasterDataService : IMasterDataService
                     oService.ServiceCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã dịch vụ
                     queryString = @"Insert into [dbo].[Services] ([ServiceCode],[ServiceName],[EnumId],[Description],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
                                     values (@ServiceCode, @ServiceName, @EnumId, @Description, @WarrantyPeriod, @QtyWarranty, getdate(), @UserId, 0)";
-                    sqlParameters = new SqlParameter[7];
-                    sqlParameters[0] = new SqlParameter("@ServiceCode", oService.ServiceCode);
-                    sqlParameters[1] = new SqlParameter("@ServiceName", oService.ServiceName);
-                    sqlParameters[2] = new SqlParameter("@EnumId", oService.EnumId);
-                    sqlParameters[3] = new SqlParameter("@Description", oService.Description ?? (object)DBNull.Value);
-                    sqlParameters[4] = new SqlParameter("@WarrantyPeriod", oService.WarrantyPeriod);
-                    sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
-                    sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                    setParameter();
                     int iPriceId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
                     await _context.BeginTranAsync();
                     await ExecQuery();
@@ -499,6 +503,15 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
                     await ExecQuery();
                     await _context.CommitTranAsync();
+                    break;
+                case nameof(EnumType.Update):
+                    queryString = @"Update [dbo].[Services]
+                                       set [ServiceName] = @ServiceName , [EnumId] = @EnumId, [Description] = @Description
+                                         , [WarrantyPeriod] = @WarrantyPeriod , [QtyWarranty] = @QtyWarranty
+                                         , [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                     where [ServiceCode] = @ServiceCode";
+                    setParameter();
+                    await ExecQuery();
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
