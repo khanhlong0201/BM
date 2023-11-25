@@ -357,6 +357,24 @@ public class MasterDataService : IMasterDataService
                     response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
                 }
             }
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[14];
+                sqlParameters[0] = new SqlParameter("@CusNo", oCustomer.CusNo);
+                sqlParameters[1] = new SqlParameter("@FullName", oCustomer.FullName);
+                sqlParameters[2] = new SqlParameter("@Phone1", oCustomer.Phone1 ?? (object)DBNull.Value);
+                sqlParameters[3] = new SqlParameter("@Phone2", oCustomer.Phone2 ?? (object)DBNull.Value);
+                sqlParameters[4] = new SqlParameter("@CINo", oCustomer.CINo ?? (object)DBNull.Value);
+                sqlParameters[5] = new SqlParameter("@Email", oCustomer.Email ?? (object)DBNull.Value);
+                sqlParameters[6] = new SqlParameter("@FaceBook", oCustomer.FaceBook ?? (object)DBNull.Value);
+                sqlParameters[7] = new SqlParameter("@Zalo", oCustomer.Zalo ?? (object)DBNull.Value);
+                sqlParameters[8] = new SqlParameter("@Address", oCustomer.Address ?? (object)DBNull.Value);
+                sqlParameters[9] = new SqlParameter("@DateOfBirth", oCustomer.DateOfBirth ?? (object)DBNull.Value);
+                sqlParameters[10] = new SqlParameter("@SkinType", oCustomer.SkinType ?? (object)DBNull.Value);
+                sqlParameters[11] = new SqlParameter("@BranchId", oCustomer.BranchId);
+                sqlParameters[12] = new SqlParameter("@Remark", oCustomer.Remark ?? (object)DBNull.Value);
+                sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
+            }
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
@@ -367,28 +385,17 @@ public class MasterDataService : IMasterDataService
                                     ,[Address],[DateOfBirth],[SkinType],[BranchId],[Remark],[DateCreate],[UserCreate],[IsDelete]) 
                                     values (@CusNo, @FullName, @Phone1, @Phone2, @CINo, @Email, @FaceBook, @Zalo
                                     ,@Address, @DateOfBirth, @SkinType, @BranchId, @Remark, getdate(), @UserId, 0)";
-                    sqlParameters = new SqlParameter[14];
-                    sqlParameters[0] = new SqlParameter("@CusNo", oCustomer.CusNo);
-                    sqlParameters[1] = new SqlParameter("@FullName", oCustomer.FullName);
-                    sqlParameters[2] = new SqlParameter("@Phone1", oCustomer.Phone1 ?? (object)DBNull.Value);
-                    sqlParameters[3] = new SqlParameter("@Phone2", oCustomer.Phone2 ?? (object)DBNull.Value);
-                    sqlParameters[4] = new SqlParameter("@CINo", oCustomer.CINo ?? (object)DBNull.Value);
-                    sqlParameters[5] = new SqlParameter("@Email", oCustomer.Email ?? (object)DBNull.Value);
-                    sqlParameters[6] = new SqlParameter("@FaceBook", oCustomer.FaceBook ?? (object)DBNull.Value);
-                    sqlParameters[7] = new SqlParameter("@Zalo", oCustomer.Zalo ?? (object)DBNull.Value);
-                    sqlParameters[8] = new SqlParameter("@Address", oCustomer.Address ?? (object)DBNull.Value);
-                    sqlParameters[9] = new SqlParameter("@DateOfBirth", oCustomer.DateOfBirth ?? (object)DBNull.Value);
-                    sqlParameters[10] = new SqlParameter("@SkinType", oCustomer.SkinType ?? (object)DBNull.Value);
-                    sqlParameters[11] = new SqlParameter("@BranchId", oCustomer.BranchId);
-                    sqlParameters[12] = new SqlParameter("@Remark", oCustomer.Remark);
-                    sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
+                    setParameter();
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Customers]
-                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = getdate(), [UserUpdate] = @UserId
-                                     where [EnumId] = @EnumId";
-                    sqlParameters = new SqlParameter[14];
+                                       set [FullName] = @FullName , [Phone1] = @Phone1, [Phone2] = @Phone2
+                                         , [CINo] = @CINo , [Email] = @Email, [FaceBook] = @FaceBook, [Zalo] = @Zalo, [Remark] = @Remark
+                                         , [Address] = @Address , [DateOfBirth] = @DateOfBirth, [SkinType] = @SkinType, [BranchId] = @BranchId
+                                         , [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                     where [CusNo] = @CusNo";
+                    setParameter();
                     await ExecQuery();
                     break;
                 default:
