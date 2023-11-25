@@ -328,7 +328,7 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth],[SkinType]
-                    ,[BranchId],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0"
+                    ,[BranchId],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0 order by [CusNo] desc"
                     , DataRecordToCustomerModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }

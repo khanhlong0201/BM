@@ -6,6 +6,7 @@ using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using System.Linq;
 using Telerik.Blazor.Components;
 using Telerik.DataSource;
 
@@ -16,6 +17,7 @@ namespace BM.Web.Features.Controllers
         #region Dependency Injection
         [Inject] private ILogger<CustomerController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
+        [Inject] private NavigationManager? _navManager { get; init; }
         #endregion
         #region Properties
         public bool IsInitialDataLoadComplete { get; set; } = true;
@@ -121,6 +123,7 @@ namespace BM.Web.Features.Controllers
             {
                 if (pAction == EnumType.Add)
                 {
+                    if (ListSkinsType != null && ListSkinsType.Any()) ListSkinsType.ForEach(item => item.IsCheck = false);
                     IsCreate = true;
                     CustomerUpdate = new CustomerModel();
                 }
@@ -141,6 +144,14 @@ namespace BM.Web.Features.Controllers
                     CustomerUpdate.Remark = pItemDetails.Remark;
                     CustomerUpdate.DateCreate = pItemDetails.DateCreate;
                     CustomerUpdate.UserCreate = pItemDetails.UserCreate;
+                    var lstSkinType = JsonConvert.DeserializeObject<List<string>>(pItemDetails.SkinType + "");
+                    if (lstSkinType != null && lstSkinType.Any() && ListSkinsType != null && ListSkinsType.Any())
+                    {
+                        ListSkinsType.ForEach(item =>
+                        {
+                            if (lstSkinType.Contains(item.Code + "")) item.IsCheck = true;
+                        });
+                    }    
                     IsCreate = false;
                 }
                 IsShowDialog = true;
@@ -161,6 +172,8 @@ namespace BM.Web.Features.Controllers
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
                 await ShowLoader();
+                string skinType = JsonConvert.SerializeObject(ListSkinsType?.Where(m => m.IsCheck).Select(m => m.Code).ToArray());
+                CustomerUpdate.SkinType = skinType;
                 bool isSuccess = await _masterDataService!.UpdateCustomerAsync(JsonConvert.SerializeObject(CustomerUpdate), sAction, pUserId);
                 if (isSuccess)
                 {
@@ -188,6 +201,11 @@ namespace BM.Web.Features.Controllers
         }
 
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as CustomerModel);
+
+        protected void CreateTicketHandler()
+        {
+            _navManager!.NavigateTo("/create-ticket");
+        }    
         #endregion
     }
 }

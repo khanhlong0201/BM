@@ -1,0 +1,130 @@
+﻿@page "/service"
+@inherits ServiceController
+
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/remove_grid.png">Xóa dòng</ToolBarButton>
+</TelerikToolBar>
+
+<div class="h-table-content" style=" height: calc(100vh - 170px);">
+    <TelerikLoaderContainer OverlayThemeColor="light"
+                            Visible="@(!IsInitialDataLoadComplete)"
+                            Text="@null" Class="grid-initial-data-loader">
+        <Template>
+            <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                           Size="@(ThemeConstants.Loader.Size.Medium)">
+            </TelerikLoader>
+        </Template>
+    </TelerikLoaderContainer>
+
+    <TelerikGrid Data="@ListServices"
+                 Height="100%"
+                 Width="100%"
+                 RowHeight="25"
+                 Pageable="true"
+                 PageSize="@DefaultConstants.PAGE_SIZE"
+                 Sortable="true"
+                 Resizable="true"
+                 FilterMode="@GridFilterMode.FilterMenu"
+                 SelectionMode="@GridSelectionMode.Multiple"
+                 ScrollMode="@GridScrollMode.Scrollable"
+                 OnRowDoubleClick="@OnRowDoubleClickHandler"
+                 @bind-SelectedItems="@SelectedServices">
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(ServiceModel.ServiceCode) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(ServiceModel.ServiceCode) Width="130px" MaxResizableWidth="150" Title="Mã dịch vụ">
+                <Template>
+                    @{
+                        var model = (context as ServiceModel);
+                        <span class="h-link">@model!.ServiceCode</span>
+                    }
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.ServiceName) Width="270px" Title="Tên dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.Price) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="130px" Title="Đơn giá"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.EnumName) Width="170px" Title="Loại dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.Description) Width="190px" Title="Mô tả"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.WarrantyPeriod) Width="190px" Title="Số tháng bảo hành"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.QtyWarranty) Width="190px" Title="Số lần bảo hành"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+<HDialog @bind-IsVisible="@IsShowDialog"
+    SaveAndClosed="@(()=> SaveDataHandler())"
+    SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+    Title="@(IsCreate ? "Thêm mới dịch vụ" : $"Cập nhật dịch vụ {ServiceUpdate!.ServiceCode}")">
+    <EditForm EditContext="@_EditContext" >
+        <DataAnnotationsValidator />
+        <div>
+            <HLabel Value="Mã dịch vụ:" />
+            <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceCode" Class="h-link" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtBranchName" Value="Tên dịch vụ:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceName" Id="txtBranchName" />
+            <HValidationTooltip ValidationFor="@(()=> ServiceUpdate!.ServiceName)" Id="txtBranchName" />
+        </div>
+        <div class="mt-2">
+            <HLabel Value="Đơn giá:" IsRequired="true" />
+            <TelerikNumericTextBox 
+                Format="@DefaultConstants.FORMAT_CURRENCY" 
+                Step="1000.0"
+                @bind-Value="@ServiceUpdate.Price" 
+                Id="numPrice" />
+            <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.Price)" Id="numPrice" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="cbbTypeEnum" Value="Loại dịch vụ:" IsRequired="true" />
+            <TelerikComboBox Data="@ListServicesType"
+                Value="@ServiceUpdate.EnumId"
+                ValueExpression="@(() => ServiceUpdate.EnumId)"
+                ValueChanged="@((string value) => ServiceUpdate.EnumId = value)"
+                Placeholder="Chọn dịch vụ"
+                TextField="@nameof(EnumModel.EnumName)"
+                ValueField="@nameof(EnumModel.EnumId)"
+                Filterable="true"
+                ClearButton="false"
+                Id="cbbTypeEnum"
+                Class="btn-noborder-radius-left"
+                Width="100%">
+            </TelerikComboBox>
+            <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.EnumId)" Id="cbbTypeEnum" />
+        </div>
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-6 col-sm-12">
+                    <HLabel Value="Số tháng bảo hành:" />
+                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
+                        Step="1000.0"
+                        @bind-Value="@ServiceUpdate.WarrantyPeriod"
+                        Id="numPrice" />
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <HLabel Value="Số lần bảo hành:" />
+                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
+                        Step="1"
+                        @bind-Value="@ServiceUpdate.QtyWarranty"
+                        Id="numPrice" />
+                </div>
+            </div>
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtDescription" Value="Mô tả:" />
+            <TelerikTextBox @bind-Value="@ServiceUpdate.Description" Id="txtDescription" />
+        </div>
+    </EditForm>
+</HDialog>
+
+
+<HConfirm @ref="@_rDialogs" />

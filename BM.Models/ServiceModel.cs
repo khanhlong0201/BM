@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BM.Models;
+
+/// <summary>
+/// dịch vụ
+/// </summary>
+public class ServiceModel : Auditable
+{
+    public string? ServiceCode { get; set; }
+    [Required(ErrorMessage = "Vui lòng điền Tên dịch vụ")]
+    public string? ServiceName { get; set; }
+    [Required(ErrorMessage = "Vui lòng chọn Loại dịch vụ")]
+    public string? EnumId { get; set; }
+    [Range(1000, double.MaxValue, ErrorMessage = "Vui lòng nhập đơn giá")]
+    public double Price { get; set; }
+    public string? EnumName { get; set; }
+    public string? Description { get; set; }
+    public double WarrantyPeriod { get; set; } // số tháng bảo thành
+    public int QtyWarranty { get; set; } // số lần bảo hành
+}
+
+/// <summary>
+/// bảng giá
+/// </summary>
+public class PriceModel
+{
+    public int Id { get; set; }
+    public string? ServiceCode { get; set; }
+    public DateTime DateCreate { get; set; }
+    public int UserCreate { get; set; }
+    public bool IsActive { get; set; }
+    [Range(1000, double.MaxValue, ErrorMessage = "Vui lòng nhập đơn giá")]
+    public double Price { get; set; }
+}
