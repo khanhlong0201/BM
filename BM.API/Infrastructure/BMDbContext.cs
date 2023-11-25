@@ -10,6 +10,9 @@ public interface IBMDbContext
 {
     Task Connect();
     Task DisConnect();
+    Task BeginTranAsync();
+    Task CommitTranAsync();
+    Task RollbackAsync();
     Task<IEnumerable<T>> GetDataAsync<T>(string commandText, Func<IDataReader, T> dataFunc, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<T> GetDataByIdAsync<T>(string commandText, Func<IDataReader, T> dataFunc, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
     Task<DataSet> GetDataSetAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null, CommandType commandType = CommandType.StoredProcedure);
@@ -23,6 +26,7 @@ public class BMDbContext : IBMDbContext
     private readonly IConfiguration _configuration;
     private SqlConnection? sqlConnection { get; set; }
     private SqlCommand? sqlCommand { get; set; }
+    SqlTransaction? sqlTransaction { get; set; }
     public BMDbContext(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -53,6 +57,36 @@ public class BMDbContext : IBMDbContext
             await sqlConnection.CloseAsync();
             //await sqlConnection.DisposeAsync(); // giải phóng tài nguyên
         }
+    }
+
+    /// <summary>
+    /// begin tran
+    /// </summary>
+    /// <returns></returns>
+    public async Task BeginTranAsync()
+    {
+        if(sqlConnection is not null && sqlConnection.State == ConnectionState.Open)
+        {
+            sqlTransaction = (SqlTransaction?)await sqlConnection.BeginTransactionAsync();
+        }    
+    }
+
+    /// <summary>
+    /// commit tran
+    /// </summary>
+    /// <returns></returns>
+    public async Task CommitTranAsync()
+    {
+        if(sqlTransaction is not null) await sqlTransaction.CommitAsync();
+    }
+
+    /// <summary>
+    /// commit tran
+    /// </summary>
+    /// <returns></returns>
+    public async Task RollbackAsync()
+    {
+        if (sqlTransaction is not null) await sqlTransaction.RollbackAsync();
     }
 
     /// <summary>
@@ -158,6 +192,7 @@ public class BMDbContext : IBMDbContext
         sqlCommand.CommandTimeout = 500;
         sqlCommand.CommandText = commandText;
         sqlCommand.CommandType = commandType;
+        sqlCommand.Transaction = sqlTransaction;
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
         DataTable dt = new DataTable();
         if (commandType == CommandType.StoredProcedure)

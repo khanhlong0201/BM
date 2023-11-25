@@ -18,6 +18,8 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateEnums(RequestModel pRequest);
     Task<IEnumerable<CustomerModel>> GetCustomersAsync();
     Task<ResponseModel> UpdateCustomer(RequestModel pRequest);
+    Task<IEnumerable<ServiceModel>> GetServicessAsync();
+    Task<ResponseModel> UpdateService(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -414,8 +416,108 @@ public class MasterDataService : IMasterDataService
             await _context.DisConnect();
         }
         return response;
-    }        
-        
+    }
+
+
+    /// <summary>
+    /// lấy danh sách dịch vụ
+    /// </summary>
+    /// <param name="pBranchId"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ServiceModel>> GetServicessAsync()
+    {
+        IEnumerable<ServiceModel> data;
+        try
+        {
+            await _context.Connect();
+            data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[Description],[WarrantyPeriod],[QtyWarranty]
+                         ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
+                         ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [DateCreate] desc), 0) as [Price]
+                    from [dbo].[Services] as T0 with(nolock) 
+              inner join [dbo].[Enums] as T1 with(nolock) on T0.[EnumId] = T1.[EnumId]
+                   where T0.[IsDelete] = 0 order by [ServiceCode] desc"
+                    , DataRecordToServiceModel, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// cập nhật thông tin dịch vụ -> Đơn giá nếu thêm mới
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateService(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            ServiceModel oService = JsonConvert.DeserializeObject<ServiceModel>(pRequest.Json + "")!;
+            SqlParameter[] sqlParameters;
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    sqlParameters = new SqlParameter[1];
+                    sqlParameters[0] = new SqlParameter("@Type", "Services");
+                    oService.ServiceCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã dịch vụ
+                    queryString = @"Insert into [dbo].[Services] ([ServiceCode],[ServiceName],[EnumId],[Description],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
+                                    values (@ServiceCode, @ServiceName, @EnumId, @Description, @WarrantyPeriod, @QtyWarranty, getdate(), @UserId, 0)";
+                    sqlParameters = new SqlParameter[7];
+                    sqlParameters[0] = new SqlParameter("@ServiceCode", oService.ServiceCode);
+                    sqlParameters[1] = new SqlParameter("@ServiceName", oService.ServiceName);
+                    sqlParameters[2] = new SqlParameter("@EnumId", oService.EnumId);
+                    sqlParameters[3] = new SqlParameter("@Description", oService.Description ?? (object)DBNull.Value);
+                    sqlParameters[4] = new SqlParameter("@WarrantyPeriod", oService.WarrantyPeriod);
+                    sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
+                    sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                    int iPriceId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
+                    await _context.BeginTranAsync();
+                    await ExecQuery();
+ 
+                    // thêm vào bảng giá
+                    queryString = @"Insert into [dbo].[Prices] ([Id],[ServiceCode],[Price],[DateCreate],[UserCreate],[IsActive])
+                                    values (@Id, @ServiceCode, @Price, getdate(), @UserId, 1)";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@Id", iPriceId);
+                    sqlParameters[1] = new SqlParameter("@ServiceCode", oService.ServiceCode);
+                    sqlParameters[2] = new SqlParameter("@Price", oService.Price);
+                    sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    await ExecQuery();
+                    await _context.CommitTranAsync();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #endregion Public Functions
 
     #region Private Funtions
@@ -510,6 +612,29 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["DateOfBirth"])) model.DateOfBirth = Convert.ToDateTime(record["DateOfBirth"]);
         if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
         if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc danh sách Services
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ServiceModel DataRecordToServiceModel(IDataRecord record)
+    {
+        ServiceModel model = new();
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
+        if (!Convert.IsDBNull(record["EnumId"])) model.EnumId = Convert.ToString(record["EnumId"]);
+        if (!Convert.IsDBNull(record["EnumName"])) model.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["Description"])) model.Description = Convert.ToString(record["Description"]);
+        if (!Convert.IsDBNull(record["WarrantyPeriod"])) model.WarrantyPeriod = Convert.ToDouble(record["WarrantyPeriod"]);
+        if (!Convert.IsDBNull(record["QtyWarranty"])) model.QtyWarranty = Convert.ToInt16(record["QtyWarranty"]);
+        if (!Convert.IsDBNull(record["Price"])) model.Price = Convert.ToDouble(record["Price"]);
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);

@@ -80,6 +80,7 @@
             <TelerikNumericTextBox 
                 Format="@DefaultConstants.FORMAT_CURRENCY" 
                 Step="1000.0"
+                Enabled="@IsCreate"
                 @bind-Value="@ServiceUpdate.Price" 
                 Id="numPrice" />
             <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.Price)" Id="numPrice" />
@@ -108,14 +109,14 @@
                     <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
                         Step="1000.0"
                         @bind-Value="@ServiceUpdate.WarrantyPeriod"
-                        Id="numPrice" />
+                        Id="numWarrantyPeriod" />
                 </div>
                 <div class="col-md-6 col-sm-12">
                     <HLabel Value="Số lần bảo hành:" />
                     <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
                         Step="1"
                         @bind-Value="@ServiceUpdate.QtyWarranty"
-                        Id="numPrice" />
+                        Id="numQtyWarranty" />
                 </div>
             </div>
         </div>

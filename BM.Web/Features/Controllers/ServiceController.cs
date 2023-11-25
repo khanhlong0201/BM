@@ -56,7 +56,8 @@ namespace BM.Web.Features.Controllers
                 try
                 {
                     await _progressService!.SetPercent(0.4);
-                    //await getDataBranchs();
+                    await getDataServices();
+                    ListServicesType = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServiceType));
                 }
                 catch (Exception ex)
                 {
@@ -72,17 +73,27 @@ namespace BM.Web.Features.Controllers
         }
         #endregion
 
+        #region Private Functions
+        private async Task getDataServices()
+        {
+            ListServices = new List<ServiceModel>();
+            SelectedServices = new List<ServiceModel>();
+            ListServices = await _masterDataService!.GetDataServicesAsync();
+        }
+
+        #endregion
+
         #region Protected Functions
         protected async void ReLoadDataHandler()
         {
             try
             {
                 IsInitialDataLoadComplete = false;
-                //await getDataBranchs();
+                await getDataServices();
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "BranchController", "ReLoadDataHandler");
+                _logger!.LogError(ex, "ServiceController", "ReLoadDataHandler");
                 ShowError(ex.Message);
             }
             finally
@@ -92,7 +103,7 @@ namespace BM.Web.Features.Controllers
             }
         }
 
-        protected void OnOpenDialogHandler(EnumType pAction = EnumType.Add, BranchModel? pItemDetails = null)
+        protected void OnOpenDialogHandler(EnumType pAction = EnumType.Add, ServiceModel? pItemDetails = null)
         {
             try
             {
@@ -103,7 +114,14 @@ namespace BM.Web.Features.Controllers
                 }
                 else
                 {
-                    
+                    ServiceUpdate.ServiceCode = pItemDetails!.ServiceCode;
+                    ServiceUpdate.ServiceName = pItemDetails!.ServiceName;
+                    ServiceUpdate.Price = pItemDetails!.Price;
+                    ServiceUpdate.EnumId = pItemDetails!.EnumId;
+                    ServiceUpdate.EnumName = pItemDetails!.EnumName;
+                    ServiceUpdate.WarrantyPeriod = pItemDetails!.WarrantyPeriod;
+                    ServiceUpdate.QtyWarranty = pItemDetails!.QtyWarranty;
+                    ServiceUpdate.Description = pItemDetails!.Description;
                     IsCreate = false;
                 }
                 IsShowDialog = true;
@@ -111,7 +129,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "BranchController", "OnOpenDialogHandler");
+                _logger!.LogError(ex, "ServiceController", "OnOpenDialogHandler");
                 ShowError(ex.Message);
             }
         }
@@ -124,10 +142,10 @@ namespace BM.Web.Features.Controllers
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
                 await ShowLoader();
-                bool isSuccess = await _masterDataService!.UpdateBranchAsync(JsonConvert.SerializeObject(ServiceUpdate), sAction, pUserId);
+                bool isSuccess = await _masterDataService!.UpdateServiceAsync(JsonConvert.SerializeObject(ServiceUpdate), sAction, pUserId);
                 if (isSuccess)
                 {
-                    //await getDataBranchs();
+                    await getDataServices();
                     if (pEnum == EnumType.SaveAndCreate)
                     {
                         ServiceUpdate = new ServiceModel();
@@ -140,7 +158,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "BranchController", "SaveDataHandler");
+                _logger!.LogError(ex, "ServiceController", "SaveDataHandler");
                 ShowError(ex.Message);
             }
             finally
@@ -149,7 +167,7 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
-        protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as BranchModel);
+        protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as ServiceModel);
 
         #endregion
     }
