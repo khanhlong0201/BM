@@ -29,4 +29,7 @@ public static class EndpointConstants
 
     public const string URL_MASTERDATA_GET_ENUM = "MasterData/GetEnumsByType";
     public const string URL_MASTERDATA_UPDATE_ENUM = "MasterData/UpdateEnum";
+
+    public const string URL_MASTERDATA_GET_CUSTOMER = "MasterData/GetCustomers";
+    public const string URL_MASTERDATA_UPDATE_CUSTOMER = "MasterData/UpdateCustomer";
 }

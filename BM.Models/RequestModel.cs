@@ -29,6 +29,7 @@ public class ComboboxModel
 {
     public string? Code { get; set; }
     public string? Name { get; set; }
+    public bool IsCheck{ get; set; }
 }
 
 public enum EnumType
