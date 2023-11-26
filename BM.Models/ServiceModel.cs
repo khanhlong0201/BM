@@ -38,3 +38,16 @@ public class PriceModel
     [Range(1000, double.MaxValue, ErrorMessage = "Vui lòng nhập đơn giá")]
     public double Price { get; set; }
 }
+
+/// <summary>
+/// Hóa đơn
+/// </summary>
+public class SalesOrderModel
+{
+    public int Id { get; set; }
+    public string ServiceCode { get; set; } = "";
+    public string ServiceName { get; set; } = "";
+    public double Price { get; set; }
+    public int Qty { get; set; }
+    public double Amount { get; set; }
+}

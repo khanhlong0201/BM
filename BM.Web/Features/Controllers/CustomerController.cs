@@ -159,7 +159,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "UserController", "OnOpenDialogHandler");
+                _logger!.LogError(ex, "CustomerController", "OnOpenDialogHandler");
                 ShowError(ex.Message);
             }
         }
@@ -190,7 +190,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "UserController", "SaveDataHandler");
+                _logger!.LogError(ex, "CustomerController", "SaveDataHandler");
                 ShowError(ex.Message);
             }
             finally
@@ -204,7 +204,25 @@ namespace BM.Web.Features.Controllers
 
         protected void CreateTicketHandler()
         {
-            _navManager!.NavigateTo("/create-ticket");
+            try
+            {
+                if(SelectedCustomers == null || !SelectedCustomers.Any())
+                {
+                    ShowWarning("Vui lòng chọn Khách hàng cần Lập đơn hàng");
+                    return;
+                }    
+                if(SelectedCustomers.ToList().Count > 1)
+                {
+                    ShowWarning("Chỉ được phép chọn 1 Khách hàng để Lập đơn hàng");
+                    return;
+                }    
+                _navManager!.NavigateTo("/create-ticket");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "CustomerController", "CreateTicketHandler");
+                ShowError(ex.Message);
+            }
         }    
         #endregion
     }
