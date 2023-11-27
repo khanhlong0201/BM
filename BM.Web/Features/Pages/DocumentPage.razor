@@ -1,2 +1,131 @@
 ﻿@page "/create-ticket"
 @inherits DocumentController
+
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/add-new-icon.png">In hóa đơn</ToolBarButton>
+</TelerikToolBar>
+<div class="h-content-filter">
+    <div class="card card-lg" style="padding: 5px">
+        <h4 class="mb-1">
+            Thông tin khách hàng 
+        </h4>
+        
+        <div class="accordion" id="accordion-info">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-1">
+                    <button style="padding: 5px 10px" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
+                        Thông tin khách hàng
+                    </button>
+                </h2>
+                <div id="collapse-info" class="accordion-collapse collapse" data-bs-parent="#accordion-info" style="">
+                    <div class="accordion-body pt-0">
+                        <strong>This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row row-gap-2 mt-2">
+            <div class="col-md-5 col-sm-12">
+                <h4 class="mb-1">Sản phẩm | Dịch vụ</h4>
+                <div class="accordion" id="accordion-service">
+                    @if (ListGroupServices != null && ListGroupServices.Any())
+                    {
+                        int iIndex = 0;
+                        @foreach (var oGroup in ListGroupServices)
+                        {
+                            iIndex++;
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-2" style="background-color: rgba(var(--tblr-muted-rgb), 0.04);">
+                                    <button style="padding: 5px 10px" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="@($"#collapse-{iIndex}")" aria-expanded="true">
+                                        @oGroup.Key
+                                    </button>
+                                </h2>
+                                <div id="@($"collapse-{iIndex}")" class="accordion-collapse collapse @(iIndex == 1 ? "show" : "")" data-bs-parent="#accordion-service" style="">
+                                    <div class="list-group list-group-flush">
+                                        @foreach (ServiceModel oItem in oGroup)
+                                        {
+                                            <div class="list-group-item active" style="padding: 5px 10px; background-color: inherit;">
+                                                <div class="row align-items-center">
+                                                    <div class="col text-truncate">
+                                                        <span class="text-reset d-block">@($"{oItem.ServiceCode} - {oItem.ServiceName}")</span>
+                                                        <div class="d-block text-secondary text-truncate mt-n1">@($"Đơn giá gốc: {oItem.Price.ToString(DefaultConstants.FORMAT_CURRENCY)}")</div>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <i class="fa-solid fa-plus" style="font-size: 17px;color: #206bc4;cursor: pointer"
+                                                           title="Thêm dịch vụ" @onclick="@(()=> AddItemToSOHandler(oItem))"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-md-7 col-sm-12">
+                <h4 class="mb-1">Đơn hàng</h4>
+                <div class="table-responsive">
+                    <table class="table table-transparent">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 1%">STT</th>
+                                <th>Dịch vụ</th>
+                                <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
+                                <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
+                                <th class="text-end" style="width: 1%">Tổng tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ListSalesOrder != null && ListSalesOrder.Any())
+                            {
+                                @foreach(var oItem in ListSalesOrder)
+                                {
+                                    @*int iIndex = i;*@
+                                    <tr>
+                                        <td class="text-center">@oItem.Id</td>
+                                        <td>
+                                            <p class="strong mb-1">@oItem.ServiceCode</p>
+                                            <div class="text-secondary">@oItem.ServiceName</div>
+                                            <div class="text-secondary">Đơn giá gốc: @oItem.PriceOld.ToString(DefaultConstants.FORMAT_CURRENCY)</div>
+                                        </td>
+                                        <td class="text-end">
+                                            <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                                           @bind-Value="@oItem.Price" Arrows="false" />
+                                        </td>
+                                        <td class="text-center">
+                                            <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" />
+                                        </td>
+                                        <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
+                                    </tr>
+                                }
+
+                            }
+                            <tr>
+                                <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
+                                <td colspan="2" class="text-end">
+                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="strong text-end">Khách trả:</td>
+                                <td colspan="2" class="text-end">
+                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
+                                <td colspan="2" class="font-weight-bold text-end">
+                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>

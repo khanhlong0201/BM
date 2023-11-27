@@ -48,6 +48,14 @@ public class SalesOrderModel
     public string ServiceCode { get; set; } = "";
     public string ServiceName { get; set; } = "";
     public double Price { get; set; }
+    public double PriceOld { get; set; }
     public int Qty { get; set; }
-    public double Amount { get; set; }
+    public double Amount
+    {
+        get
+        {
+            return Qty * Price;
+        }
+        private set { }
+    }
 }

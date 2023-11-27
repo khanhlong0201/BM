@@ -697,3 +697,8 @@ th.k-header,
     border: 1px solid var(--tblr-border-color);
     box-sizing: border-box;
 }
+
+/*input text end*/
+.k-numerictextbox input {
+    text-align: end;
+}
