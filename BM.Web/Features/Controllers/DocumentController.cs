@@ -16,7 +16,7 @@ namespace BM.Web.Features.Controllers
 
         #region Properties
         public double TotalDue { get; set; } = 0.0;
-
+        public CustomerModel CustomerUpdate { get; set; } = new CustomerModel();
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
         public IEnumerable<IGrouping<string, ServiceModel>>? ListGroupServices { get; set; }
         #endregion

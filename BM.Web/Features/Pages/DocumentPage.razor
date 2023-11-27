@@ -5,22 +5,78 @@
     <ToolBarButton ImageUrl="../assets/refresh.png">Thanh toán</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/add-new-icon.png">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
-<div class="h-content-filter">
-    <div class="card card-lg" style="padding: 5px">
-        <h4 class="mb-1">
-            Thông tin khách hàng 
-        </h4>
-        
-        <div class="accordion" id="accordion-info">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="heading-1">
-                    <button style="padding: 5px 10px" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
-                        Thông tin khách hàng
-                    </button>
-                </h2>
-                <div id="collapse-info" class="accordion-collapse collapse" data-bs-parent="#accordion-info" style="">
-                    <div class="accordion-body pt-0">
-                        <strong>This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+<div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
+    <div class="card card-lg mt-1" style="padding: 5px">
+        <div style="border-bottom: 1px solid var(--tblr-border-color)">
+            <div class="accordion" id="accordion-info">
+                <div class="accordion-item" style="border: none">
+                    <span class="accordion-header" id="heading-1">
+                        <button class="accordion-button " style="padding-top: 5px; padding-bottom: 5px" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
+                            <h4 class="mb-1">Thông tin khách hàng</h4>
+                        </button>
+                    </span>
+                    <div id="collapse-info" class="accordion-collapse collapse show" data-bs-parent="#accordion-info">
+                        <div class="accordion-body pt-0">
+                            <div class="mb-2">
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                        Mã K/H: <strong>@CustomerUpdate.CusNo</strong>
+                                    </div>
+                                    <div class="col-lg-8 col-md-6 col-sm-12">
+                                        Cơ sở: <strong>@CustomerUpdate.BranchName</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-5 col-sm-12">
+                                        Tên khách hàng: <strong>@CustomerUpdate.FullName</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-3 col-sm-12">
+                                        Ngày sinh: <strong>@CustomerUpdate.DateOfBirth?.ToString(DefaultConstants.FORMAT_DATE)</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        CCCD: <strong>@CustomerUpdate.CINo</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        SĐT: <strong>@CustomerUpdate.Phone1</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Zalo: <strong>@CustomerUpdate.Zalo</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Facebook: <strong>@CustomerUpdate.FaceBook</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                Địa chỉ: <strong>@CustomerUpdate.Address</strong>
+                            </div>
+                            <div class="mb-2">
+                                Đặc điểm: <strong>@CustomerUpdate.Remark</strong>
+                            </div>
+                            <div class="mb-2">
+                                <div class="row row-gap-2">
+                                    <div class="col-md-4 col-sm-12">
+                                        Tình trạng khách khi sử dụng dịch vụ:
+                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.StatusBefore" Id="txtStatusBefore" />
+                                    </div>
+                                    <div class="col-md-4 col-sm-12">
+                                        Tình trạng sức khỏe:
+                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.HealthStatus" Id="txtHealthStatus" />
+                                    </div>
+                                    <div class="col-md-4 col-sm-12">
+                                        Ghi chú đơn hàng:
+                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.NoteForAll" Id="txtNoteForAll" />
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

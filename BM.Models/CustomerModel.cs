@@ -20,5 +20,10 @@ namespace BM.Models
         public string? BranchId { get; set; }
         public string? Remark { get; set; }
         public DateTime? DateOfBirth { get; set; }
+        public string? BranchName { get; set; }
+        public string? StatusBefore { get; set; }
+        public string? HealthStatus { get; set; }
+        public string? NoteForAll { get; set; }
+        public string? Status { get; set; }
     }
 }
