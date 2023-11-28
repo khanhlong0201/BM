@@ -3,6 +3,10 @@ using BM.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace BM.API.Controllers
 {
@@ -13,11 +17,13 @@ namespace BM.API.Controllers
         
         private readonly IMasterDataService _masterService;
         private ILogger<MasterDataController> _logger { get; set; }
-        
-        public MasterDataController(ILogger<MasterDataController> logger, IMasterDataService masterService)
+        private readonly IConfiguration _configuration;
+
+        public MasterDataController(ILogger<MasterDataController> logger, IMasterDataService masterService, IConfiguration configuration)
         {
             _logger = logger;
             _masterService = masterService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -232,5 +238,57 @@ namespace BM.API.Controllers
 
             }
         }
+
+        [HttpPost]
+        [Route("Login")]
+        public async Task<IActionResult> Login([FromBody]  LoginRequestModel loginRequest)
+        {
+            try
+            {
+                var data = await _masterService.Login(loginRequest);
+                if (data == null || data.Count() ==0) return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
+                });
+                var claims = new[]
+              {
+                    new Claim("Id", data.FirstOrDefault().Id + ""),
+                    new Claim("UserName", data.FirstOrDefault().UserName + ""),
+                    new Claim("FullName", data.FirstOrDefault().FullName + ""),
+                    new Claim("Phone", data.FirstOrDefault().PhoneNumber + ""),
+                    new Claim("IsAdmin", data.FirstOrDefault().IsAdmin + ""),
+                    new Claim("BranchId", data.FirstOrDefault().BranchId + ""),
+                }; // thông tin mã hóa (payload)
+                // JWT: json web token: Header - Payload - SIGNATURE (base64UrlEncode(header) + "." + base64UrlEncode(payload), your - 256 - bit - secret)
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:JwtSecurityKey").Value + "")); // key mã hóa
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256); // loại mã hóa (Header)
+                var expiry = DateTime.Now.AddDays(Convert.ToInt32(_configuration.GetSection("Jwt:JwtExpiryInDays").Value)); // hết hạn token
+                //var expiry = DateTime.Now.AddMinutes(Convert.ToInt32(_configuration.GetSection("Jwt:JwtExpiryInDays").Value)); // hết hạn token test 1 phút hết tonken
+                var token = new JwtSecurityToken(
+                    _configuration.GetSection("Jwt:JwtIssuer").Value,
+                    _configuration.GetSection("Jwt:JwtAudience").Value,
+                    claims,
+                    expires: expiry,
+                    signingCredentials: creds
+                );
+                return Ok(new
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Success",
+                    data.FirstOrDefault().UserName,
+                    data.FirstOrDefault().FullName, // để hiện thị lên người dùng khỏi phải parse từ clainm
+                    Token = new JwtSecurityTokenHandler().WriteToken(token) // token user
+                });
+
+ 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "Login");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+        }
+
     }
 }

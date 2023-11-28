@@ -19,6 +19,7 @@ public interface IBMDbContext
     Task<DataTable> AddOrUpdateAsync(string commandText, IEnumerable<SqlParameter> sqlParameters, CommandType commandType = CommandType.StoredProcedure);
     Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
     Task<int> ExecuteScalarAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
+    Task<IEnumerable<T>> ExecuteAsync<T>(string commandText, Func<IDataReader, T> dataFunc, IEnumerable<SqlParameter>? sqlParameters = null);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -267,8 +268,47 @@ public class BMDbContext : IBMDbContext
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
         int scopeIdentity = Convert.ToInt32(await sqlCommand.ExecuteScalarAsync());
         return scopeIdentity;
-    }    
+    }
 
 
+    public async Task<IEnumerable<T>> ExecuteAsync<T>(string commandText, Func<IDataReader, T> dataFunc, IEnumerable<SqlParameter>? sqlParameters = null)
+    {
+        try
+        {
+            using (SqlCommand sqlCommand = new SqlCommand())
+            {
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandTimeout = 500;
+                sqlCommand.CommandText = commandText;
+                sqlCommand.CommandType = CommandType.Text;
+
+                if (sqlParameters != null && sqlParameters.Any())
+                    sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+
+                List<T> records = new List<T>();
+
+                using (IDataReader reader = await sqlCommand.ExecuteReaderAsync())
+                {
+                    while (reader.Read())
+                    {
+                        T record = dataFunc(reader); // Read record
+                        records.Add(record);
+                    }
+
+                    reader.Close();
+                }
+
+                return records;
+            }
+        }
+        catch (Exception)
+        {
+            throw; // Handle or log the exception as needed
+        }
+        finally
+        {
+            await sqlConnection.CloseAsync(); // Close the connection in a finally block
+        }
+    }
 
 }

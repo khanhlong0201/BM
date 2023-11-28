@@ -20,6 +20,8 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateCustomer(RequestModel pRequest);
     Task<IEnumerable<ServiceModel>> GetServicessAsync();
     Task<ResponseModel> UpdateService(RequestModel pRequest);
+
+    Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -531,6 +533,45 @@ public class MasterDataService : IMasterDataService
         }
         return response;
     }
+
+
+    /// <summary>
+    /// Đăng nhập
+    /// </summary>
+    /// <param name="pBranchId"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest)
+    {
+        IEnumerable<UserModel> data= null;
+        SqlParameter[] sqlParameters;
+        string queryString = "";
+        try
+        {
+            await _context.Connect();
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[2];
+                sqlParameters[0] = new SqlParameter("@UserName", pRequest.UserName);
+                sqlParameters[1] = new SqlParameter("@Password", pRequest.Password);
+                //sqlParameters[2] = new SqlParameter("@BranchId", pRequest.BranchId);
+            }
+            async Task ExecQuery()
+            {
+                  data = await _context.ExecuteAsync(queryString, DataRecordToUserModelByLogin, sqlParameters);
+            }
+
+            queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId
+                                                 from dbo.[Users] t0 where t0.UserName = @UserName and t0.Password = @Password";
+            setParameter();
+            await ExecQuery();
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
     #endregion Public Functions
 
     #region Private Funtions
@@ -653,6 +694,24 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
         return model;
+    }
+
+
+    /// <summary>
+    /// lấy những thuộc tính cần thiết khi đăng nhập thành công
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private UserModel DataRecordToUserModelByLogin(IDataRecord record)
+    {
+        UserModel user = new();
+        if (!Convert.IsDBNull(record["Id"])) user.Id = Convert.ToInt32(record["Id"]);
+        if (!Convert.IsDBNull(record["EmpNo"])) user.EmpNo = Convert.ToString(record["EmpNo"]);
+        if (!Convert.IsDBNull(record["UserName"])) user.UserName = Convert.ToString(record["UserName"]);
+        if (!Convert.IsDBNull(record["FullName"])) user.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["IsAdmin"])) user.IsAdmin = Convert.ToBoolean(record["IsAdmin"]);
+        if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);
+        return user;
     }
 
     #endregion
