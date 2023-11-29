@@ -83,7 +83,7 @@
             </div>
         </div>
         <div class="row row-gap-2 mt-2">
-            <div class="col-md-5 col-sm-12">
+            <div class="col-md-4 col-sm-12">
                 <h4 class="mb-1">Sản phẩm | Dịch vụ</h4>
                 <div class="accordion" id="accordion-service">
                     @if (ListGroupServices != null && ListGroupServices.Any())
@@ -104,7 +104,7 @@
                                         {
                                             <div class="list-group-item active" style="padding: 5px 10px; background-color: inherit;">
                                                 <div class="row align-items-center">
-                                                    <div class="col text-truncate">
+                                                    <div class="col">
                                                         <span class="text-reset d-block">@($"{oItem.ServiceCode} - {oItem.ServiceName}")</span>
                                                         <div class="d-block text-secondary text-truncate mt-n1">@($"Đơn giá gốc: {oItem.Price.ToString(DefaultConstants.FORMAT_CURRENCY)}")</div>
                                                     </div>
@@ -122,17 +122,19 @@
                     }
                 </div>
             </div>
-            <div class="col-md-7 col-sm-12">
+            <div class="col-md-8 col-sm-12">
                 <h4 class="mb-1">Đơn hàng</h4>
                 <div class="table-responsive">
                     <table class="table table-transparent">
                         <thead>
                             <tr>
                                 <th class="text-center" style="width: 1%">STT</th>
-                                <th>Dịch vụ</th>
+                                <th style="min-width: 210px">Dịch vụ</th>
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
                                 <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
-                                <th class="text-end" style="width: 1%">Tổng tiền</th>
+                                <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
+                                <th class="text-end" style="min-width: 130px">NV thực hiện</th>
+                                <th class="text-end" style="min-width: 130px">NV tư vấn</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,6 +158,8 @@
                                             <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" />
                                         </td>
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                 }
 
@@ -165,18 +169,25 @@
                                 <td colspan="2" class="text-end">
                                     @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
                                 </td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="strong text-end">Khách trả:</td>
                                 <td colspan="2" class="text-end">
-                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                            @bind-Value="@oItem.Price" Arrows="false" />
                                 </td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
                                 <td colspan="2" class="font-weight-bold text-end">
                                     @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
                                 </td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
                     </table>
