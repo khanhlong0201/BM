@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using static System.Net.Mime.MediaTypeNames;
 using System.Text;
 
 namespace BM.Web.Services;
@@ -23,6 +24,7 @@ public interface ICliMasterDataService
     Task<bool> UpdateCustomerAsync(string pJson, string pAction, int pUserId);
     Task<List<ServiceModel>?> GetDataServicesAsync();
     Task<bool> UpdateServiceAsync(string pJson, string pAction, int pUserId);
+    Task<CustomerModel?> GetCustomerByIdAsync(string pCustomer);
     Task<string> LoginAsync(LoginViewModel request);
     Task LogoutAsync();
 }
@@ -364,6 +366,46 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         return false;
     }
 
+    /// <summary>
+    /// Call API lấy danh sách Chi nhánh
+    /// </summary>
+    /// <returns></returns>
+    public async Task<CustomerModel?> GetCustomerByIdAsync(string pCustomer)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pCusNo", $"{pCustomer}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_CUSTOMER_BY_ID, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<CustomerModel>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataCustomersAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// lấy danh sách dịch vụ
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<ServiceModel>?> GetDataServicesAsync()
     {
         try
@@ -392,6 +434,13 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         return default;
     }
 
+    /// <summary>
+    /// cập nhật thông tin dịch vụ
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
     public async Task<bool> UpdateServiceAsync(string pJson, string pAction, int pUserId)
     {
         try

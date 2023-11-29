@@ -22,6 +22,7 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateService(RequestModel pRequest);
 
     Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest);
+    Task<CustomerModel> GetCustomerById(string pCusNo);
 }
 
 public class MasterDataService : IMasterDataService
@@ -343,6 +344,11 @@ public class MasterDataService : IMasterDataService
         return data;
     }
 
+    /// <summary>
+    /// cập nhật thông tin khách hàng
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
     public async Task<ResponseModel> UpdateCustomer(RequestModel pRequest)
     {
         ResponseModel response = new ResponseModel();
@@ -420,6 +426,30 @@ public class MasterDataService : IMasterDataService
         return response;
     }
 
+    /// <summary>
+    /// lấy khách hàng theo mã
+    /// </summary>
+    /// <param name="pCusNo"></param>
+    /// <returns></returns>
+    public async Task<CustomerModel> GetCustomerById(string pCusNo)
+    {
+        CustomerModel oCustomer;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
+            oCustomer = await _context.GetDataByIdAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth],[SkinType]
+                    ,[BranchId],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0 and [CusNo] = @CusNo"
+                    , DataRecordToCustomerModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return oCustomer;
+    }
 
     /// <summary>
     /// lấy danh sách dịch vụ

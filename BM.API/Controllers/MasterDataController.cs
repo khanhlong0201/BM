@@ -171,6 +171,30 @@ namespace BM.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetCustomerById")]
+        public async Task<IActionResult> GetCustomerById([FromQuery] string pCusNo)
+        {
+            try
+            {
+                var data = await _masterService.GetCustomerById(pCusNo);
+                if(data == null)
+                {
+                    return StatusCode(StatusCodes.Status204NoContent, new
+                    {
+                        StatusCode = StatusCodes.Status204NoContent,
+                        Message = "Không tìm thấy thông tin khách hàng. Vui lòng làm mới lại trang"
+                    });
+                }    
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetCustomers");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+        }
+
         [HttpPost]
         [Route("UpdateCustomer")]
         public async Task<IActionResult> UpdateCustomer([FromBody] RequestModel request)
