@@ -4,8 +4,10 @@ using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using System;
 
 namespace BM.Web.Features.Controllers
 {
@@ -14,6 +16,7 @@ namespace BM.Web.Features.Controllers
         #region Dependency Injection
         [Inject] private ILogger<DocumentController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
+        [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navigationManager { get; init; }
         #endregion
 
@@ -161,14 +164,37 @@ namespace BM.Web.Features.Controllers
                 {
                     if (string.IsNullOrEmpty(CustomerUpdate.CusNo))
                     {
-                        ShowWarning("Không tìm thấy thông tin nhân viên!");
+                        ShowWarning("Không tìm thấy thông tin khách hàng!");
                         return;
                     }
-                    if(ListSalesOrder == null || ListSalesOrder.Any())
+                    if(ListSalesOrder == null || !ListSalesOrder.Any())
                     {
                         ShowWarning("Vui lòng chọn dịch vụ!");
                         return;
-                    }    
+                    }
+                    DraftModel oDraft = new DraftModel();
+                    oDraft.CusNo = CustomerUpdate.CusNo;
+                    oDraft.DiscountCode = "";
+                    oDraft.Total = 0;
+                    oDraft.GuestsPay = 0;
+                    oDraft.StatusBefore = CustomerUpdate.StatusBefore;
+                    oDraft.HealthStatus = CustomerUpdate.HealthStatus;
+                    oDraft.NoteForAll = CustomerUpdate.NoteForAll;
+                    oDraft.StatusId = "";
+                    await ShowLoader();
+                    bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(oDraft), "", nameof(EnumType.Add), pUserId);
+                    //if (isSuccess)
+                    //{
+                    //    await getDataServices();
+                    //    if (pEnum == EnumType.SaveAndCreate)
+                    //    {
+                    //        ServiceUpdate = new ServiceModel();
+                    //        _EditContext = new EditContext(ServiceUpdate);
+                    //        return;
+                    //    }
+                    //    IsShowDialog = false;
+                    //    return;
+                    //}
                 }    
                 else
                 {

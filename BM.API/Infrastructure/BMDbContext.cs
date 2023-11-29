@@ -264,6 +264,7 @@ public class BMDbContext : IBMDbContext
         sqlCommand.CommandTimeout = 500;
         sqlCommand.CommandText = commandText;
         sqlCommand.CommandType = CommandType.Text;
+        sqlCommand.Transaction = sqlTransaction;
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
         int scopeIdentity = Convert.ToInt32(await sqlCommand.ExecuteScalarAsync());
         return scopeIdentity;

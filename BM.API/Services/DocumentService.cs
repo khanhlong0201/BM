@@ -40,7 +40,7 @@ public class DocumentService : IDocumentService
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
-                    int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Drafts] with(nolock)");
+                    int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[Drafts] with(nolock)");
                     await _context.BeginTranAsync();
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay],[StatusBefore]
                                    ,[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
