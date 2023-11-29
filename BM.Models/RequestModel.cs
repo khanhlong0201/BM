@@ -5,6 +5,7 @@ public class RequestModel
     public int UserId { get; set; }
     public string? Json { get; set; }
     public string? Type { get; set; }
+    public string? JsonDetail { get; set; }
 }
 
 public class ResponseModel

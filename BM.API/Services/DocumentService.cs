@@ -9,7 +9,7 @@ namespace BM.API.Services;
 
 public interface IDocumentService
 {
-
+    Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -26,38 +26,62 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             string queryString = "";
-            BranchModel oBranch = JsonConvert.DeserializeObject<BranchModel>(pRequest.Json + "")!;
+            DraftModel oDraft = JsonConvert.DeserializeObject<DraftModel>(pRequest.Json + "")!;
             SqlParameter[] sqlParameters = new SqlParameter[1];
-            sqlParameters[0] = new SqlParameter("@Type", "Branchs");
-            if (pRequest.Type == nameof(EnumType.Add))
+            async Task ExecQuery()
             {
-                oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
-                queryString = @"Insert into [dbo].[Branchs]  ([BranchId], [BranchName], [IsActive], [Address], [PhoneNumber], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate])
-                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, getDate(), @UserId , null, null )";
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
             }
-            else
+            switch (pRequest.Type)
             {
-                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = getDate() , UserUpdate = @UserId where BranchId = @BranchId";
-            }
-            sqlParameters = new SqlParameter[6];
-            sqlParameters[0] = new SqlParameter("@BranchId", oBranch.BranchId);
-            sqlParameters[1] = new SqlParameter("@BranchName", oBranch.BranchName);
-            sqlParameters[2] = new SqlParameter("@IsActive", oBranch.IsActive);
-            sqlParameters[3] = new SqlParameter("@Address", oBranch.Address + "");
-            sqlParameters[4] = new SqlParameter("@PhoneNumber", oBranch.PhoneNumber + "");
-            sqlParameters[5] = new SqlParameter("@UserId", pRequest.UserId + "");
+                case nameof(EnumType.Add):
+                    int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Drafts] with(nolock)");
+                    await _context.BeginTranAsync();
+                    queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay],[StatusBefore]
+                                   ,[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
+                                    values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @StatusBefore
+                                   ,@HealthStatus, @NoteForAll, @StatusId, getdate(), @UserId, 0)";
 
-            var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
-            if (data != null && data.Rows.Count > 0)
-            {
-                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
-                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
-            }
+                    sqlParameters = new SqlParameter[10];
+                    sqlParameters[0] = new SqlParameter("@DocEntry", iDocentry);
+                    sqlParameters[1] = new SqlParameter("@CusNo", oDraft.CusNo);
+                    sqlParameters[2] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
+                    sqlParameters[3] = new SqlParameter("@Total", oDraft.Total);
+                    sqlParameters[4] = new SqlParameter("@GuestsPay", oDraft.GuestsPay);
+                    sqlParameters[5] = new SqlParameter("@StatusBefore", oDraft.StatusBefore ?? (object)DBNull.Value);
+                    sqlParameters[6] = new SqlParameter("@HealthStatus", oDraft.HealthStatus ?? (object)DBNull.Value);
+                    sqlParameters[7] = new SqlParameter("@NoteForAll", oDraft.NoteForAll ?? (object)DBNull.Value);
+                    sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
+                    sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
+                    await ExecQuery();
+                    await _context.CommitTranAsync();
+
+                    break;
+                case nameof(EnumType.Update):
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }    
+
+            //var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            //if (data != null && data.Rows.Count > 0)
+            //{
+            //    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+            //    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            //}
         }
         catch (Exception ex)
         {
             response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.Message = ex.Message;
+            await _context.RollbackAsync();
         }
         finally
         {

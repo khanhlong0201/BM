@@ -2,8 +2,9 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/refresh.png">Thanh toán</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/add-new-icon.png">In hóa đơn</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/bill.png">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
     <div class="card card-lg mt-1" style="padding: 5px">
@@ -33,7 +34,7 @@
                                         Tên khách hàng: <strong>@CustomerUpdate.FullName</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-3 col-sm-12">
-                                        Ngày sinh: <strong>@CustomerUpdate.DateOfBirth?.ToString(DefaultConstants.FORMAT_DATE)</strong>
+                                        Ngày sinh: <strong>@(CustomerUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY : CustomerUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         CCCD: <strong>@CustomerUpdate.CINo</strong>
@@ -185,3 +186,5 @@
     </div>
     
 </div>
+
+<HConfirm @ref="@_rDialogs" />
