@@ -215,8 +215,14 @@ namespace BM.Web.Features.Controllers
                 {
                     ShowWarning("Chỉ được phép chọn 1 Khách hàng để Lập đơn hàng");
                     return;
-                }    
-                _navManager!.NavigateTo("/create-ticket");
+                }
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pCusNo", $"{SelectedCustomers.First().CusNo}" },
+                    { "pIsCreate", $"{true}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navManager!.NavigateTo($"/create-ticket?key={key}");
             }
             catch (Exception ex)
             {
