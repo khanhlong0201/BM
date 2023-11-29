@@ -1,9 +1,13 @@
 ﻿using Blazored.LocalStorage;
 using BM.Models;
 using BM.Web.Commons;
+using BM.Web.Models;
+using BM.Web.Providers;
+using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace BM.Web.Services;
 
@@ -19,17 +23,21 @@ public interface ICliMasterDataService
     Task<bool> UpdateCustomerAsync(string pJson, string pAction, int pUserId);
     Task<List<ServiceModel>?> GetDataServicesAsync();
     Task<bool> UpdateServiceAsync(string pJson, string pAction, int pUserId);
+    Task<string> LoginAsync(LoginViewModel request);
+    Task LogoutAsync();
 }
-public class CliMasterDataService : CliServiceBase, ICliMasterDataService
+public class CliMasterDataService : CliServiceBase, ICliMasterDataService 
 {
     private readonly ToastService _toastService;
     private readonly ILocalStorageService _localStorage;
+    private readonly AuthenticationStateProvider _authenticationStateProvider;
     public CliMasterDataService(IHttpClientFactory factory, ILogger<CliMasterDataService> logger
-        , ToastService toastService, ILocalStorageService localStorage)
+        , ToastService toastService, ILocalStorageService localStorage, AuthenticationStateProvider authenticationStateProvider)
         : base(factory, logger)
     {
         _toastService = toastService;
         _localStorage = localStorage;
+        _authenticationStateProvider = authenticationStateProvider;
     }
 
     /// <summary>
@@ -423,5 +431,38 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    public async Task<string> LoginAsync(LoginViewModel request)
+    {
+        try
+        {
+            var loginRequest = new LoginViewModel();
+            loginRequest.UserName = request.UserName;
+            loginRequest.Password = EncryptHelper.Encrypt(request.Password + "");
+            string jsonBody = JsonConvert.SerializeObject(loginRequest);
+            HttpResponseMessage httpResponse = await _httpClient.PostAsync($"api/{EndpointConstants.URL_MASTERDATA_USER_LOGIN}", new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
+            Debug.Print(jsonBody);
+            var content = await httpResponse.Content.ReadAsStringAsync();
+            LoginResponseViewModel response = JsonConvert.DeserializeObject<LoginResponseViewModel>(content)!;
+            if (!httpResponse.IsSuccessStatusCode) return response.Message + "";
+            // save token
+            if (await _localStorage.ContainKeyAsync("authToken")) await _localStorage.RemoveItemAsync("authToken");
+            await _localStorage.SetItemAsync("authToken", response.Token);
+            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated($"{response!.FullName}");
+            _httpClient.DefaultRequestHeaders.Add("UserId", $"{response!.UserId}");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", response!.Token);
+            return "";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Login");
+            return ex.Message;
+        }
+    }
+    public async Task LogoutAsync()
+    {
+        await _localStorage.RemoveItemAsync("authToken");
+        ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
     }
 }

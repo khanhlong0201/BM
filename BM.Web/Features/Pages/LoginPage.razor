@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/Login"
 @layout BM.Web.Shared.AuthLayout;
 
 <div class="row mx-0">
@@ -18,7 +18,7 @@
                         <ul class="validation-errors">
                             <li class="validation-message">
                                 @ErrorMessage
-                            </li>
+                            </li>   
                         </ul>
                     }
                     <div style="text-align: center;">
@@ -34,7 +34,7 @@
                                         PlaceHolder="Mật khẩu*:" @bind-Value="@LoginRequest.Password" Password="true" />
                         <HValidationTooltip ValidationFor="@(()=> LoginRequest.Password)" Id="txtPassword" />
                     </div>
-                    <div class="mt-2">
+                    @*<div class="mt-2">
                         <TelerikComboBox @bind-Value="@LoginRequest.BranchId"
                                          Data="@ListBranchs"
                                          Placeholder="Chọn chi nhánh"
@@ -47,7 +47,7 @@
                                          Id="txtCategoryId" Width="100%">
                         </TelerikComboBox>
                         <HValidationTooltip ValidationFor="@(()=> LoginRequest.BranchId)" Id="txtCategoryId" />
-                    </div>
+                    </div>*@
                     <div class="mt-2 d-flex justify-content-start align-items-end">
                         <TelerikCheckBox @bind-Value="@LoginRequest.RememberMe" />
                         <span style="font-size: 13px;margin-left: 5px;line-height: 1.1;">Ghi nhớ đăng nhập?</span>
