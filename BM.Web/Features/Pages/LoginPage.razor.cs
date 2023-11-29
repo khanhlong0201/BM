@@ -12,6 +12,7 @@ namespace BM.Web.Features.Pages
         [Inject] NavigationManager? _navigationManager { get; set; }
         [Inject] private ILogger<LoginPage>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; set; }
+        [Inject] public ToastService? _toastService { get; init; }
         public LoginViewModel LoginRequest { get; set; } = new LoginViewModel();
         public bool IsLoading { get; set; }
         public string ErrorMessage = "";

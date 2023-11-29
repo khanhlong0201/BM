@@ -8,6 +8,7 @@ public class LoginViewModel
     public string? UserName { get; set; }
     [Required(ErrorMessage = "Vui lòng điền mật khẩu")]
     public string? Password { get; set; }
+    [Required(ErrorMessage = "Vui lòng chọn chi nhánh")]
     public string? BranchId { get; set; }
 
     //[Required(ErrorMessage = "Vui lòng chọn chi nhánh")]
