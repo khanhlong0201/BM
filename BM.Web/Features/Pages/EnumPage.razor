@@ -1,5 +1,8 @@
-﻿@page "/service-type"
+﻿@page "/service-type" 
 @page "/skin-type"
+@page "/service-pack"
+@page "/unit"
+@page "/state-of-health"
 @inherits EnumController
 
 
@@ -52,7 +55,7 @@
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(EnumModel.EnumName) Width="270px" Title="Tên danh mục"></GridColumn>
-            <GridColumn Field=@nameof(EnumModel.EnumType) Width="150px" Title="Loại danh mục"></GridColumn>
+            <GridColumn Field=@nameof(EnumModel.EnumTypeName) Width="150px" Title="Loại danh mục"></GridColumn>
             <GridColumn Field=@nameof(EnumModel.Description) Width="240px" Title="Mô tả"></GridColumn>
         </GridColumns>
     </TelerikGrid>
