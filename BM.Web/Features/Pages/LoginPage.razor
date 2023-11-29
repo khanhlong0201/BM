@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/Login"
 @layout BM.Web.Shared.AuthLayout;
 
 <div class="row mx-0">
@@ -18,7 +18,7 @@
                         <ul class="validation-errors">
                             <li class="validation-message">
                                 @ErrorMessage
-                            </li>
+                            </li>   
                         </ul>
                     }
                     <div style="text-align: center;">
@@ -38,8 +38,8 @@
                         <TelerikComboBox @bind-Value="@LoginRequest.BranchId"
                                          Data="@ListBranchs"
                                          Placeholder="Chọn chi nhánh"
-                                         TextField="@nameof(BranchModel.BranchId)"
-                                         ValueField="@nameof(BranchModel.BranchName)"
+                                         TextField="@nameof(BranchModel.BranchName)"
+                                         ValueField="@nameof(BranchModel.BranchId)"
                                          Filterable="true"
                                          ClearButton="false"
                                          FillMode="@ThemeConstants.TextBox.FillMode.Flat"

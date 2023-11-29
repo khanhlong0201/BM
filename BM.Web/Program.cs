@@ -28,6 +28,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddRegisterComponents();
 
 builder.Services.AddClientScopeService();
+builder.Services.AddClientAuthorization();
 builder.Services.AddHttpClient("api", m =>
 {
     m.BaseAddress = new Uri(apiUrl);

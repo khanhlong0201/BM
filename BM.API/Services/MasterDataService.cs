@@ -579,12 +579,13 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId
-                                                 from dbo.[Users] t0 where t0.UserName = @UserName and t0.Password = @Password";
+                                                 from dbo.[Users] t0 where t0.UserName = @UserName and t0.Password = @Password
+                                                 and t0.BranchId = @BranchId";
             //setParameter();
-            sqlParameters = new SqlParameter[2];
+            sqlParameters = new SqlParameter[3];
             sqlParameters[0] = new SqlParameter("@UserName", pRequest.UserName);
             sqlParameters[1] = new SqlParameter("@Password", pRequest.Password);
-            //sqlParameters[2] = new SqlParameter("@BranchId", pRequest.BranchId);
+            sqlParameters[2] = new SqlParameter("@BranchId", pRequest.BranchId);
             data = await _context.GetDataAsync(queryString, DataRecordToUserModelByLogin, sqlParameters, CommandType.Text);
         }
         catch (Exception) { throw; }
