@@ -42,7 +42,10 @@ namespace BM.Web.Features.Controllers
                 {
 
                     new ComboboxModel() {Code = nameof(EnumType.@ServiceType), Name = "Loại dịch vụ"},
-                    new ComboboxModel() {Code = nameof(EnumType.@SkinType), Name = "Loại da"}
+                    new ComboboxModel() {Code = nameof(EnumType.@SkinType), Name = "Loại da"},
+                    new ComboboxModel() {Code = nameof(EnumType.@ServicePack), Name = "Gói dịch vụ"},
+                    new ComboboxModel() {Code = nameof(EnumType.@Unit), Name = "Đơn vị tính"},
+                    new ComboboxModel() {Code = nameof(EnumType.@StateOfHealth), Name = "Tình trạng sức khỏe"}
                 };
                 pEnumType = nameof(EnumType.ServiceType);
                 var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
@@ -53,6 +56,15 @@ namespace BM.Web.Features.Controllers
                         break;
                     case "/SKIN-TYPE":
                         pEnumType = nameof(EnumType.@SkinType);
+                        break;
+                    case "/SERVICE-PACK":
+                        pEnumType = nameof(EnumType.@ServicePack);
+                        break;
+                    case "/UNIT":
+                        pEnumType = nameof(EnumType.@Unit);
+                        break;
+                    case "/STATE-OF-HEAlTH":
+                        pEnumType = nameof(EnumType.@StateOfHealth);
                         break;
                 }
                 ListBreadcrumbs = new List<BreadcrumbModel>
@@ -104,17 +116,43 @@ namespace BM.Web.Features.Controllers
             ListEnums = await _masterDataService!.GetDataEnumsAsync(pEnumType);
         }
 
-        void LocationChanged(object sender, LocationChangedEventArgs e)
+         void LocationChanged(object sender, LocationChangedEventArgs e)
         {
             // Cập nhật giá trị khi location thay đổi
             currentLocation = e.Location;
-            if(currentLocation == "/service-type")
+            if(currentLocation != null)
             {
+                if(currentLocation.Contains("/service-type"))
+                {
+                    pEnumType = nameof(EnumType.@ServiceType);
 
+                }
+                else if (currentLocation.Contains("/skin-type"))
+                {
+                    pEnumType = nameof(EnumType.@SkinType);
+                }
+                else if (currentLocation.Contains("/service-pack"))
+                {
+                    pEnumType = nameof(EnumType.ServicePack);
+                }
+                else if (currentLocation.Contains("/unit"))
+                {
+                    pEnumType = nameof(EnumType.Unit);
+                }
+                else if (currentLocation.Contains("/state-of-health"))
+                {
+                    pEnumType = nameof(EnumType.StateOfHealth);
+                }
+                ListBreadcrumbs = new List<BreadcrumbModel>
+                {
+                    new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                    new BreadcrumbModel() { Text = "Hệ thống" },
+                    new BreadcrumbModel() { Text = "Danh mục" },
+                    new BreadcrumbModel() { Text = ListTypeEnums.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
+                };
+                 ListEnums = new List<EnumModel>();
+                 NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
             }
-            else if (currentLocation == "/skin-type")
-            { 
-            }    
         }
 
         void IDisposable.Dispose()

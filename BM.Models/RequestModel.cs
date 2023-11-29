@@ -41,5 +41,8 @@ public enum EnumType
     @SaveAndCreate,
     @Report,
     @ServiceType,
-    @SkinType
+    @SkinType,
+    @ServicePack,
+    @Unit,
+    @StateOfHealth,
 }

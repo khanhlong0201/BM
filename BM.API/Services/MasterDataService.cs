@@ -240,7 +240,7 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@EnumType", $"{pEnumType}");
-            data = await _context.GetDataAsync(@"select [EnumId],[EnumType],[EnumName],[Description],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate]
+            data = await _context.GetDataAsync(@"select [EnumId],[EnumType],[EnumTypeName],[EnumName],[Description],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate]
                     from [dbo].[Enums] where [IsDelete] = 0 and [EnumType] = @EnumType"
                     , DataRecordToEnumModel, sqlParameters , commandType: CommandType.Text);
         }
@@ -657,6 +657,7 @@ public class MasterDataService : IMasterDataService
         EnumModel model = new EnumModel();
         if (!Convert.IsDBNull(record["EnumId"])) model.EnumId = Convert.ToString(record["EnumId"]);
         if (!Convert.IsDBNull(record["EnumType"])) model.EnumType = Convert.ToString(record["EnumType"]);
+        if (!Convert.IsDBNull(record["EnumTypeName"])) model.EnumTypeName = Convert.ToString(record["EnumTypeName"]);
         if (!Convert.IsDBNull(record["EnumName"])) model.EnumName = Convert.ToString(record["EnumName"]);
         if (!Convert.IsDBNull(record["Description"])) model.Description = Convert.ToString(record["Description"]);
         //if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);

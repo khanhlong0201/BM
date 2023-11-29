@@ -10,5 +10,6 @@ namespace BM.Models
         [Required(ErrorMessage = "Vui lòng điền Tên danh mục")]
         public string? EnumName { get; set; }
         public string? Description { get; set; }
+        public string? EnumTypeName { get; set; }
     }
 }
