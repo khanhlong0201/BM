@@ -5,16 +5,17 @@ using Microsoft.AspNetCore.Components;
 
 namespace BM.Web.Features.Pages
 {
-    public partial class LoginPage
+    public partial class LoginPage 
     {
 
         #region Properties
         [Inject] NavigationManager? _navigationManager { get; set; }
+        [Inject] private ILogger<LoginPage>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; set; }
         public LoginViewModel LoginRequest { get; set; } = new LoginViewModel();
         public bool IsLoading { get; set; }
         public string ErrorMessage = "";
-        public List<BranchModel>? ListBranchs { get; set; }
+        public List<BranchModel>? ListBranchs { get; set; } = new List<BranchModel>();
         #endregion
 
         protected async Task LoginHandler()
@@ -36,5 +37,27 @@ namespace BM.Web.Features.Pages
                 IsLoading = false;
             }
         }
+
+        #region "Form Events"
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                try
+                {
+                    ListBranchs = await _masterDataService!.GetDataBranchsAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger!.LogError(ex, "OnAfterRenderAsync");
+                 
+                }
+                finally
+                {;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        #endregion "Form Events"
     }
 }

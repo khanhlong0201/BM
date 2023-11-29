@@ -277,7 +277,7 @@ namespace BM.API.Controllers
                 });
                 var claims = new[]
               {
-                    new Claim("Id", data.FirstOrDefault().Id + ""),
+                    new Claim("UserId", data.FirstOrDefault().Id + ""),
                     new Claim("UserName", data.FirstOrDefault().UserName + ""),
                     new Claim("FullName", data.FirstOrDefault().FullName + ""),
                     new Claim("Phone", data.FirstOrDefault().PhoneNumber + ""),

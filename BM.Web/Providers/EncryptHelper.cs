@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace BHSystem.Web.Providers
+namespace BM.Web.Providers
 {
     //UsingSymmetricKey: Khóa đổi xứng
     public static class EncryptHelper
