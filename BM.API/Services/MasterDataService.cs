@@ -23,6 +23,8 @@ public interface IMasterDataService
 
     Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest);
     Task<CustomerModel> GetCustomerById(string pCusNo);
+    Task<IEnumerable<SuppliesModel>> GetSuppliesAsync();
+    Task<ResponseModel> UpdateSupplies(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -595,6 +597,114 @@ public class MasterDataService : IMasterDataService
         }
         return data;
     }
+
+
+    /// <summary>
+    /// lấy danh sách nhân viên
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<SuppliesModel>> GetSuppliesAsync()
+    {
+        IEnumerable<SuppliesModel> data;
+        try
+        {
+            await _context.Connect();
+            data = await _context.GetDataAsync(@"SELECT t0.[SuppliesCode] ,t0.[SuppliesName], t0.[EnumId], t1.[EnumName], t0.[DateCreate] ,t0.[UserCreate], t0.[DateUpdate], t0.[UserUpdate]
+                                                FROM [dbo].[Supplies] t0 
+                                                inner join Enums t1  on t0.EnumId = t1.EnumId
+                                                where t0.[IsDelete] = 0 and t1.EnumType ='Unit'
+                                                "
+                    , DataRecordToSuppliesModel, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Thêm mới/Cập nhật vật tư
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateSupplies(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            SuppliesModel oSupplies = JsonConvert.DeserializeObject<SuppliesModel>(pRequest.Json + "")!;
+            SqlParameter[] sqlParameters;
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[4];
+                sqlParameters[0] = new SqlParameter("@SuppliesCode", oSupplies.SuppliesCode);
+                sqlParameters[1] = new SqlParameter("@SuppliesName", oSupplies.SuppliesName);
+                sqlParameters[2] = new SqlParameter("@EnumId", oSupplies.EnumId);
+                sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    sqlParameters = new SqlParameter[1];
+                    sqlParameters[0] = new SqlParameter("@SuppliesName", oSupplies.SuppliesName);
+                    // kiểm tra tên vật tư
+                    if (await _context.ExecuteScalarAsync("select COUNT(*) from Supplies with(nolock) where SuppliesName = @SuppliesName", sqlParameters) > 0)
+                    {
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        response.Message = "Tên vật tư đã tồn tại!";
+                        break;
+                    }
+                    sqlParameters[0] = new SqlParameter("@Type", "Supplies");
+                    oSupplies.SuppliesCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy mã vật tư
+                    queryString = @"INSERT INTO [dbo].[Supplies] ([SuppliesCode] ,[SuppliesName],[EnumId],[DateCreate],[UserCreate],[IsDelete]))
+                                    values ( @SuppliesCode , @SuppliesName , @EnumId , getDate(), @UserId, 0 )";
+
+                    setParameter();
+                     await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    queryString = @"UPDATE [dbo].[Supplies]
+                                   SET [SuppliesName] = @SuppliesName
+                                      ,[EnumId] = @EnumId
+                                      ,[DateCreate] = getdate()
+                                      ,[UserCreate] = @UserId
+                                      ,[IsDelete] = 0
+                                      ,[ReasonDelete] = <ReasonDelete, nvarchar(254),>
+                                 WHERE SuppliesCode = @SuppliesCode";
+
+                    setParameter();
+                    await ExecQuery();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #endregion Public Functions
 
     #region Private Funtions
@@ -738,5 +848,24 @@ public class MasterDataService : IMasterDataService
         return user;
     }
 
+
+    /// <summary>
+    /// đọc danh sách Vật tư
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private SuppliesModel DataRecordToSuppliesModel(IDataRecord record)
+    {
+        SuppliesModel suppplies = new();
+        if (!Convert.IsDBNull(record["SuppliesCode"])) suppplies.SuppliesCode = Convert.ToString(record["SuppliesCode"]);
+        if (!Convert.IsDBNull(record["SuppliesName"])) suppplies.SuppliesName = Convert.ToString(record["SuppliesName"]);
+        if (!Convert.IsDBNull(record["EnumId"])) suppplies.EnumId = Convert.ToString(record["EnumId"]);
+        if (!Convert.IsDBNull(record["EnumName"])) suppplies.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) suppplies.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) suppplies.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) suppplies.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) suppplies.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        return suppplies;
+    }
     #endregion
 }

@@ -314,5 +314,49 @@ namespace BM.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetSupplies")]
+        public async Task<IActionResult> GetSupplies()
+        {
+            try
+            {
+                var data = await _masterService.GetSuppliesAsync();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetSupplies");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+
+        }
+
+        [HttpPost]
+        [Route("UpdateSupplies")]
+        public async Task<IActionResult> UpdateSupplies([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.UpdateSupplies(request);
+
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "UpdateSupplies");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
     }
 }
