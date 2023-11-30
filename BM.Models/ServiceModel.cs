@@ -59,16 +59,3 @@ public class SalesOrderModel
         private set { }
     }
 }
-
-public class DraftModel : Auditable
-{
-    public int DocEntry { get; set; }
-    public string? CusNo { get; set; }
-    public string? DiscountCode { get; set; }
-    public double Total { get; set; }
-    public double GuestsPay { get; set; }
-    public string? StatusBefore { get; set; }
-    public string? HealthStatus { get; set; }
-    public string? NoteForAll { get; set; }
-    public string? StatusId { get; set; }
-}

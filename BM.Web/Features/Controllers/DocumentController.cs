@@ -22,8 +22,10 @@ namespace BM.Web.Features.Controllers
 
         #region Properties
         public double TotalDue { get; set; } = 0.0;
-        public CustomerModel CustomerUpdate { get; set; } = new CustomerModel();
+        public DocumentModel DocumentUpdate { get; set; } = new DocumentModel();
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
+        public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
+        public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
         public IEnumerable<IGrouping<string, ServiceModel>>? ListGroupServices { get; set; }
         public HConfirm? _rDialogs { get; set; }
         //
@@ -43,15 +45,14 @@ namespace BM.Web.Features.Controllers
                     new BreadcrumbModel() { Text = "Lập đơn hàng" }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
-                CustomerUpdate.CusNo = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.BranchName = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.FullName = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.CINo = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.Phone1 = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.Zalo = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.FaceBook = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.Address = DATA_CUSTOMER_EMPTY;
-                CustomerUpdate.Remark = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.BranchName = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.FullName = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.CINo = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.Phone1 = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.Zalo = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.FaceBook = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.Address = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.Remark = DATA_CUSTOMER_EMPTY;
                 // đọc giá tri câu query
                 var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
                 if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
@@ -60,7 +61,7 @@ namespace BM.Web.Features.Controllers
                     Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
                     if(pParams != null && pParams.Any())
                     {
-                        if (pParams.ContainsKey("pCusNo")) CustomerUpdate.CusNo = pParams["pCusNo"];
+                        if (pParams.ContainsKey("pCusNo")) DocumentUpdate.CusNo = pParams["pCusNo"];
                         if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
                     }    
                 }    
@@ -81,25 +82,25 @@ namespace BM.Web.Features.Controllers
                     // lấy thông tin khách hàng
                     if(pIsCreate)
                     {
-                        var oCustomer = await _masterDataService!.GetCustomerByIdAsync(CustomerUpdate.CusNo + "");
+                        var oCustomer = await _masterDataService!.GetCustomerByIdAsync(DocumentUpdate.CusNo + "");
                         if (oCustomer == null) return;
-                        CustomerUpdate.BranchName = oCustomer.BranchName ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.FullName = oCustomer.FullName ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.CINo = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.Phone1 = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.Zalo = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.FaceBook = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
-                        CustomerUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.BranchName = oCustomer.BranchName ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.FullName = oCustomer.FullName ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.CINo = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Phone1 = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Zalo = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.FaceBook = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
 
                     }    
                     await _progressService!.SetPercent(0.6);
                     // lấy danh sách dịch vụ
                     var listServices = await _masterDataService!.GetDataServicesAsync();
-                    if(listServices != null && listServices.Any())
-                    {
-                        ListGroupServices = listServices.GroupBy(m => $"{m.EnumName}");
-                    }    
+                    if(listServices != null && listServices.Any()) ListGroupServices = listServices.GroupBy(m => $"{m.EnumName}");
+
+                    var listUsers = await _masterDataService!.GetDataUsersAsync();
+                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m=> new ComboboxModel() { Code = m.EmpNo, Name = m.FullName});
                 }
                 catch (Exception ex)
                 {
@@ -118,6 +119,20 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
+        protected void ValueChangedGuestsPayHandler(double value)
+        {
+            try
+            {
+                DocumentUpdate.GuestsPay = value;
+                DocumentUpdate.Debt = (ListSalesOrder?.Sum(m => m.Amount) ?? 0) - value;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "OnChangeGuestsPayHandler");
+                ShowError(ex.Message);
+            }
+        }
 
         /// <summary>
         /// add item to Grid Sales Order
@@ -156,13 +171,33 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        protected void RemoveItemInSOHandler(int pId)
+        {
+            try
+            {
+                var oItem = ListSalesOrder!.FirstOrDefault(m => m.Id == pId);
+                if(oItem != null)
+                {
+                    ListSalesOrder!.Remove(oItem);
+                    // đánh lại số thứ tự
+                    for (int i = 0; i < ListSalesOrder.Count(); i++) { ListSalesOrder[i].Id = (i + 1); }
+                    StateHasChanged();
+                }    
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "AddItemToSOHandler");
+                ShowError(ex.Message);
+            }
+        }    
+
         protected async void SaveDocHandler()
         {
             try
             {
                 if(pIsCreate)
                 {
-                    if (string.IsNullOrEmpty(CustomerUpdate.CusNo))
+                    if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
                     {
                         ShowWarning("Không tìm thấy thông tin khách hàng!");
                         return;
@@ -172,29 +207,25 @@ namespace BM.Web.Features.Controllers
                         ShowWarning("Vui lòng chọn dịch vụ!");
                         return;
                     }
-                    DraftModel oDraft = new DraftModel();
-                    oDraft.CusNo = CustomerUpdate.CusNo;
-                    oDraft.DiscountCode = "";
-                    oDraft.Total = 0;
-                    oDraft.GuestsPay = 0;
-                    oDraft.StatusBefore = CustomerUpdate.StatusBefore;
-                    oDraft.HealthStatus = CustomerUpdate.HealthStatus;
-                    oDraft.NoteForAll = CustomerUpdate.NoteForAll;
-                    oDraft.StatusId = "";
+                    if(DocumentUpdate.GuestsPay <=0)
+                    {
+                        ShowWarning("Vui lòng điền số tiền khách trả!");
+                        return;
+                    }    
                     await ShowLoader();
-                    bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(oDraft), "", nameof(EnumType.Add), pUserId);
-                    //if (isSuccess)
-                    //{
-                    //    await getDataServices();
-                    //    if (pEnum == EnumType.SaveAndCreate)
-                    //    {
-                    //        ServiceUpdate = new ServiceModel();
-                    //        _EditContext = new EditContext(ServiceUpdate);
-                    //        return;
-                    //    }
-                    //    IsShowDialog = false;
-                    //    return;
-                    //}
+                    DocumentUpdate.Total = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
+                    List<DocumentDetailModel> lstDraftDetails = ListSalesOrder!.Select(m => new DocumentDetailModel()
+                    {
+                        ServiceCode = m.ServiceCode,
+                        ServiceName = m.ServiceName,
+                        Price = m.Price,
+                        Qty = m.Qty,
+                        LineTotal = m.Amount,
+                        ActionType = nameof(EnumType.Add),
+                        ConsultUserId = ListUserAdvise == null || ListUserAdvise.Any() ? "" : JsonConvert.SerializeObject(ListUserAdvise.ToArray())
+                    }).ToList();
+                    bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
+                        , JsonConvert.SerializeObject(lstDraftDetails), nameof(EnumType.Add), pUserId);
                 }    
                 else
                 {

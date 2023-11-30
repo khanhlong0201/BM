@@ -194,6 +194,12 @@ html {
     font-size: 13px;
 }
 
+.k-multiselect.k-input-md {
+    min-height: 27.5px;
+    height: unset;
+    font-size: 13px;
+}
+
     .k-input-md .k-input-inner,
     .k-picker-md .k-input-inner {
         padding: 2px 8px;

@@ -21,58 +21,58 @@
                             <div class="mb-2">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-6 col-sm-12">
-                                        Mã K/H: <strong>@CustomerUpdate.CusNo</strong>
+                                        Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
                                     </div>
                                     <div class="col-lg-8 col-md-6 col-sm-12">
-                                        Cơ sở: <strong>@CustomerUpdate.BranchName</strong>
+                                        Cơ sở: <strong>@DocumentUpdate.BranchName</strong>
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-5 col-sm-12">
-                                        Tên khách hàng: <strong>@CustomerUpdate.FullName</strong>
+                                        Tên khách hàng: <strong>@DocumentUpdate.FullName</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-3 col-sm-12">
-                                        Ngày sinh: <strong>@(CustomerUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY : CustomerUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))</strong>
+                                        Ngày sinh: <strong>@(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        CCCD: <strong>@CustomerUpdate.CINo</strong>
+                                        CCCD: <strong>@DocumentUpdate.CINo</strong>
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        SĐT: <strong>@CustomerUpdate.Phone1</strong>
+                                        SĐT: <strong>@DocumentUpdate.Phone1</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        Zalo: <strong>@CustomerUpdate.Zalo</strong>
+                                        Zalo: <strong>@DocumentUpdate.Zalo</strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        Facebook: <strong>@CustomerUpdate.FaceBook</strong>
+                                        Facebook: <strong>@DocumentUpdate.FaceBook</strong>
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-2">
-                                Địa chỉ: <strong>@CustomerUpdate.Address</strong>
+                                Địa chỉ: <strong>@DocumentUpdate.Address</strong>
                             </div>
                             <div class="mb-2">
-                                Đặc điểm: <strong>@CustomerUpdate.Remark</strong>
+                                Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng khách khi sử dụng dịch vụ:
-                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.StatusBefore" Id="txtStatusBefore" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng sức khỏe:
-                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.HealthStatus" Id="txtHealthStatus" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         Ghi chú đơn hàng:
-                                        <TelerikTextBox @bind-Value="@CustomerUpdate!.NoteForAll" Id="txtNoteForAll" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
                                     </div>
                                 </div>
                                 
@@ -128,13 +128,14 @@
                     <table class="table table-transparent">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 35px; max-width: 35px"></th>
                                 <th class="text-center" style="width: 1%">STT</th>
                                 <th style="min-width: 210px">Dịch vụ</th>
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
                                 <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
                                 <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
-                                <th class="text-end" style="min-width: 130px">NV thực hiện</th>
-                                <th class="text-end" style="min-width: 130px">NV tư vấn</th>
+                                <th class="text-center" style="width: 150px; max-width: 170px">NV tư vấn</th>
+                                <th class="text-center" style="width: 150px; max-width: 170px">NV thực hiện</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -144,6 +145,10 @@
                                 {
                                     @*int iIndex = i;*@
                                     <tr>
+                                        <td class="text-center">
+                                            <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
+                                                title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.Id))"></i>
+                                        </td>
                                         <td class="text-center">@oItem.Id</td>
                                         <td>
                                             <p class="strong mb-1">@oItem.ServiceCode</p>
@@ -158,37 +163,67 @@
                                             <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" />
                                         </td>
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
-                                        <td></td>
-                                        <td></td>
+                                        <td class="text-center">
+                                            <TelerikMultiSelect Data="@ListUsers"
+                                                @bind-Value="@ListUserAdvise"
+                                                ValueField="@nameof(ComboboxModel.Code)"
+                                                TextField="@nameof(ComboboxModel.Name)"
+                                                FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                AutoClose="false" Width="100%"
+                                            >
+
+                                            </TelerikMultiSelect>
+                                        </td>
+                                        <td class="text-center">
+                                            <TelerikMultiSelect Data="@ListUsers"
+                                                        @bind-Value="@ListUserAdvise"
+                                                        ValueField="@nameof(ComboboxModel.Code)"
+                                                        TextField="@nameof(ComboboxModel.Name)"
+                                                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                        AutoClose="false" Width="100%">
+
+                                            </TelerikMultiSelect>
+                                        </td>
                                     </tr>
                                 }
 
                             }
-                            <tr>
-                                <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
-                                <td colspan="2" class="text-end">
-                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                </td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="strong text-end">Khách trả:</td>
-                                <td colspan="2" class="text-end">
-                                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                            @bind-Value="@TotalDue" Arrows="false" />
-                                </td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
-                                <td colspan="2" class="font-weight-bold text-end">
-                                    @((ListSalesOrder?.Sum(m => m.Amount) ?? 0).ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                </td>
-                                <td></td>
-                                <td></td>
-                            </tr>
+
+                            @{
+                                double pSumTotal = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
+                                DocumentUpdate.GuestsPay = pSumTotal <= 0 ? 0 : DocumentUpdate.GuestsPay;
+                                DocumentUpdate.Debt = pSumTotal <= 0 ? 0 : DocumentUpdate.Debt;
+                                <tr>
+                                    <td class="text-center"></td>
+                                    <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
+                                    <td colspan="2" class="text-end">
+                                        @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center"></td>
+                                    <td colspan="3" class="strong text-end">Khách trả:</td>
+                                    <td colspan="2" class="text-end">
+                                        <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                            ValueChanged="@((double e) => ValueChangedGuestsPayHandler(e))" Enabled="@(pSumTotal > 0)"
+                                            Value="@DocumentUpdate.GuestsPay" Arrows="false" />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center"></td>
+                                    <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
+                                    <td colspan="2" class="font-weight-bold text-end">
+                                        @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            }
+                            
                         </tbody>
                     </table>
                 </div>
