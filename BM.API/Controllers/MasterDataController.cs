@@ -358,5 +358,31 @@ namespace BM.API.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Route("DeleteData")]
+        public async Task<IActionResult> DeleteData([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.DeleteDataAsync(request);
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "UpdateService");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
     }
 }

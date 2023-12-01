@@ -25,6 +25,7 @@ public interface IMasterDataService
     Task<CustomerModel> GetCustomerById(string pCusNo);
     Task<IEnumerable<SuppliesModel>> GetSuppliesAsync();
     Task<ResponseModel> UpdateSupplies(RequestModel pRequest);
+    Task<ResponseModel> DeleteDataAsync(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -705,9 +706,85 @@ public class MasterDataService : IMasterDataService
         }
         return response;
     }
+
+    /// <summary>
+    /// xóa thông tin trong bảng
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> DeleteDataAsync(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters;
+            string queryString = "";
+            switch (pRequest.Type)
+            {
+                case nameof(EnumTable.Users):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[Id] in (@ListIds) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[3];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }    
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #endregion Public Functions
 
     #region Private Funtions
+    /// <summary>
+    /// xóa dữ liệu -> cập nhật cột IsDelete
+    /// </summary>
+    /// <returns></returns>
+    private async Task<ResponseModel> deleteDataAsync(string pTableName, string pCondition, SqlParameter[] sqlParameters)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.BeginTranAsync();
+            string queryString = @$"UPDATE [dbo].[{pTableName}] 
+                                set [IsDelete] = 1, [ReasonDelete] = @ReasonDelete, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                where {pCondition}";
+
+            var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            if (data != null && data.Rows.Count > 0)
+            {
+                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            }
+
+            if (response.StatusCode == 0) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync(); 
+        }
+        return response;
+    }
 
     /// <summary>
     /// đọc dnah sách chi nhánh
