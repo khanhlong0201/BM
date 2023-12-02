@@ -28,6 +28,9 @@ public interface ICliMasterDataService
     Task<string> LoginAsync(LoginViewModel request);
     Task LogoutAsync();
     Task<bool> DeleteDataAsync(string pTableName, string pReasonDelete, string pValue, int pUserId);
+
+    Task<List<SuppliesModel>?> GetDataSuppliesAsync();
+    Task<bool> UpdateSuppliesAsync(string pJson, string pAction, int pUserId);
 }
 public class CliMasterDataService : CliServiceBase, ICliMasterDataService 
 {
@@ -560,6 +563,86 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         catch (Exception ex)
         {
             _logger.LogError(ex, "DeleteDataAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách vật tư
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<SuppliesModel>?> GetDataSuppliesAsync()
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SUPPLIES);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<SuppliesModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataSuppliesAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// cập nhật danh mục
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateSuppliesAsync(string pJson, string pAction, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                Type = pAction,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_MASTERDATA_UPDATE_SUPPLIES, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
+                    _toastService.ShowSuccess($"{sMessage} Vật tư!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdateSuppliesAsync");
             _toastService.ShowError(ex.Message);
         }
         return false;

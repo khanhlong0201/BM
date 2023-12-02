@@ -2,18 +2,16 @@
 
 namespace BM.Models
 {
-    public class SuppliesModel: Auditable
+    public class InvetoryModel : Auditable
     {
         public string? SuppliesCode { get; set; }
-
-        [Required(ErrorMessage = "Vui lòng điền Tên vật tư")]
         public string? SuppliesName { get; set; }
-
-
-        [Required(ErrorMessage = "Vui lòng điền Đơn vị tính")]
-        public string? EnumId { get; set; }
+        public string? EnumId { get; set; } //đơn vị tính
         public string? EnumName { get; set; }
         public decimal? QtyInv { get; set; }
         public decimal? Price { get; set; }
+        public string? BranchId { get; set; }
+        public string? BranchName { get; set; }
+
     }
 }
