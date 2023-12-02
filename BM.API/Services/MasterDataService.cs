@@ -32,9 +32,11 @@ public interface IMasterDataService
 public class MasterDataService : IMasterDataService
 {
     private readonly IBMDbContext _context;
-    public MasterDataService(IBMDbContext context)
+    private readonly IDateTimeService _dateTimeService;
+    public MasterDataService(IBMDbContext context, IDateTimeService dateTimeService)
     {
         _context = context;
+        _dateTimeService = dateTimeService;
     }
 
     #region Public Funtions
@@ -82,15 +84,16 @@ public class MasterDataService : IMasterDataService
             }
             else
             {
-                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = getDate() , UserUpdate = @UserId where BranchId = @BranchId";
+                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = @DateTimeNow , UserUpdate = @UserId where BranchId = @BranchId";
             }
-            sqlParameters = new SqlParameter[6];
+            sqlParameters = new SqlParameter[7];
             sqlParameters[0] = new SqlParameter("@BranchId", oBranch.BranchId);
             sqlParameters[1] = new SqlParameter("@BranchName", oBranch.BranchName);
             sqlParameters[2] = new SqlParameter("@IsActive", oBranch.IsActive);
             sqlParameters[3] = new SqlParameter("@Address", oBranch.Address + "");
             sqlParameters[4] = new SqlParameter("@PhoneNumber", oBranch.PhoneNumber + "");
             sqlParameters[5] = new SqlParameter("@UserId", pRequest.UserId + "");
+            sqlParameters[6] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
             var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
             if (data != null && data.Rows.Count > 0)
