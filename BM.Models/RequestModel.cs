@@ -55,5 +55,6 @@ public enum EnumTable
     @Drafts,
     @DraftDetails,
     @Users,
-    @Customers
+    @Customers,
+    @Prices
 }

@@ -28,12 +28,10 @@ public class ServiceModel : Auditable
 /// <summary>
 /// bảng giá
 /// </summary>
-public class PriceModel
+public class PriceModel : Auditable
 {
     public int Id { get; set; }
     public string? ServiceCode { get; set; }
-    public DateTime DateCreate { get; set; }
-    public int UserCreate { get; set; }
     public bool IsActive { get; set; }
     [Range(1000, double.MaxValue, ErrorMessage = "Vui lòng nhập đơn giá")]
     public double Price { get; set; }

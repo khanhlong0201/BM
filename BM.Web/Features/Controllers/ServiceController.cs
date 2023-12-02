@@ -1,4 +1,5 @@
 ﻿using BM.Models;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -27,6 +28,12 @@ namespace BM.Web.Features.Controllers
         public bool IsCreate { get; set; } = true;
         public List<EnumModel>? ListServicesType { get; set; } // ds loại dịch vụ
         public HConfirm? _rDialogs { get; set; }
+
+        public bool IsShowDialogPriceList { get; set; }
+        public List<PriceModel>? ListPrices { get; set; }
+        public IEnumerable<PriceModel>? SelectedPrices { get; set; } = new List<PriceModel>();
+        public PriceModel PriceUpdate { get; set; } = new PriceModel();
+        public string pServiceCode { get; set; } = "";
         #endregion
 
         #region Override Functions
@@ -81,15 +88,34 @@ namespace BM.Web.Features.Controllers
             ListServices = await _masterDataService!.GetDataServicesAsync();
         }
 
+        private async Task getDataPricesList()
+        {
+            ListPrices = new List<PriceModel>();
+            SelectedPrices = new List<PriceModel>();
+            PriceUpdate = new PriceModel();
+            ListPrices = await _masterDataService!.GetDataPricesByServiceAsync(pServiceCode);
+        }
         #endregion
 
         #region Protected Functions
-        protected async void ReLoadDataHandler()
+        protected async void ReLoadDataHandler(EnumTable pTable = EnumTable.Services)
         {
             try
             {
-                IsInitialDataLoadComplete = false;
-                await getDataServices();
+                switch(pTable)
+                {
+                    case EnumTable.Services:
+                        IsInitialDataLoadComplete = false;
+                        await getDataServices();
+                        break;
+                    case EnumTable.Prices:
+                        await ShowLoader();
+                        await getDataPricesList();
+                        break;
+                    default:
+                        break;
+                }    
+                
             }
             catch (Exception ex)
             {
@@ -99,6 +125,7 @@ namespace BM.Web.Features.Controllers
             finally
             {
                 IsInitialDataLoadComplete = true;
+                await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -168,6 +195,96 @@ namespace BM.Web.Features.Controllers
             }
         }
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as ServiceModel);
+
+        #region Bảng giá
+        protected async void EditPriceHandler(ServiceModel pService)
+        {
+            try
+            {
+                if (pService == null) return;    
+                await ShowLoader();
+                pServiceCode = pService.ServiceCode + "";
+                await getDataPricesList();
+                IsShowDialogPriceList = true;
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "EditPriceHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        /// <summary>
+        /// cập nhật thông tin bảng giá
+        /// </summary>
+        /// <param name="pEnum"></param>
+        protected async void SaveDataPriceListHandler(EnumType pEnum = EnumType.Add)
+        {
+            try
+            {
+                string sAction = "";
+                string sMessage = "";
+                if (pEnum == EnumType.Add)
+                {
+                    sAction = nameof(EnumType.Add);
+                    sMessage = "Thêm thông tin bảng giá";
+                }    
+                else
+                {
+                    if(PriceUpdate.Id <= 0)
+                    {
+                        ShowWarning("Vui lòng chọn dòng cần cập nhật");
+                        return;
+                    }
+                    sAction = nameof(EnumType.Update);
+                    sMessage = PriceUpdate.IsActive ? "Sử dụng đơn giá này" : "Hủy sử dụng đơn giá này";
+                }    
+                if (PriceUpdate.Price <= 0)
+                {
+                    ShowWarning("Vui lòng nhập đơn giá");
+                    return;
+                }
+                //var confirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn {sMessage} ?");
+                //if (!confirm) return;
+                await ShowLoader();
+                PriceUpdate.ServiceCode = pServiceCode;
+                bool isSuccess = await _masterDataService!.UpdatePriceAsync(JsonConvert.SerializeObject(PriceUpdate), sAction, pUserId);
+                if (isSuccess) await getDataPricesList();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "SaveDataPriceListHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected void OnRowClickPriceHandler(GridRowClickEventArgs args)
+        {
+            try
+            {
+                var oPrice = args.Item as PriceModel;
+                PriceUpdate.Id = oPrice!.Id; 
+                PriceUpdate.Price = oPrice.Price;
+                PriceUpdate.IsActive = oPrice.IsActive;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "OnRowClickPriceHandler");
+                ShowError(ex.Message);
+            }
+        }
+        #endregion
 
         #endregion
     }

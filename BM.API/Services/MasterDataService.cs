@@ -2,6 +2,7 @@
 using BM.Models;
 using BM.Models.Shared;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Data;
 using System.Data.SqlClient;
@@ -27,6 +28,8 @@ public interface IMasterDataService
     Task<IEnumerable<SuppliesModel>> GetSuppliesAsync();
     Task<ResponseModel> UpdateSupplies(RequestModel pRequest);
     Task<ResponseModel> DeleteDataAsync(RequestModel pRequest);
+    Task<IEnumerable<PriceModel>> GetPriceListByServiceAsync(string pServiceCode);
+    Task<ResponseModel> UpdatePrice(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -446,9 +449,16 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
-            oCustomer = await _context.GetDataByIdAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth],[SkinType]
-                    ,[BranchId],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0 and [CusNo] = @CusNo"
-                    , DataRecordToCustomerModel, sqlParameters, commandType: CommandType.Text);
+            string queryString = @"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
+                                    ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], string_agg(T0.EnumName, ', ') as [SkinType]
+                              from (select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
+                                           ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], EnumName
+					                  from [dbo].[Customers] as T0 
+			           cross apply (select EnumName from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T0.SkinType like '%""'+T00.EnumId+'""%' ) as T1
+			                 where T0.[IsDelete] = 0 and [CusNo] = @CusNo) as T0
+                          group by [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
+                                   ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]";
+            oCustomer = await _context.GetDataByIdAsync(queryString, DataRecordToCustomerModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -471,7 +481,7 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[Description],[WarrantyPeriod],[QtyWarranty]
                          ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
-                         ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [DateCreate] desc), 0) as [Price]
+                         ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [DateUpdate] desc, [DateCreate] desc), 0) as [Price]
                     from [dbo].[Services] as T0 with(nolock) 
               inner join [dbo].[Enums] as T1 with(nolock) on T0.[EnumId] = T1.[EnumId]
                    where T0.[IsDelete] = 0 order by [ServiceCode] desc"
@@ -571,6 +581,100 @@ public class MasterDataService : IMasterDataService
         return response;
     }
 
+    /// <summary>
+    /// Danh sách bảng giá theo dịch vụ
+    /// </summary>
+    /// <param name="pServiceCode"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<PriceModel>> GetPriceListByServiceAsync(string pServiceCode)
+    {
+        IEnumerable<PriceModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@ServiceCode", pServiceCode);
+            data = await _context.GetDataAsync(@"select [Id], [ServiceCode],[Price],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], [IsActive]
+                    from [dbo].[Prices] as T0 with(nolock) 
+                   where T0.[ServiceCode] = @ServiceCode order by [DateUpdate] desc, [DateCreate] desc"
+                    , DataRecordToPriceModel, sqlParameters, commandType: CommandType.Text);
+
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }    
+
+    /// <summary>
+    /// thêm mới + cập nhật thông tin bảng giá
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdatePrice(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            PriceModel oPrice = JsonConvert.DeserializeObject<PriceModel>(pRequest.Json + "")!;
+            SqlParameter[] sqlParameters;
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    oPrice.Id = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
+                    queryString = @"Insert into [dbo].[Prices] ([Id],[ServiceCode],[Price],[DateCreate],[UserCreate],[IsActive])
+                                    values (@Id, @ServiceCode, @Price, @DateTimeNow, @UserId, @IsActive)";
+                    sqlParameters = new SqlParameter[6];
+                    sqlParameters[0] = new SqlParameter("@Id", oPrice.Id);
+                    sqlParameters[1] = new SqlParameter("@ServiceCode", oPrice.ServiceCode);
+                    sqlParameters[2] = new SqlParameter("@Price", oPrice.Price);
+                    sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[4] = new SqlParameter("@IsActive", oPrice.IsActive);
+                    sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    queryString = @"Update [dbo].[Prices]
+                                       set [IsActive] = @IsActive
+                                         , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                     where [Id] = @Id";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@Id", oPrice.Id);
+                    sqlParameters[1] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[2] = new SqlParameter("@IsActive", oPrice.IsActive);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    await ExecQuery();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }    
 
     /// <summary>
     /// Đăng nhập
@@ -956,5 +1060,24 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
         return suppplies;
     }
+    
+    /// <summary>
+    /// đoc danh sách bảng giá
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private PriceModel DataRecordToPriceModel(IDataRecord record)
+    {
+        PriceModel model = new PriceModel();
+        if (!Convert.IsDBNull(record["Id"])) model.Id = Convert.ToInt32(record["Id"]);
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["Price"])) model.Price = Convert.ToDouble(record["Price"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["IsActive"])) model.IsActive = Convert.ToBoolean(record["IsActive"]);
+        return model;
+    }    
     #endregion
 }

@@ -39,6 +39,8 @@ public static class EndpointConstants
 
     public const string URL_MASTERDATA_GET_SERVICE = "MasterData/GetServices";
     public const string URL_MASTERDATA_UPDATE_SERVICE = "MasterData/UpdateService";
+    public const string URL_MASTERDATA_GET_PRICE_BY_SERVICE = "MasterData/GetPricesByService";
+    public const string URL_MASTERDATA_UPDATE_PRICE = "MasterData/UpdatePrice";
 
     public const string URL_MASTERDATA_USER_LOGIN = "MasterData/Login";
     public const string URL_MASTERDATA_DELETE = "MasterData/DeleteData";
