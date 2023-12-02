@@ -1,0 +1,211 @@
+﻿@page "/supplies"
+@inherits SupliesController;
+
+<TelerikTabStrip>
+    <TabStripTab Title="Quản lý vật tư">
+        <TelerikToolBar Class="border-bottom-0">
+            <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+            <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
+            <ToolBarButton ImageUrl="../assets/remove_grid.png" >Xóa dòng</ToolBarButton>
+        </TelerikToolBar>
+        <div class="h-table-content" style=" height: calc(100vh - 170px);">
+            <TelerikLoaderContainer OverlayThemeColor="light"
+                                    Visible="@(!IsInitialDataLoadComplete)"
+                                    Text="@null" Class="grid-initial-data-loader">
+                <Template>
+                    <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                                   Size="@(ThemeConstants.Loader.Size.Medium)">
+                    </TelerikLoader>
+                </Template>
+            </TelerikLoaderContainer>
+
+            <TelerikGrid Data="@ListSupplies"
+                         Height="100%"
+                         Width="100%"
+                         RowHeight="25"
+                         Pageable="true"
+                         PageSize="@DefaultConstants.PAGE_SIZE"
+                         Sortable="true"
+                         Resizable="true"
+                         FilterMode="@GridFilterMode.FilterMenu"
+                         SelectionMode="@GridSelectionMode.Multiple"
+                         ScrollMode="@GridScrollMode.Scrollable"
+                         OnRowDoubleClick="@OnRowDoubleClickHandler"
+                         @bind-SelectedItems="@SelectedSupplies">
+                <GridSettings>
+                    <GridPagerSettings InputType="PagerInputType.Input" />
+                </GridSettings>
+                <GridAggregates>
+                    <GridAggregate Field=@nameof(SuppliesModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+                </GridAggregates>
+                <GridColumns>
+                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
+                        <Template>
+                            @{
+                                var model = (context as SuppliesModel);
+                                <span class="h-link">@model!.SuppliesCode</span>
+                            }
+                        </Template>
+                        <FooterTemplate>
+                            Số dòng: @context.Count
+                        </FooterTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="270px" Title="Tên vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="140px" Title="Tổng số lượng trong kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.Price) Width="140px" Title="Giá hiện tại" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                </GridColumns>
+            </TelerikGrid>
+        </div>
+    </TabStripTab>
+    <TabStripTab Title="Quản lý tồn kho">
+        <TelerikToolBar Class="border-bottom-0">
+            <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+            <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenIntoInvHandler())">Nhập kho</ToolBarButton>
+            <ToolBarButton ImageUrl="../assets/remove_grid.png" >Xóa dòng</ToolBarButton>
+        </TelerikToolBar>
+        <div class="h-table-content" style=" height: calc(100vh - 170px);">
+            <TelerikLoaderContainer OverlayThemeColor="light"
+                                    Visible="@(!IsInitialDataLoadComplete)"
+                                    Text="@null" Class="grid-initial-data-loader">
+                <Template>
+                    <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                                   Size="@(ThemeConstants.Loader.Size.Medium)">
+                    </TelerikLoader>
+                </Template>
+            </TelerikLoaderContainer>
+
+            <TelerikGrid Data="@ListSupplies"
+                         Height="100%"
+                         Width="100%"
+                         RowHeight="25"
+                         Pageable="true"
+                         PageSize="@DefaultConstants.PAGE_SIZE"
+                         Sortable="true"
+                         Resizable="true"
+                         FilterMode="@GridFilterMode.FilterMenu"
+                         SelectionMode="@GridSelectionMode.Multiple"
+                         ScrollMode="@GridScrollMode.Scrollable"
+                         OnRowDoubleClick="@OnRowDoubleClickHandler"
+                         @bind-SelectedItems="@SelectedSupplies">
+                <GridSettings>
+                    <GridPagerSettings InputType="PagerInputType.Input" />
+                </GridSettings>
+                <GridAggregates>
+                    <GridAggregate Field=@nameof(SuppliesModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+                </GridAggregates>
+                <GridColumns>
+                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
+                        <Template>
+                            @{
+                                var model = (context as SuppliesModel);
+                                <span class="h-link">@model!.SuppliesCode</span>
+                            }
+                        </Template>
+                        <FooterTemplate>
+                            Số dòng: @context.Count
+                        </FooterTemplate>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="270px" Title="Tên vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="140px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian nhập kho" Filterable="false"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.UserNameCreate) Width="140px" Title="Người nhập kho" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian sửa nhập kho" Filterable="false"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.UserNameUpdate) Width="140px" Title="Người sửa nhập kho" ></GridColumn>
+                </GridColumns>
+            </TelerikGrid>
+        </div>
+    </TabStripTab>
+</TelerikTabStrip>
+<HDialog @bind-IsVisible="@IsShowDialog"
+    SaveAndClosed="@(()=> SaveDataHandler())"
+    SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+    Title="@(IsCreate ? "Thêm mới vật tư" : $"Cập nhật vật tư {SuppliesUpdate!.SuppliesCode}")">
+    <EditForm EditContext="@_EditContext" >
+        <DataAnnotationsValidator />
+        <div>
+            <HLabel Value="Mã vật tư:" />
+            <TelerikTextBox @bind-Value="@SuppliesUpdate!.SuppliesCode" Class="h-link" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtSuppliesName" Value="Tên vật tư:" IsRequired="true" />
+            <TelerikTextBox @bind-Value="@SuppliesUpdate.SuppliesName" Id="txtSuppliesName" />
+            <HValidationTooltip ValidationFor="@(()=> SuppliesUpdate.SuppliesName)" Id="txtSuppliesName" />
+        </div>
+         <div class="mt-2">
+                <HLabel For="cbbUnit" Value="Đơn vị tính:" IsRequired="true" />
+                <TelerikComboBox Data="@ListEnums"
+                    Value="@SuppliesUpdate.EnumId"
+                    ValueExpression="@(() => SuppliesUpdate.EnumId)"
+                    ValueChanged="@((string value) => SuppliesUpdate.EnumId = value)"
+                    Placeholder="Chọn đơn vị tính"
+                    TextField="@nameof(EnumModel.EnumName)"
+                    ValueField="@nameof(EnumModel.EnumId)"
+                    Filterable="true"
+                    ClearButton="false"
+                    Id="cbbBranch"
+                    Class="btn-noborder-radius-left"
+                    Width="100%">
+                </TelerikComboBox>
+                <HValidationTooltip ValidationFor="@(()=> SuppliesUpdate.EnumId)" Id="cbbBranch" />
+            </div>
+    </EditForm>
+</HDialog>
+
+
+<HDialog @bind-IsVisible="@IsShowIntoInv"
+    SaveAndClosed="@(()=> SaveDataHandler())"
+    SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+    Title="Nhập vật tư vào kho">
+   @* <TelerikGrid Data="@ListInvetoryCreate"
+                    Height="100%"
+                    Width="100%"
+                    RowHeight="25"
+                    Pageable="true"
+                    PageSize="@DefaultConstants.PAGE_SIZE"
+                    Sortable="true"
+                    Resizable="true"
+                    FilterMode="@GridFilterMode.FilterMenu"
+                    SelectionMode="@GridSelectionMode.Multiple"
+                    ScrollMode="@GridScrollMode.Scrollable"
+                    @bind-SelectedItems="@SelectedInvetoryCreate">
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
+                <Template>
+                     <TelerikComboBox Data="@ListSupplies"
+                        Value="@SelectedInvetoryCreate.SuppliesCode"
+                        ValueExpression="@(() => SelectedInvetoryCreate.SuppliesCode)"
+                        ValueChanged="@((string value) => SelectedInvetoryCreate.SuppliesCode = value)"
+                        Placeholder="Chọn đơn vị tính"
+                        TextField="@nameof(SuppliesModel.SuppliesName)"
+                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                        Filterable="true"
+                        ClearButton="false"
+                        Id="cbbBranch"
+                        Class="btn-noborder-radius-left"
+                        Width="100%">
+                    </TelerikComboBox>
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="140px" Title="Tổng số lượng trong kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá hiện tại" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>*@
+</HDialog>
+
+<HConfirm @ref="@_rDialogs" />

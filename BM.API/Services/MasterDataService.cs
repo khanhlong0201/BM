@@ -609,11 +609,19 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"SELECT t0.[SuppliesCode] ,t0.[SuppliesName], t0.[EnumId], t1.[EnumName], t0.[DateCreate] ,t0.[UserCreate], t0.[DateUpdate], t0.[UserUpdate]
-                                                FROM [dbo].[Supplies] t0 
-                                                inner join Enums t1  on t0.EnumId = t1.EnumId
-                                                where t0.[IsDelete] = 0 and t1.EnumType ='Unit'
-                                                "
+            data = await _context.GetDataAsync(@"SELECT t0.[SuppliesCode]
+                      ,t0.[SuppliesName]
+                      ,t0.[EnumId]
+	                  ,t1.EnumName 
+                      ,t0.[DateCreate]
+                      ,t0.[UserCreate]
+	                  ,t0.[DateUpdate]
+                      ,t0.[UserUpdate]
+	                  , (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode) as QtyInv
+	                  , (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode order by t1.DateCreate desc) as Price
+                  FROM [dbo].[Supplies] t0 
+                  inner join Enums t1 on t0.EnumId = t1.EnumId
+                  where t0.IsDelete = 0 and t1.EnumType ='Unit'"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -669,7 +677,7 @@ public class MasterDataService : IMasterDataService
                     }
                     sqlParameters[0] = new SqlParameter("@Type", "Supplies");
                     oSupplies.SuppliesCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy mã vật tư
-                    queryString = @"INSERT INTO [dbo].[Supplies] ([SuppliesCode] ,[SuppliesName],[EnumId],[DateCreate],[UserCreate],[IsDelete]))
+                    queryString = @"INSERT INTO [dbo].[Supplies] ([SuppliesCode] ,[SuppliesName],[EnumId],[DateCreate],[UserCreate],[IsDelete])
                                     values ( @SuppliesCode , @SuppliesName , @EnumId , getDate(), @UserId, 0 )";
 
                     setParameter();
@@ -681,8 +689,6 @@ public class MasterDataService : IMasterDataService
                                       ,[EnumId] = @EnumId
                                       ,[DateCreate] = getdate()
                                       ,[UserCreate] = @UserId
-                                      ,[IsDelete] = 0
-                                      ,[ReasonDelete] = <ReasonDelete, nvarchar(254),>
                                  WHERE SuppliesCode = @SuppliesCode";
 
                     setParameter();
@@ -865,6 +871,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) suppplies.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) suppplies.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) suppplies.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["QtyInv"])) suppplies.QtyInv = Convert.ToDecimal(record["QtyInv"]);
+        if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
         return suppplies;
     }
     #endregion
