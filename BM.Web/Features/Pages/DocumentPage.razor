@@ -128,9 +128,9 @@
                     <table class="table table-transparent">
                         <thead>
                             <tr>
-                                <th class="text-center" style="width: 30px; min-width: 30px"></th>
+                                <th class="text-center" style="width: 25px; min-width: 25px"></th>
                                 <th class="text-center" style="width: 1%">STT</th>
-                                <th style="min-width: 210px">Dịch vụ</th>
+                                <th style="min-width: 230px">Dịch vụ</th>
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
                                 <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
                                 <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
@@ -154,6 +154,10 @@
                                             <p class="strong mb-1">@oItem.ServiceCode</p>
                                             <div class="text-secondary">@oItem.ServiceName</div>
                                             <div class="text-secondary">Đơn giá gốc: @oItem.PriceOld.ToString(DefaultConstants.FORMAT_CURRENCY)</div>
+                                            <div class="text-secondary">
+                                                Bảo hành:
+                                                @($"{Math.Round(oItem.WarrantyPeriod, 2)} tháng/{@oItem.QtyWarranty} lần")
+                                            </div>
                                         </td>
                                         <td class="text-end">
                                             <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
@@ -171,12 +175,11 @@
                                                 FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
                                                 AutoClose="false" Width="100%"
                                             >
-
                                             </TelerikMultiSelect>
                                         </td>
                                         <td class="text-center">
                                             <TelerikMultiSelect Data="@ListUsers"
-                                                        @bind-Value="@ListUserAdvise"
+                                                        @bind-Value="@ListUserImplements"
                                                         ValueField="@nameof(ComboboxModel.Code)"
                                                         TextField="@nameof(ComboboxModel.Name)"
                                                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"

@@ -1,4 +1,5 @@
 ﻿using BM.Models;
+using BM.Models.Shared;
 using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;

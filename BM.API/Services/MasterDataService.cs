@@ -1,5 +1,6 @@
 ﻿using BM.API.Infrastructure;
 using BM.Models;
+using BM.Models.Shared;
 using Microsoft.AspNetCore.Components.Routing;
 using Newtonsoft.Json;
 using System.Data;

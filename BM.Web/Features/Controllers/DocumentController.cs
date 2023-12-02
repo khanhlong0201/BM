@@ -1,4 +1,5 @@
 ﻿using BM.Models;
+using BM.Models.Shared;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -26,6 +27,7 @@ namespace BM.Web.Features.Controllers
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
         public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
         public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
+        public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
         public IEnumerable<IGrouping<string, ServiceModel>>? ListGroupServices { get; set; }
         public HConfirm? _rDialogs { get; set; }
         //
@@ -100,7 +102,11 @@ namespace BM.Web.Features.Controllers
                     if(listServices != null && listServices.Any()) ListGroupServices = listServices.GroupBy(m => $"{m.EnumName}");
 
                     var listUsers = await _masterDataService!.GetDataUsersAsync();
-                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m=> new ComboboxModel() { Code = m.EmpNo, Name = m.FullName});
+                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m=> new ComboboxModel()
+                    {
+                        Code = m.EmpNo,
+                        Name = $"{m.EmpNo}-{m.FullName}"
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -152,6 +158,8 @@ namespace BM.Web.Features.Controllers
                     oItem.Price = oService.Price;
                     oItem.ServiceCode = oService.ServiceCode + "";
                     oItem.ServiceName = oService.ServiceName + "";
+                    oItem.WarrantyPeriod = oService.WarrantyPeriod;
+                    oItem.QtyWarranty = oService.QtyWarranty;
                     ListSalesOrder.Add(oItem);
                 }
 
@@ -222,7 +230,8 @@ namespace BM.Web.Features.Controllers
                         Qty = m.Qty,
                         LineTotal = m.Amount,
                         ActionType = nameof(EnumType.Add),
-                        ConsultUserId = ListUserAdvise == null || ListUserAdvise.Any() ? "" : JsonConvert.SerializeObject(ListUserAdvise.ToArray())
+                        ConsultUserId = ListUserAdvise == null || ListUserAdvise.Any() ? "" : JsonConvert.SerializeObject(ListUserAdvise.ToArray()),
+                        ImplementUserId = ListUserImplements == null || ListUserImplements.Any() ? "" : JsonConvert.SerializeObject(ListUserImplements.ToArray())
                     }).ToList();
                     bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
                         , JsonConvert.SerializeObject(lstDraftDetails), nameof(EnumType.Add), pUserId);

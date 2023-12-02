@@ -489,7 +489,7 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         {
             var loginRequest = new LoginViewModel();
             loginRequest.UserName = request.UserName;
-            loginRequest.Password = BM.Models.EncryptHelper.Encrypt(request.Password + "");
+            loginRequest.Password = BM.Models.Shared.EncryptHelper.Encrypt(request.Password + "");
             loginRequest.BranchId = request.BranchId;
             string jsonBody = JsonConvert.SerializeObject(loginRequest);
             HttpResponseMessage httpResponse = await _httpClient.PostAsync($"api/{EndpointConstants.URL_MASTERDATA_USER_LOGIN}", new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));

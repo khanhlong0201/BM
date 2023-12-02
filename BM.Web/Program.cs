@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using BM.Models.Shared;
 using BM.Web.Commons;
 using BM.Web.Services;
 using Microsoft.AspNetCore.Components;
@@ -21,6 +22,7 @@ string tokenKey = builder.Configuration.GetSection("appSettings:TokenKey").Value
 string tokenValue = builder.Configuration.GetSection("appSettings:TokenValue").Value + "";
 
 // Add services to the container.
+builder.Services.AddSingleton<IDateTimeService, VietnamDateTimeService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddTelerikBlazor();
