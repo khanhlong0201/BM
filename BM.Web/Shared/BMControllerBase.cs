@@ -1,4 +1,5 @@
-﻿using BM.Web.Models;
+﻿using BM.Models.Shared;
+using BM.Web.Models;
 using BM.Web.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -10,6 +11,7 @@ public class BMControllerBase : ComponentBase
     [Inject] public IProgressService? _progressService { get; init; }
     [Inject] public LoaderService? _loaderService { get; init; }
     [Inject] public ToastService? _toastService { get; init; }
+    [Inject] public IDateTimeService? _dateTimeService { get; init; }
     #endregion
 
     #region Properties

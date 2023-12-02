@@ -49,5 +49,7 @@ public class DocumentDetailModel : Auditable
     public string? ConsultUserId { get; set; } // ds mã nhân viên tư vấn
     public string? ImplementUserId { get; set; } // ds mã nhân viên thực hiện
     public string? ChemicalFormula { get; set; } // công thức mực
+    public double WarrantyPeriod { get; set; }
+    public int QtyWarranty { get; set; }
 }
 

@@ -55,6 +55,8 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.FaceBook = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.Address = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.Remark = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.SkinType = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.DateCreate = _dateTimeService!.GetCurrentVietnamTime();
                 // đọc giá tri câu query
                 var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
                 if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
@@ -94,7 +96,7 @@ namespace BM.Web.Features.Controllers
                         DocumentUpdate.FaceBook = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
-
+                        DocumentUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
                     }    
                     await _progressService!.SetPercent(0.6);
                     // lấy danh sách dịch vụ
@@ -230,8 +232,11 @@ namespace BM.Web.Features.Controllers
                         Qty = m.Qty,
                         LineTotal = m.Amount,
                         ActionType = nameof(EnumType.Add),
-                        ConsultUserId = ListUserAdvise == null || ListUserAdvise.Any() ? "" : JsonConvert.SerializeObject(ListUserAdvise.ToArray()),
-                        ImplementUserId = ListUserImplements == null || ListUserImplements.Any() ? "" : JsonConvert.SerializeObject(ListUserImplements.ToArray())
+                        ChemicalFormula = m.ChemicalFomula,
+                        WarrantyPeriod = m.WarrantyPeriod,
+                        QtyWarranty = m.QtyWarranty,
+                        ConsultUserId = ListUserAdvise == null || !ListUserAdvise.Any() ? "" : string.Join(",", ListUserAdvise),
+                        ImplementUserId = ListUserImplements == null || !ListUserImplements.Any() ? "" : string.Join(",", ListUserImplements)
                     }).ToList();
                     bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
                         , JsonConvert.SerializeObject(lstDraftDetails), nameof(EnumType.Add), pUserId);

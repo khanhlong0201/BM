@@ -23,8 +23,11 @@
                                     <div class="col-lg-4 col-md-6 col-sm-12">
                                         Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
                                     </div>
-                                    <div class="col-lg-8 col-md-6 col-sm-12">
+                                    <div class="col-lg-4 col-md-6 col-sm-12">
                                         Cơ sở: <strong>@DocumentUpdate.BranchName</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                        Ngày tạo: <strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>
                                     </div>
                                 </div>
                             </div>
@@ -58,7 +61,15 @@
                                 Địa chỉ: <strong>@DocumentUpdate.Address</strong>
                             </div>
                             <div class="mb-2">
-                                Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-12">
+                                        Loại da: <strong>@DocumentUpdate.Remark</strong>
+                                    </div>
+                                </div>
+                                
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
@@ -136,6 +147,7 @@
                                 <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
                                 <th class="text-center" style="width: 170px; min-width: 170px">NV tư vấn</th>
                                 <th class="text-center" style="width: 170px; min-width: 170px">NV thực hiện</th>
+                                <th class="text-center" style="width: 190px; min-width: 190px">Công thức mực</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -187,6 +199,9 @@
 
                                             </TelerikMultiSelect>
                                         </td>
+                                        <td class="text-center">
+                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFomula" Id="txtChemicalFomula" />
+                                        </td>
                                     </tr>
                                 }
 
@@ -202,28 +217,28 @@
                                     <td colspan="2" class="text-end">
                                         @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
                                     </td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="3"></td>
                                 </tr>
                                 <tr>
                                     <td class="text-center"></td>
                                     <td colspan="3" class="strong text-end">Khách trả:</td>
                                     <td colspan="2" class="text-end">
                                         <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                            ValueChanged="@((double e) => ValueChangedGuestsPayHandler(e))" Enabled="@(pSumTotal > 0)"
-                                            Value="@DocumentUpdate.GuestsPay" Arrows="false" />
+                                             @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" />
                                     </td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="3"></td>
                                 </tr>
                                 <tr>
                                     <td class="text-center"></td>
                                     <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
                                     <td colspan="2" class="font-weight-bold text-end">
+                                        @{
+                                            DocumentUpdate.Debt = pSumTotal <= 0 || DocumentUpdate.GuestsPay >= pSumTotal ? 0 
+                                            : pSumTotal - DocumentUpdate.GuestsPay;
+                                        }
                                         @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
                                     </td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="3"></td>
                                 </tr>
                             }
                             
