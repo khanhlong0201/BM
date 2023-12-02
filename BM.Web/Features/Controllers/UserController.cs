@@ -190,7 +190,7 @@ public class UserController : BMControllerBase
             var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
             if (!confirm) return;
             await ShowLoader();
-            bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Users), "Test Xóa", string.Join(",", SelectedUsers.Select(m=>m.Id)), pUserId);
+            bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Users), "", string.Join(",", SelectedUsers.Select(m=>m.Id)), pUserId);
             if(isSuccess)
             {
                 await getDataUsers();
