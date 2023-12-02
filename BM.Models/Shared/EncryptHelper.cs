@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace BM.Models;
+namespace BM.Models.Shared;
 
 public static class EncryptHelper
 {
@@ -21,9 +21,9 @@ public static class EncryptHelper
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                 {
-                    using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
+                    using (StreamWriter streamWriter = new StreamWriter(cryptoStream))
                     {
                         streamWriter.Write(plainText);
                     }
@@ -49,9 +49,9 @@ public static class EncryptHelper
 
             using (MemoryStream memoryStream = new MemoryStream(buffer))
             {
-                using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                 {
-                    using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                    using (StreamReader streamReader = new StreamReader(cryptoStream))
                     {
                         return streamReader.ReadToEnd();
                     }

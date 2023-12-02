@@ -231,7 +231,7 @@ html {
     background-color: var(--tblr-bg-forms);
 }
 
-.k-list-md {
+.k-list-md, .k-chip-md {
     font-size: 13px;
 }
 
@@ -707,4 +707,9 @@ th.k-header,
 /*input text end*/
 .k-numerictextbox input {
     text-align: end;
+}
+
+/**/
+.table > :not(caption) > * > *, .markdown > table > :not(caption) > * > *{
+    padding: 5px;
 }

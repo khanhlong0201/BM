@@ -16,6 +16,9 @@ public static class DefaultConstants
     public const string MESSAGE_LOGIN_EXPIRED = "Hết phiên đăng nhập!";
     public const string MESSAGE_INSERT = "Đã tạo mới";
     public const string MESSAGE_UPDATE = "Đã cập nhât";
+    public const string MESSAGE_DELETE = "Đã xóa các dòng được chọn!";
+    public const string MESSAGE_NO_CHOSE_DATA = "Không có dòng nào được chọn!";
+    public const string MESSAGE_CONFIRM_DELETE = "Bạn có chắc muốn xóa các dòng được chọn?";
 }
 
 
@@ -38,7 +41,7 @@ public static class EndpointConstants
     public const string URL_MASTERDATA_UPDATE_SERVICE = "MasterData/UpdateService";
 
     public const string URL_MASTERDATA_USER_LOGIN = "MasterData/Login";
-
+    public const string URL_MASTERDATA_DELETE = "MasterData/DeleteData";
     public const string URL_DOCUMENT_UPDATE_SALES_ORDER = "Document/UpdateSalesOrder";
 
     public const string URL_MASTERDATA_GET_SUPPLIES = "MasterData/GetSupplies";

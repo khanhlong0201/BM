@@ -47,3 +47,13 @@ public enum EnumType
     @Unit,
     @StateOfHealth,
 }
+
+public enum EnumTable
+{
+    @Enums,
+    @Services,
+    @Drafts,
+    @DraftDetails,
+    @Users,
+    @Customers
+}

@@ -1,4 +1,6 @@
 ﻿using BM.Models;
+using BM.Models.Shared;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -177,5 +179,34 @@ public class UserController : BMControllerBase
     }
     protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as UserModel);
 
+    protected async void DeleteDataHandler()
+    {
+        try
+        {
+            if(SelectedUsers == null || !SelectedUsers.Any())
+            {
+                ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                return;
+            }
+            var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+            if (!confirm) return;
+            await ShowLoader();
+            bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Users), "", string.Join(",", SelectedUsers.Select(m=>m.Id)), pUserId);
+            if(isSuccess)
+            {
+                await getDataUsers();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+            ShowError(ex.Message);
+        }
+        finally
+        {
+            await ShowLoader(false);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
     #endregion
 }

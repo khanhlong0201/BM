@@ -47,6 +47,8 @@ public class SalesOrderModel
     public int Id { get; set; }
     public string ServiceCode { get; set; } = "";
     public string ServiceName { get; set; } = "";
+    public double WarrantyPeriod { get; set; }
+    public int QtyWarranty { get; set; }
     public double Price { get; set; }
     public double PriceOld { get; set; }
     public int Qty { get; set; }

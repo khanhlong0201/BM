@@ -1,5 +1,6 @@
 ﻿using BM.API.Infrastructure;
 using BM.Models;
+using BM.Models.Shared;
 using Microsoft.AspNetCore.Components.Routing;
 using Newtonsoft.Json;
 using System.Data;
@@ -25,14 +26,17 @@ public interface IMasterDataService
     Task<CustomerModel> GetCustomerById(string pCusNo);
     Task<IEnumerable<SuppliesModel>> GetSuppliesAsync();
     Task<ResponseModel> UpdateSupplies(RequestModel pRequest);
+    Task<ResponseModel> DeleteDataAsync(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
 {
     private readonly IBMDbContext _context;
-    public MasterDataService(IBMDbContext context)
+    private readonly IDateTimeService _dateTimeService;
+    public MasterDataService(IBMDbContext context, IDateTimeService dateTimeService)
     {
         _context = context;
+        _dateTimeService = dateTimeService;
     }
 
     #region Public Funtions
@@ -76,19 +80,20 @@ public class MasterDataService : IMasterDataService
             {
                 oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
                 queryString = @"Insert into [dbo].[Branchs]  ([BranchId], [BranchName], [IsActive], [Address], [PhoneNumber], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate])
-                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, getDate(), @UserId , null, null )";
+                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, @DateTimeNow, @UserId , null, null )";
             }
             else
             {
-                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = getDate() , UserUpdate = @UserId where BranchId = @BranchId";
+                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = @DateTimeNow , UserUpdate = @UserId where BranchId = @BranchId";
             }
-            sqlParameters = new SqlParameter[6];
+            sqlParameters = new SqlParameter[7];
             sqlParameters[0] = new SqlParameter("@BranchId", oBranch.BranchId);
             sqlParameters[1] = new SqlParameter("@BranchName", oBranch.BranchName);
             sqlParameters[2] = new SqlParameter("@IsActive", oBranch.IsActive);
             sqlParameters[3] = new SqlParameter("@Address", oBranch.Address + "");
             sqlParameters[4] = new SqlParameter("@PhoneNumber", oBranch.PhoneNumber + "");
             sqlParameters[5] = new SqlParameter("@UserId", pRequest.UserId + "");
+            sqlParameters[6] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
             var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
             if (data != null && data.Rows.Count > 0)
@@ -711,9 +716,85 @@ public class MasterDataService : IMasterDataService
         }
         return response;
     }
+
+    /// <summary>
+    /// xóa thông tin trong bảng
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> DeleteDataAsync(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters;
+            string queryString = "";
+            switch (pRequest.Type)
+            {
+                case nameof(EnumTable.Users):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[Id] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[3];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }    
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #endregion Public Functions
 
     #region Private Funtions
+    /// <summary>
+    /// xóa dữ liệu -> cập nhật cột IsDelete
+    /// </summary>
+    /// <returns></returns>
+    private async Task<ResponseModel> deleteDataAsync(string pTableName, string pCondition, SqlParameter[] sqlParameters)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.BeginTranAsync();
+            string queryString = @$"UPDATE [dbo].[{pTableName}] 
+                                set [IsDelete] = 1, [ReasonDelete] = @ReasonDelete, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                where {pCondition}";
+
+            var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            if (data != null && data.Rows.Count > 0)
+            {
+                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            }
+
+            if (response.StatusCode == 0) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync(); 
+        }
+        return response;
+    }
 
     /// <summary>
     /// đọc dnah sách chi nhánh

@@ -27,6 +27,7 @@ public interface ICliMasterDataService
     Task<CustomerModel?> GetCustomerByIdAsync(string pCustomer);
     Task<string> LoginAsync(LoginViewModel request);
     Task LogoutAsync();
+    Task<bool> DeleteDataAsync(string pTableName, string pReasonDelete, string pValue, int pUserId);
 
     Task<List<SuppliesModel>?> GetDataSuppliesAsync();
     Task<bool> UpdateSuppliesAsync(string pJson, string pAction, int pUserId);
@@ -491,7 +492,7 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         {
             var loginRequest = new LoginViewModel();
             loginRequest.UserName = request.UserName;
-            loginRequest.Password = BM.Models.EncryptHelper.Encrypt(request.Password + "");
+            loginRequest.Password = BM.Models.Shared.EncryptHelper.Encrypt(request.Password + "");
             loginRequest.BranchId = request.BranchId;
             string jsonBody = JsonConvert.SerializeObject(loginRequest);
             HttpResponseMessage httpResponse = await _httpClient.PostAsync($"api/{EndpointConstants.URL_MASTERDATA_USER_LOGIN}", new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
@@ -517,6 +518,54 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     {
         await _localStorage.RemoveItemAsync("authToken");
         ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
+    }
+
+    /// <summary>
+    /// cập nhật thông tin dịch vụ
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> DeleteDataAsync(string pTableName, string pReasonDelete, string pValue, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pValue,
+                Type = pTableName,
+                JsonDetail = pReasonDelete,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_MASTERDATA_DELETE, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _toastService.ShowSuccess(DefaultConstants.MESSAGE_DELETE);
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "DeleteDataAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
     }
 
     /// <summary>
