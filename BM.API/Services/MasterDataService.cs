@@ -725,7 +725,7 @@ public class MasterDataService : IMasterDataService
                 case nameof(EnumTable.Users):
                     // kiểm tra điều kiện trước khi xóa
                     //
-                    queryString = "[Id] in (@ListIds) and [IsDelete] = 0";
+                    queryString = "[Id] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
                     sqlParameters = new SqlParameter[3];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
