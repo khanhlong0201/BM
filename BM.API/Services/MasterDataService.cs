@@ -80,7 +80,7 @@ public class MasterDataService : IMasterDataService
             {
                 oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
                 queryString = @"Insert into [dbo].[Branchs]  ([BranchId], [BranchName], [IsActive], [Address], [PhoneNumber], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate])
-                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, getDate(), @UserId , null, null )";
+                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, @DateTimeNow, @UserId , null, null )";
             }
             else
             {
