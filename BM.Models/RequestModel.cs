@@ -33,6 +33,15 @@ public class ComboboxModel
     public bool IsCheck{ get; set; }
 }
 
+public class SearchModel
+{
+    public int UserId { get; set; }
+    public DateTime FromDate { get; set; }
+    public DateTime ToDate { get; set; }
+    public string? StatusId { get; set; }
+    public bool IsAdmin { get; set; }
+}
+
 public enum EnumType
 {
     @Add,
@@ -45,7 +54,7 @@ public enum EnumType
     @SkinType,
     @ServicePack,
     @Unit,
-    @StateOfHealth,
+    @StateOfHealth
 }
 
 public enum EnumTable
@@ -57,4 +66,10 @@ public enum EnumTable
     @Users,
     @Customers,
     @Prices
+}
+
+public enum DocStatus
+{
+    @Pending,
+    @Closed
 }

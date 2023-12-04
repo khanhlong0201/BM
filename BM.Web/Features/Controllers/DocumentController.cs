@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using System;
+using System.Data;
 
 namespace BM.Web.Features.Controllers
 {
@@ -26,8 +27,6 @@ namespace BM.Web.Features.Controllers
         public DocumentModel DocumentUpdate { get; set; } = new DocumentModel();
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
         public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
-        public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
-        public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
         public IEnumerable<IGrouping<string, ServiceModel>>? ListGroupServices { get; set; }
         public HConfirm? _rDialogs { get; set; }
         //
@@ -65,8 +64,9 @@ namespace BM.Web.Features.Controllers
                     Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
                     if(pParams != null && pParams.Any())
                     {
-                        if (pParams.ContainsKey("pCusNo")) DocumentUpdate.CusNo = pParams["pCusNo"];
                         if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
+                        if (pParams.ContainsKey("pDocEntry")) DocumentUpdate.DocEntry = Convert.ToInt32(pParams["pDocEntry"]);
+                        if (pIsCreate && pParams.ContainsKey("pCusNo")) DocumentUpdate.CusNo = pParams["pCusNo"];
                     }    
                 }    
             }
@@ -91,13 +91,18 @@ namespace BM.Web.Features.Controllers
                         DocumentUpdate.BranchName = oCustomer.BranchName ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.FullName = oCustomer.FullName ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.CINo = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
-                        DocumentUpdate.Phone1 = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
-                        DocumentUpdate.Zalo = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Phone1 = oCustomer.Phone1 ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.Zalo = oCustomer.Zalo ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.FaceBook = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
                     }    
+                    else
+                    {
+                        // Vô từ page lập chưng từ
+                        await showVoucher();
+                    }
                     await _progressService!.SetPercent(0.6);
                     // lấy danh sách dịch vụ
                     var listServices = await _masterDataService!.GetDataServicesAsync();
@@ -124,6 +129,27 @@ namespace BM.Web.Features.Controllers
         }
         #endregion
         #region Private Functions
+        private async Task showVoucher()
+        {
+            DataTable? dtTable = await _documentService!.GetDocByIdAsync(DocumentUpdate.DocEntry);
+            if (dtTable == null) return;
+            var oHeader = dtTable.Rows[0];
+            DocumentUpdate.BranchName = Convert.ToString(oHeader["BranchName"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.FullName = Convert.ToString(oHeader["FullName"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.CINo = Convert.ToString(oHeader["CINo"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.Phone1 = Convert.ToString(oHeader["Phone1"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.Zalo = Convert.ToString(oHeader["Zalo"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.FaceBook = Convert.ToString(oHeader["FaceBook"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.Address = Convert.ToString(oHeader["Address"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.Remark = Convert.ToString(oHeader["Remark"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.SkinType = Convert.ToString(oHeader["SkinType"]) ?? DATA_CUSTOMER_EMPTY;
+            DocumentUpdate.GuestsPay = Convert.ToDouble(oHeader["GuestsPay"]);
+            DocumentUpdate.Debt = Convert.ToDouble(oHeader["Debt"]);
+            for (int i = 0; i < dtTable.Rows.Count; i++)
+            {
+                
+            }    
+        }
         #endregion
 
         #region Protected Functions
@@ -224,6 +250,8 @@ namespace BM.Web.Features.Controllers
                     }    
                     await ShowLoader();
                     DocumentUpdate.Total = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
+                    DocumentUpdate.BranchId = pBranchId;
+                    DocumentUpdate.StatusId = nameof(DocStatus.Pending);
                     List<DocumentDetailModel> lstDraftDetails = ListSalesOrder!.Select(m => new DocumentDetailModel()
                     {
                         ServiceCode = m.ServiceCode,
@@ -235,8 +263,8 @@ namespace BM.Web.Features.Controllers
                         ChemicalFormula = m.ChemicalFomula,
                         WarrantyPeriod = m.WarrantyPeriod,
                         QtyWarranty = m.QtyWarranty,
-                        ConsultUserId = ListUserAdvise == null || !ListUserAdvise.Any() ? "" : string.Join(",", ListUserAdvise),
-                        ImplementUserId = ListUserImplements == null || !ListUserImplements.Any() ? "" : string.Join(",", ListUserImplements)
+                        ConsultUserId = m.ListUserAdvise == null || !m.ListUserAdvise.Any() ? "" : string.Join(",", m.ListUserAdvise),
+                        ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements)
                     }).ToList();
                     bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
                         , JsonConvert.SerializeObject(lstDraftDetails), nameof(EnumType.Add), pUserId);

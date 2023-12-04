@@ -181,7 +181,7 @@
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
                                         <td class="text-center">
                                             <TelerikMultiSelect Data="@ListUsers"
-                                                @bind-Value="@ListUserAdvise"
+                                                @bind-Value="@oItem.ListUserAdvise"
                                                 ValueField="@nameof(ComboboxModel.Code)"
                                                 TextField="@nameof(ComboboxModel.Name)"
                                                 FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
@@ -191,7 +191,7 @@
                                         </td>
                                         <td class="text-center">
                                             <TelerikMultiSelect Data="@ListUsers"
-                                                        @bind-Value="@ListUserImplements"
+                                                        @bind-Value="@oItem.ListUserImplements"
                                                         ValueField="@nameof(ComboboxModel.Code)"
                                                         TextField="@nameof(ComboboxModel.Name)"
                                                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"

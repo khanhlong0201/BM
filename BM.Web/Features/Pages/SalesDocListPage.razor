@@ -1,0 +1,86 @@
+﻿@page "/sales-doclist"
+@inherits SalesDocListController
+<div class="h-content-filter">
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="d-flex ">
+                <HLabel Value="Tình trạng:" IsRequired="true" Style="width: 110px" />
+                <div style="width: calc(100% - 110px)">
+                    <TelerikComboBox @bind-Value="@pStatusId"
+                        Data="@ListStatus"
+                        Placeholder="Chọn tình trạng..."
+                        ClearButton="false"
+                        TextField="@nameof(ComboboxModel.Name)"
+                        ValueField="@nameof(ComboboxModel.Code)"
+                        Filterable="true"
+                        Class="btn-noborder-radius-left"
+                        Id="txtStatusId" Width="100%">
+                    </TelerikComboBox>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+</TelerikToolBar>
+<div class="h-table-content" style=" height: calc(100vh - 200px);">
+    <TelerikLoaderContainer OverlayThemeColor="light"
+                            Visible="@(!IsInitialDataLoadComplete)"
+                            Text="@null" Class="grid-initial-data-loader">
+        <Template>
+            <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                           Size="@(ThemeConstants.Loader.Size.Medium)">
+            </TelerikLoader>
+        </Template>
+    </TelerikLoaderContainer>
+    <TelerikGrid Data="@ListDocuments"
+                 Height="100%"
+                 Width="100%"
+                 RowHeight="25"
+                 Pageable="true"
+                 PageSize="@DefaultConstants.PAGE_SIZE"
+                 Sortable="true"
+                 Resizable="true"
+                 FilterMode="@GridFilterMode.FilterMenu"
+                 SelectionMode="@GridSelectionMode.Multiple"
+                 ScrollMode="@GridScrollMode.Scrollable"
+                 OnRowDoubleClick="@OnRowDoubleClickHandler"
+                 @bind-SelectedItems="@SelectedDocuments">
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(DocumentModel.DocEntry) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(DocumentModel.DocEntry) Width="90px" MaxResizableWidth="100" Title="Mã">
+                <Template>
+                    @{
+                        var model = (context as DocumentModel);
+                        <span class="h-link">@model!.DocEntry</span>
+                    }
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="160px" Title="Ngày giờ tạo"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="140px" Title="Số hóa đơn"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.CusNo) Width="125px" Title="Mã KH"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.Total) Width="150px" Title="Tổng tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.GuestsPay) Width="150px" Title="Khách trả" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.Debt) Width="150px" Title="Còn nợ" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.StatusName) Width="140px" Title="Tình trạng"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.NoteForAll) Width="170px" Title="Ghi chú"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.Phone1) Width="140px" Title="SĐT"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.Remark) Width="170px" Title="Đặc điểm"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.BranchId) Width="120px" Title="Mã CN"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.BranchName) Width="170px" Title="Tên chi nhánh"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="165px" Title="Ngày giờ cập nhật"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+

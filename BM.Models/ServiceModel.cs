@@ -59,4 +59,7 @@ public class SalesOrderModel
         }
         private set { }
     }
+
+    public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
+    public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
 }

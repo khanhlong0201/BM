@@ -18,6 +18,9 @@ public class DocumentModel : Auditable
     public string? HealthStatus { get; set; }
     public string? NoteForAll { get; set; }
     public string? StatusId { get; set; }
+    public string? StatusName { get; set; }
+    public string? VoucherNo { get; set; }
+    public int BaseEntry { get; set; }
 
     #region Thông tin khách hàng
     public string? FullName { get; set; }

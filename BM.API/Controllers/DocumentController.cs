@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -49,6 +50,40 @@ namespace BM.API.Controllers
                 });
 
             }
+        }
+
+        [HttpGet]
+        [Route("GetDocList")]
+        public async Task<IActionResult> GetDataDocuments(bool pIsAdmin = false)
+        {
+            try
+            {
+                var data = await _documentervice.GetSalesOrdersAsync(pIsAdmin);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetDataDocuments");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+
+        }
+
+        [HttpGet]
+        [Route("GetDocById")]
+        public async Task<IActionResult> GetDocById(int pDocEntry)
+        {
+            try
+            {
+                var data = await _documentervice.GetDocumentById(pDocEntry);
+                return Ok(JsonConvert.SerializeObject(data));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetDocById");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+
         }
     }
 }

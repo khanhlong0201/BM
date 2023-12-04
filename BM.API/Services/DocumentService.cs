@@ -11,6 +11,8 @@ namespace BM.API.Services;
 public interface IDocumentService
 {
     Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest);
+    Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(bool isAdmin = false);
+    Task<DataTable> GetDocumentById(int pDocEntry);
 }
 public class DocumentService : IDocumentService
 {
@@ -22,6 +24,73 @@ public class DocumentService : IDocumentService
         _dateTimeService = dateTimeService;
     }
 
+    /// <summary>
+    /// lấy danh sách đơn hàng
+    /// </summary>
+    /// <param name="isAdmin"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(bool isAdmin = false)
+    {
+        IEnumerable<DocumentModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@ServiceCode", isAdmin);
+            data = await _context.GetDataAsync(@$"select [DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo]
+                            ,T1.[BranchId],T1.[BranchName],T0.[CusNo],T2.[FullName],T2.[Phone1],T2.[Remark]
+                            ,case [StatusId]  when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' else N'Chờ xử lý' end as [StatusName]
+                            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+                      from [dbo].[Drafts] as T0 with(nolock) 
+                inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
+                inner join [dbo].[Customers] as T2 with(nolock) on T0.CusNo = T2.CusNo
+                  order by [DocEntry] desc"
+                    , DataRecordToDocumentModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    public async Task<DataTable> GetDocumentById(int pDocEntry)
+    {
+        DataTable data = new DataTable();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
+            string queryString = @"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
+            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+            ,T2.[BranchId],T2.[BranchName]
+	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
+            ,T4.[ServiceCode],T4.[ServiceName]
+        from [dbo].[Drafts] as T0 with(nolock) 
+        inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
+        inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
+        inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
+        inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
+        where T0.DocEntry = @DocEntry";
+
+            var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
+            if(ds != null && ds.Tables.Count > 0) data = ds.Tables[0];
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// cập nhật danh sách đơn hàng
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
     public async Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest)
     {
         ResponseModel response = new ResponseModel();
@@ -49,11 +118,11 @@ public class DocumentService : IDocumentService
                     int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[Drafts] with(nolock)");
                     await _context.BeginTranAsync();
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore]
-                                   ,[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
+                                   ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore
-                                   ,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, 0)";
+                                   ,@BranchId,@BaseEntry,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, 0)";
 
-                    sqlParameters = new SqlParameter[12];
+                    sqlParameters = new SqlParameter[14];
                     sqlParameters[0] = new SqlParameter("@DocEntry", iDocentry);
                     sqlParameters[1] = new SqlParameter("@CusNo", oDraft.CusNo);
                     sqlParameters[2] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
@@ -66,6 +135,8 @@ public class DocumentService : IDocumentService
                     sqlParameters[9] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
                     sqlParameters[10] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[11] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[12] = new SqlParameter("@BranchId", oDraft.BranchId);
+                    sqlParameters[13] = new SqlParameter("@BaseEntry", oDraft.BaseEntry);
                     bool isAdded = await ExecQuery();
                     if(isAdded)
                     {
@@ -113,12 +184,6 @@ public class DocumentService : IDocumentService
                     break;
             }    
 
-            //var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
-            //if (data != null && data.Rows.Count > 0)
-            //{
-            //    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
-            //    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
-            //}
         }
         catch (Exception ex)
         {
@@ -131,5 +196,39 @@ public class DocumentService : IDocumentService
             await _context.DisConnect();
         }
         return response;
-    }    
+    }
+
+    #region Private Funtions
+
+    /// <summary>
+    /// đọc danh sách đơn hàng
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private DocumentModel DataRecordToDocumentModel(IDataRecord record)
+    {
+        DocumentModel model = new();
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["BaseEntry"])) model.BaseEntry = Convert.ToInt32(record["BaseEntry"]);
+        if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);
+        if (!Convert.IsDBNull(record["DiscountCode"])) model.DiscountCode = Convert.ToString(record["DiscountCode"]);
+        if (!Convert.IsDBNull(record["Total"])) model.Total = Convert.ToDouble(record["Total"]);
+        if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
+        if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
+        if (!Convert.IsDBNull(record["StatusId"])) model.StatusId = Convert.ToString(record["StatusId"]);
+        if (!Convert.IsDBNull(record["NoteForAll"])) model.NoteForAll = Convert.ToString(record["NoteForAll"]);
+        if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);
+        if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
+        if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        return model;
+    }
+    #endregion
 }

@@ -19,7 +19,9 @@ public class BMControllerBase : ComponentBase
     public EventCallback<List<BreadcrumbModel>> NotifyBreadcrumb { get; set; }
     public List<BreadcrumbModel>? ListBreadcrumbs { get; set; }
 
-    public int pUserId { get; set; }
+    public int pUserId { get; set; } = 1;
+    public bool pIsAdmin { get; set; } = true;
+    public string pBranchId { get; set; } = "KT003";
 
     #endregion Properties
 
