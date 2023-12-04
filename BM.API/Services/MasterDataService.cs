@@ -481,7 +481,7 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[Description],[WarrantyPeriod],[QtyWarranty]
                          ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
-                         ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [DateUpdate] desc, [DateCreate] desc), 0) as [Price]
+                         ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [Price]
                     from [dbo].[Services] as T0 with(nolock) 
               inner join [dbo].[Enums] as T1 with(nolock) on T0.[EnumId] = T1.[EnumId]
                    where T0.[IsDelete] = 0 order by [ServiceCode] desc"
@@ -596,7 +596,7 @@ public class MasterDataService : IMasterDataService
             sqlParameters[0] = new SqlParameter("@ServiceCode", pServiceCode);
             data = await _context.GetDataAsync(@"select [Id], [ServiceCode],[Price],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], [IsActive]
                     from [dbo].[Prices] as T0 with(nolock) 
-                   where T0.[ServiceCode] = @ServiceCode order by [DateUpdate] desc, [DateCreate] desc"
+                   where T0.[ServiceCode] = @ServiceCode order by [IsActive] desc, [DateUpdate] desc"
                     , DataRecordToPriceModel, sqlParameters, commandType: CommandType.Text);
 
         }
@@ -635,8 +635,8 @@ public class MasterDataService : IMasterDataService
             {
                 case nameof(EnumType.Add):
                     oPrice.Id = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
-                    queryString = @"Insert into [dbo].[Prices] ([Id],[ServiceCode],[Price],[DateCreate],[UserCreate],[IsActive])
-                                    values (@Id, @ServiceCode, @Price, @DateTimeNow, @UserId, @IsActive)";
+                    queryString = @"Insert into [dbo].[Prices] ([Id],[ServiceCode],[Price],[DateCreate],[UserCreate], [DateUpdate],[IsActive])
+                                    values (@Id, @ServiceCode, @Price, @DateTimeNow, @UserId, @DateTimeNow, @IsActive)";
                     sqlParameters = new SqlParameter[6];
                     sqlParameters[0] = new SqlParameter("@Id", oPrice.Id);
                     sqlParameters[1] = new SqlParameter("@ServiceCode", oPrice.ServiceCode);

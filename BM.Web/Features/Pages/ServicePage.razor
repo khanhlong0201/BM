@@ -161,7 +161,7 @@
                 <TelerikNumericTextBox 
                     Format="@DefaultConstants.FORMAT_CURRENCY" 
                     Step="1000.0"
-                    Min="0"
+                    Min="0" Enabled="@(PriceUpdate.Id <= 0)"
                     @bind-Value="@PriceUpdate.Price" 
                     Id="numPrice" />
             </div>
@@ -221,4 +221,3 @@
         </TelerikGrid>
     </div>
 </HDialog>
-<HConfirm @ref="@_rDialogs" />

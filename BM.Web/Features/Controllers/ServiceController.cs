@@ -7,6 +7,7 @@ using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using Telerik.Blazor;
 using Telerik.Blazor.Components;
 
 namespace BM.Web.Features.Controllers
@@ -27,13 +28,14 @@ namespace BM.Web.Features.Controllers
         public bool IsShowDialog { get; set; }
         public bool IsCreate { get; set; } = true;
         public List<EnumModel>? ListServicesType { get; set; } // ds loại dịch vụ
-        public HConfirm? _rDialogs { get; set; }
-
         public bool IsShowDialogPriceList { get; set; }
         public List<PriceModel>? ListPrices { get; set; }
         public IEnumerable<PriceModel>? SelectedPrices { get; set; } = new List<PriceModel>();
         public PriceModel PriceUpdate { get; set; } = new PriceModel();
         public string pServiceCode { get; set; } = "";
+
+        [CascadingParameter]
+        public DialogFactory? _rDialogs { get; set; }
         #endregion
 
         #region Override Functions
@@ -233,6 +235,11 @@ namespace BM.Web.Features.Controllers
                 {
                     sAction = nameof(EnumType.Add);
                     sMessage = "Thêm thông tin bảng giá";
+                    if(PriceUpdate.Id > 0)
+                    {
+                        ShowWarning("Vui lòng làm mới lại dữ liệu trước khi thêm mới đơn giá");
+                        return;
+                    }    
                 }    
                 else
                 {
@@ -249,12 +256,16 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng nhập đơn giá");
                     return;
                 }
-                //var confirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn {sMessage} ?");
-                //if (!confirm) return;
+                var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn {sMessage} ?", "Thông báo");
+                if (!isConfirm) return;
                 await ShowLoader();
                 PriceUpdate.ServiceCode = pServiceCode;
                 bool isSuccess = await _masterDataService!.UpdatePriceAsync(JsonConvert.SerializeObject(PriceUpdate), sAction, pUserId);
-                if (isSuccess) await getDataPricesList();
+                if (isSuccess)
+                {
+                    await getDataPricesList();
+                    await getDataServices();
+                }    
             }
             catch (Exception ex)
             {
