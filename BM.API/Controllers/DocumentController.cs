@@ -52,13 +52,13 @@ namespace BM.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetDocList")]
-        public async Task<IActionResult> GetDataDocuments(bool pIsAdmin = false)
+        public async Task<IActionResult> GetDataDocuments(SearchModel pSearchData)
         {
             try
             {
-                var data = await _documentervice.GetSalesOrdersAsync(pIsAdmin);
+                var data = await _documentervice.GetSalesOrdersAsync(pSearchData);
                 return Ok(data);
             }
             catch (Exception ex)

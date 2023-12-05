@@ -10,7 +10,7 @@ namespace BM.Web.Services;
 public interface ICliDocumentService
 {
     Task<bool> UpdateSalesOrder(string pJson, string pJsonDetail, string pAction, int pUserId);
-    Task<List<DocumentModel>?> GetDataDocumentsAsync(int pUserId, bool pIsAdmin = false);
+    Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch);
     Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
@@ -81,16 +81,11 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
     /// Call API lấy danh sách đơn hàng
     /// </summary>
     /// <returns></returns>
-    public async Task<List<DocumentModel>?> GetDataDocumentsAsync(int pUserId, bool pIsAdmin)
+    public async Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch)
     {
         try
         {
-            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
-            {
-                {"pIsAdmin", $"{pIsAdmin}"},
-                {"pUserId", pUserId}
-            };
-            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_GET_SALES_ORDER, pParams);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_GET_SALES_ORDER, pSearch);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else

@@ -13,7 +13,7 @@ namespace BM.API.Services;
 public interface IDocumentService
 {
     Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest);
-    Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(bool isAdmin = false);
+    Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(SearchModel pSearchData);
     Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry);
 }
 public class DocumentService : IDocumentService
@@ -31,14 +31,20 @@ public class DocumentService : IDocumentService
     /// </summary>
     /// <param name="isAdmin"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(bool isAdmin = false)
+    public async Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(SearchModel pSearchData)
     {
         IEnumerable<DocumentModel> data;
         try
         {
             await _context.Connect();
-            SqlParameter[] sqlParameters = new SqlParameter[1];
-            sqlParameters[0] = new SqlParameter("@ServiceCode", isAdmin);
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
+            SqlParameter[] sqlParameters = new SqlParameter[5];
+            sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId);
+            sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value.Date);
+            sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value.Date);
+            sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
+            sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
             data = await _context.GetDataAsync(@$"select [DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo]
                             ,T1.[BranchId],T1.[BranchName],T0.[CusNo],T2.[FullName],T2.[Phone1],T2.[Remark]
                             ,case [StatusId]  when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' else N'Chờ xử lý' end as [StatusName]
@@ -46,6 +52,9 @@ public class DocumentService : IDocumentService
                       from [dbo].[Drafts] as T0 with(nolock) 
                 inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
                 inner join [dbo].[Customers] as T2 with(nolock) on T0.CusNo = T2.CusNo
+                     where cast(T0.[DateCreate] as Date) between @FromDate and @ToDate
+                           and (@StatusId = 'All' or (@StatusId <> 'All' and T0.[StatusId] = @StatusId))
+                           and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
                   order by [DocEntry] desc"
                     , DataRecordToDocumentModel, sqlParameters, commandType: CommandType.Text);
         }
@@ -361,6 +370,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
         if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
         if (!Convert.IsDBNull(record["StatusId"])) model.StatusId = Convert.ToString(record["StatusId"]);
+        if (!Convert.IsDBNull(record["StatusName"])) model.StatusName = Convert.ToString(record["StatusName"]);
         if (!Convert.IsDBNull(record["NoteForAll"])) model.NoteForAll = Convert.ToString(record["NoteForAll"]);
         if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
         if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);

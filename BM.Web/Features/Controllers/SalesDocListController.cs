@@ -6,8 +6,10 @@ using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Telerik.Blazor.Components;
+using Telerik.Blazor.Components.Grid;
 
 namespace BM.Web.Features.Controllers
 {
@@ -17,6 +19,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<SalesDocListController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navManager { get; init; }
+        [Inject] private IDateTimeService _dateTimeService { get; init; }
         #endregion
 
         #region Properties
@@ -24,7 +27,7 @@ namespace BM.Web.Features.Controllers
         public List<DocumentModel>? ListDocuments { get; set; }
         public IEnumerable<DocumentModel>? SelectedDocuments { get; set; } = new List<DocumentModel>();
         public List<ComboboxModel>? ListStatus { get; set; }
-        public string pStatusId { get; set; } = nameof(DocStatus.Pending);
+        public SearchModel ItemFilter = new SearchModel();
         #endregion
 
         #region Override Functions
@@ -43,6 +46,7 @@ namespace BM.Web.Features.Controllers
                 {
                     new ComboboxModel() {Code = nameof(DocStatus.Pending), Name = "Chờ xử lý"},
                     new ComboboxModel() {Code = nameof(DocStatus.Closed), Name = "Đã thanh toán"},
+                    new ComboboxModel() {Code = nameof(DocStatus.All), Name = "Tất cả"},
                 };
             }
             catch (Exception ex)
@@ -53,10 +57,14 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
                 {
+                    ItemFilter.StatusId = nameof(DocStatus.Pending);
+                    ItemFilter.FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                    ItemFilter.ToDate = _dateTimeService.GetCurrentVietnamTime();
                     await _progressService!.SetPercent(0.4);
                     await getDataDocuments();
                 }
@@ -79,7 +87,9 @@ namespace BM.Web.Features.Controllers
         {
             ListDocuments = new List<DocumentModel>();
             SelectedDocuments = new List<DocumentModel>();
-            ListDocuments = await _documentService!.GetDataDocumentsAsync(pUserId, pIsAdmin);
+            ItemFilter.UserId = pUserId;
+            ItemFilter.IsAdmin = pIsAdmin;
+            ListDocuments = await _documentService!.GetDataDocumentsAsync(ItemFilter);
         }
 
         #endregion
@@ -89,6 +99,12 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
+                if (ItemFilter.FromDate.HasValue && ItemFilter.ToDate.HasValue
+                    && ItemFilter.FromDate.Value.Date > ItemFilter.ToDate.Value.Date)
+                {
+                    ShowWarning("Dữ liệu tìm kiếm không hợp lệ. [Từ ngày] <= [Đến ngày]");
+                    return;
+                }
                 IsInitialDataLoadComplete = false;
                 await getDataDocuments();
             }

@@ -36,8 +36,8 @@ public class ComboboxModel
 public class SearchModel
 {
     public int UserId { get; set; }
-    public DateTime FromDate { get; set; }
-    public DateTime ToDate { get; set; }
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
     public string? StatusId { get; set; }
     public bool IsAdmin { get; set; }
 }
@@ -71,5 +71,6 @@ public enum EnumTable
 public enum DocStatus
 {
     @Pending,
-    @Closed
+    @Closed,
+    @All
 }

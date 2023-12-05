@@ -32,16 +32,28 @@ public class BMControllerBase : ComponentBase
         await base.OnInitializedAsync();
         try
         {
-            await _progressService!.Start();
-            var oUser = await ((Providers.ApiAuthenticationStateProvider)_authenticationStateProvider!).GetAuthenticationStateAsync();
-            if(oUser != null)
-            {
-                pUserId = int.Parse(oUser.User.Claims.FirstOrDefault(m => m.Type == "UserId")?.Value + "");
-                pBranchId = oUser.User.Claims.FirstOrDefault(m => m.Type == "BranchId")?.Value + "";
-                pIsAdmin = oUser.User.Claims.FirstOrDefault(m => m.Type == "IsAdmin")?.Value?.ToUpper() == "TRUE";
-            }    
+            await _progressService!.Start(); 
         }
         catch (Exception) { }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if(firstRender)
+        {
+            try
+            {
+                var oUser = await((Providers.ApiAuthenticationStateProvider)_authenticationStateProvider!).GetAuthenticationStateAsync();
+                if (oUser != null)
+                {
+                    pUserId = int.Parse(oUser.User.Claims.FirstOrDefault(m => m.Type == "UserId")?.Value + "");
+                    pBranchId = oUser.User.Claims.FirstOrDefault(m => m.Type == "BranchId")?.Value + "";
+                    pIsAdmin = oUser.User.Claims.FirstOrDefault(m => m.Type == "IsAdmin")?.Value?.ToUpper() == "TRUE";
+                }
+            }
+            catch (Exception) { }
+        }    
     }
 
     #region Public Functions
