@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Net;
 using BM.Models.Shared;
+using System.Reflection;
 
 namespace BM.API.Services;
 
@@ -12,7 +13,7 @@ public interface IDocumentService
 {
     Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest);
     Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(bool isAdmin = false);
-    Task<DataTable> GetDocumentById(int pDocEntry);
+    Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry);
 }
 public class DocumentService : IDocumentService
 {
@@ -55,9 +56,9 @@ public class DocumentService : IDocumentService
         return data;
     }
 
-    public async Task<DataTable> GetDocumentById(int pDocEntry)
+    public async Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry)
     {
-        DataTable data = new DataTable();
+        Dictionary<string, string>? data = null;
         try
         {
             await _context.Connect();
@@ -65,9 +66,11 @@ public class DocumentService : IDocumentService
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
             string queryString = @"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
             ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
-            ,T2.[BranchId],T2.[BranchName]
+            ,T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
+            ,T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
 	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
-            ,T4.[ServiceCode],T4.[ServiceName]
+            ,isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
+            ,(select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
         from [dbo].[Drafts] as T0 with(nolock) 
         inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
         inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -76,7 +79,63 @@ public class DocumentService : IDocumentService
         where T0.DocEntry = @DocEntry";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
-            if(ds != null && ds.Tables.Count > 0) data = ds.Tables[0];
+            if(ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+            {
+                string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
+                DataTable dt = ds.Tables[0];
+                DataRow dr = dt.Rows[0];
+                DocumentModel oHeader = new DocumentModel();
+                oHeader.BranchId = Convert.ToString(dr["BranchId"]);
+                oHeader.BranchName = Convert.ToString(dr["BranchName"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.CusNo = Convert.ToString(dr["CusNo"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.FullName = Convert.ToString(dr["FullName"]) ?? DATA_CUSTOMER_EMPTY;
+                if (!Convert.IsDBNull(dr["DateOfBirth"])) oHeader.DateOfBirth = Convert.ToDateTime(dr["DateOfBirth"]);
+                oHeader.CINo = Convert.ToString(dr["CINo"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.Phone1 = Convert.ToString(dr["Phone1"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.Zalo =  Convert.ToString(dr["Zalo"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.FaceBook = Convert.ToString(dr["FaceBook"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.Address = Convert.ToString(dr["Address"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.Remark = Convert.ToString(dr["Remark"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.SkinType = Convert.ToString(dr["SkinType"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.GuestsPay = Convert.ToDouble(dr["GuestsPay"]);
+                oHeader.Debt = Convert.ToDouble(dr["Debt"]);
+                oHeader.DocEntry = Convert.ToInt32(dr["DocEntry"]);
+                oHeader.BaseEntry = Convert.ToInt32(dr["BaseEntry"]);
+                oHeader.DiscountCode = Convert.ToString(dr["DiscountCode"]);
+                oHeader.NoteForAll = Convert.ToString(dr["NoteForAll"]);
+                oHeader.StatusId = Convert.ToString(dr["StatusId"]);
+                oHeader.VoucherNo = Convert.ToString(dr["VoucherNo"]);
+                oHeader.StatusBefore = Convert.ToString(dr["StatusBefore"]);
+                oHeader.HealthStatus = Convert.ToString(dr["HealthStatus"]);
+                if (!Convert.IsDBNull(dr["DateCreate"])) oHeader.DateCreate = Convert.ToDateTime(dr["DateCreate"]);
+                if (!Convert.IsDBNull(dr["UserCreate"])) oHeader.UserCreate = Convert.ToInt32(dr["UserCreate"]);
+                if (!Convert.IsDBNull(dr["DateUpdate"])) oHeader.DateUpdate = Convert.ToDateTime(dr["DateUpdate"]);
+                if (!Convert.IsDBNull(dr["UserUpdate"])) oHeader.UserUpdate = Convert.ToInt32(dr["UserUpdate"]);
+                List<DocumentDetailModel> lstDetails = new List<DocumentDetailModel>();
+                foreach(DataRow item in dt.Rows)
+                {
+                    DocumentDetailModel oLine = new DocumentDetailModel();
+                    oLine.ServiceCode = Convert.ToString(item["ServiceCode"]);
+                    oLine.ServiceName = Convert.ToString(item["ServiceName"]);
+                    oLine.Id = Convert.ToInt32(item["Id"]);
+                    oLine.Qty = Convert.ToInt32(item["Qty"]);
+                    oLine.QtyWarranty = Convert.ToInt32(item["QtyWarranty"]);
+                    oLine.Price = Convert.ToDouble(item["Price"]);
+                    oLine.PriceOld = Convert.ToDouble(item["PriceOld"]);
+                    oLine.LineTotal = Convert.ToDouble(item["LineTotal"]);
+                    oLine.WarrantyPeriod = Convert.ToDouble(item["WarrantyPeriod"]);
+                    oLine.ActionType = Convert.ToString(item["ActionType"]);
+                    oLine.ConsultUserId = Convert.ToString(item["ConsultUserId"]);
+                    oLine.ImplementUserId = Convert.ToString(item["ImplementUserId"]);
+                    oLine.ChemicalFormula = Convert.ToString(item["ChemicalFormula"]);
+                    lstDetails.Add(oLine);
+                }    
+                data = new Dictionary<string, string>()
+                {
+                    {"oHeader", JsonConvert.SerializeObject(oHeader)},
+                    {"oLine", JsonConvert.SerializeObject(lstDetails)}
+                };
+            }
         }
         catch (Exception) { throw; }
         finally

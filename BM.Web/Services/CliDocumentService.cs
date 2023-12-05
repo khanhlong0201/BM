@@ -11,7 +11,7 @@ public interface ICliDocumentService
 {
     Task<bool> UpdateSalesOrder(string pJson, string pJsonDetail, string pAction, int pUserId);
     Task<List<DocumentModel>?> GetDataDocumentsAsync(int pUserId, bool pIsAdmin = false);
-    Task<DataTable?> GetDocByIdAsync(int pDocEntry);
+    Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -118,7 +118,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
     /// Call API lấy danh sách đơn hàng
     /// </summary>
     /// <returns></returns>
-    public async Task<DataTable?> GetDocByIdAsync(int pDocEntry)
+    public async Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry)
     {
         try
         {
@@ -134,8 +134,8 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
                 var content = await httpResponse.Content.ReadAsStringAsync();
                 if (httpResponse.IsSuccessStatusCode)
                 {
-                    var dt = JsonConvert.DeserializeObject<DataTable>(content);
-                    if(dt == null || dt.Rows.Count < 1) _toastService.ShowWarning(DefaultConstants.MESSAGE_NO_DATA);
+                    var dt = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+                    if(dt == null || dt.Keys.Count < 1) _toastService.ShowWarning(DefaultConstants.MESSAGE_NO_DATA);
                     return dt;
                     
                 }    

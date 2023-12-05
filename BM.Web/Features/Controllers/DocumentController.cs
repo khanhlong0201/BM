@@ -131,23 +131,31 @@ namespace BM.Web.Features.Controllers
         #region Private Functions
         private async Task showVoucher()
         {
-            DataTable? dtTable = await _documentService!.GetDocByIdAsync(DocumentUpdate.DocEntry);
-            if (dtTable == null) return;
-            var oHeader = dtTable.Rows[0];
-            DocumentUpdate.BranchName = Convert.ToString(oHeader["BranchName"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.FullName = Convert.ToString(oHeader["FullName"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.CINo = Convert.ToString(oHeader["CINo"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.Phone1 = Convert.ToString(oHeader["Phone1"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.Zalo = Convert.ToString(oHeader["Zalo"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.FaceBook = Convert.ToString(oHeader["FaceBook"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.Address = Convert.ToString(oHeader["Address"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.Remark = Convert.ToString(oHeader["Remark"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.SkinType = Convert.ToString(oHeader["SkinType"]) ?? DATA_CUSTOMER_EMPTY;
-            DocumentUpdate.GuestsPay = Convert.ToDouble(oHeader["GuestsPay"]);
-            DocumentUpdate.Debt = Convert.ToDouble(oHeader["Debt"]);
-            for (int i = 0; i < dtTable.Rows.Count; i++)
+            Dictionary<string, string>? keyValues = await _documentService!.GetDocByIdAsync(DocumentUpdate.DocEntry);
+            if (keyValues == null) return;
+            if (keyValues.ContainsKey("oHeader")) DocumentUpdate = JsonConvert.DeserializeObject<DocumentModel>(keyValues["oHeader"]);
+            if (keyValues.ContainsKey("oLine"))
             {
-                
+                ListSalesOrder = new List<SalesOrderModel>();
+                List<DocumentDetailModel> lstDocLine = JsonConvert.DeserializeObject<List<DocumentDetailModel>>(keyValues["oLine"]);
+                for(int i = 0; i< lstDocLine.Count; i++)
+                {
+                    var item = lstDocLine[i];
+                    SalesOrderModel oLine = new SalesOrderModel();
+                    oLine.Id = item.Id;
+                    oLine.LineNum = (i + 1);
+                    oLine.ServiceCode = item.ServiceCode + "";
+                    oLine.ServiceName = item.ServiceName + "";
+                    oLine.WarrantyPeriod = item.WarrantyPeriod;
+                    oLine.QtyWarranty = item.QtyWarranty;
+                    oLine.Price = item.Price;
+                    oLine.PriceOld = item.PriceOld; // đơn giá hiện tại
+                    oLine.Qty = item.Qty;
+                    oLine.ChemicalFormula = item.ChemicalFormula + "";
+                    oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
+                    oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
+                    ListSalesOrder.Add(oLine);
+                }       
             }    
         }
         #endregion
@@ -195,7 +203,7 @@ namespace BM.Web.Features.Controllers
                 TotalDue = 0.0;
                 for (int i = 0; i < ListSalesOrder.Count(); i++)
                 {
-                    ListSalesOrder[i].Id = (i + 1);
+                    ListSalesOrder[i].LineNum = (i + 1);
                     TotalDue += ListSalesOrder[i].Amount;
                 }
                 StateHasChanged();
@@ -211,12 +219,12 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
-                var oItem = ListSalesOrder!.FirstOrDefault(m => m.Id == pId);
+                var oItem = ListSalesOrder!.FirstOrDefault(m => m.LineNum == pId);
                 if(oItem != null)
                 {
                     ListSalesOrder!.Remove(oItem);
                     // đánh lại số thứ tự
-                    for (int i = 0; i < ListSalesOrder.Count(); i++) { ListSalesOrder[i].Id = (i + 1); }
+                    for (int i = 0; i < ListSalesOrder.Count(); i++) { ListSalesOrder[i].LineNum = (i + 1); }
                     StateHasChanged();
                 }    
             }
@@ -260,7 +268,7 @@ namespace BM.Web.Features.Controllers
                         Qty = m.Qty,
                         LineTotal = m.Amount,
                         ActionType = nameof(EnumType.Add),
-                        ChemicalFormula = m.ChemicalFomula,
+                        ChemicalFormula = m.ChemicalFormula,
                         WarrantyPeriod = m.WarrantyPeriod,
                         QtyWarranty = m.QtyWarranty,
                         ConsultUserId = m.ListUserAdvise == null || !m.ListUserAdvise.Any() ? "" : string.Join(",", m.ListUserAdvise),

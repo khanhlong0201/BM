@@ -159,9 +159,9 @@
                                     <tr>
                                         <td class="text-center">
                                             <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
-                                                title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.Id))"></i>
+                                               title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
                                         </td>
-                                        <td class="text-center">@oItem.Id</td>
+                                        <td class="text-center">@oItem.LineNum</td>
                                         <td>
                                             <p class="strong mb-1">@oItem.ServiceCode</p>
                                             <div class="text-secondary">@oItem.ServiceName</div>
@@ -200,7 +200,7 @@
                                             </TelerikMultiSelect>
                                         </td>
                                         <td class="text-center">
-                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFomula" Id="txtChemicalFomula" />
+                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Id="txtChemicalFomula" />
                                         </td>
                                     </tr>
                                 }
