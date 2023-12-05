@@ -26,7 +26,8 @@ public partial class MainLayout
             {
                 FullName = oUser.User.Claims.FirstOrDefault(m => m.Type == "FullName")?.Value + "";
                 bool isAdmin = oUser.User.Claims.FirstOrDefault(m => m.Type == "IsAdmin")?.Value?.ToUpper() == "TRUE";
-                RoleName = isAdmin ? "Admin" : "Nhân viên";
+                string empNo = oUser.User.Claims.FirstOrDefault(m => m.Type == "EmpNo")?.Value + "";
+                RoleName = isAdmin ? $"{empNo} - Admin" : $"{empNo} - Nhân viên";
                 StateHasChanged();
             }
         }

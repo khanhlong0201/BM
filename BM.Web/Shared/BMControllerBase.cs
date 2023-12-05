@@ -2,6 +2,7 @@
 using BM.Web.Models;
 using BM.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BM.Web.Shared;
 
@@ -12,6 +13,7 @@ public class BMControllerBase : ComponentBase
     [Inject] public LoaderService? _loaderService { get; init; }
     [Inject] public ToastService? _toastService { get; init; }
     [Inject] public IDateTimeService? _dateTimeService { get; init; }
+    [Inject] AuthenticationStateProvider? _authenticationStateProvider { get; set; }
     #endregion
 
     #region Properties
@@ -19,17 +21,27 @@ public class BMControllerBase : ComponentBase
     public EventCallback<List<BreadcrumbModel>> NotifyBreadcrumb { get; set; }
     public List<BreadcrumbModel>? ListBreadcrumbs { get; set; }
 
-    public int pUserId { get; set; } = 1;
-    public bool pIsAdmin { get; set; } = true;
-    public string pBranchId { get; set; } = "KT003";
+    public int pUserId { get; set; }
+    public bool pIsAdmin { get; set; }
+    public string pBranchId { get; set; } = "";
 
     #endregion Properties
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        try { await _progressService!.Start(); }
-        catch(Exception) { }
+        try
+        {
+            await _progressService!.Start();
+            var oUser = await ((Providers.ApiAuthenticationStateProvider)_authenticationStateProvider!).GetAuthenticationStateAsync();
+            if(oUser != null)
+            {
+                pUserId = int.Parse(oUser.User.Claims.FirstOrDefault(m => m.Type == "UserId")?.Value + "");
+                pBranchId = oUser.User.Claims.FirstOrDefault(m => m.Type == "BranchId")?.Value + "";
+                pIsAdmin = oUser.User.Claims.FirstOrDefault(m => m.Type == "IsAdmin")?.Value?.ToUpper() == "TRUE";
+            }    
+        }
+        catch (Exception) { }
     }
 
     #region Public Functions

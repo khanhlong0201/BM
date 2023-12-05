@@ -321,9 +321,8 @@ namespace BM.API.Controllers
                 var claims = new[]
                 {
                     new Claim("UserId", oUser.Id + ""),
-                    new Claim("UserName", oUser.UserName + ""),
+                    new Claim("EmpNo", oUser.EmpNo + ""),
                     new Claim("FullName", oUser.FullName + ""),
-                    //new Claim("Phone", data.FirstOrDefault().PhoneNumber + ""),
                     new Claim("IsAdmin", oUser.IsAdmin + ""),
                     new Claim("BranchId", oUser.BranchId + ""),
                 }; // thông tin mã hóa (payload)
@@ -343,8 +342,6 @@ namespace BM.API.Controllers
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    oUser.UserName,
-                    oUser.FullName, // để hiện thị lên người dùng khỏi phải parse từ clainm
                     Token = new JwtSecurityTokenHandler().WriteToken(token) // token user
                 });
 
