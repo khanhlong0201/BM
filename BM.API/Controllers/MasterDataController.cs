@@ -317,14 +317,15 @@ namespace BM.API.Controllers
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
                 });
+                UserModel oUser = data.First();
                 var claims = new[]
-              {
-                    new Claim("UserId", data.FirstOrDefault().Id + ""),
-                    new Claim("UserName", data.FirstOrDefault().UserName + ""),
-                    new Claim("FullName", data.FirstOrDefault().FullName + ""),
-                    new Claim("Phone", data.FirstOrDefault().PhoneNumber + ""),
-                    new Claim("IsAdmin", data.FirstOrDefault().IsAdmin + ""),
-                    new Claim("BranchId", data.FirstOrDefault().BranchId + ""),
+                {
+                    new Claim("UserId", oUser.Id + ""),
+                    new Claim("UserName", oUser.UserName + ""),
+                    new Claim("FullName", oUser.FullName + ""),
+                    //new Claim("Phone", data.FirstOrDefault().PhoneNumber + ""),
+                    new Claim("IsAdmin", oUser.IsAdmin + ""),
+                    new Claim("BranchId", oUser.BranchId + ""),
                 }; // thông tin mã hóa (payload)
                 // JWT: json web token: Header - Payload - SIGNATURE (base64UrlEncode(header) + "." + base64UrlEncode(payload), your - 256 - bit - secret)
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:JwtSecurityKey").Value + "")); // key mã hóa
@@ -342,8 +343,8 @@ namespace BM.API.Controllers
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    data.FirstOrDefault().UserName,
-                    data.FirstOrDefault().FullName, // để hiện thị lên người dùng khỏi phải parse từ clainm
+                    oUser.UserName,
+                    oUser.FullName, // để hiện thị lên người dùng khỏi phải parse từ clainm
                     Token = new JwtSecurityTokenHandler().WriteToken(token) // token user
                 });
 

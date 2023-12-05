@@ -27,10 +27,6 @@ namespace BM.Web.Providers
                 var savedToken = await _localStorage.GetItemAsync<string>("authToken");
                 if (string.IsNullOrWhiteSpace(savedToken))
                 {
-                    string sPath = _nav.ToBaseRelativePath(_nav.Uri);
-                    if($"{sPath}".ToUpper().Contains("ADMIN") 
-                        && !$"{sPath}".ToUpper().Contains("ADMIN/LOGIN")
-                        && !$"{sPath}".ToUpper().Contains("ADMIN/LOGOUT")) _nav.NavigateTo("/trang-chu");
                     return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
                 }
                 return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
