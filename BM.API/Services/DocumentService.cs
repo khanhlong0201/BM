@@ -6,6 +6,7 @@ using System.Data;
 using System.Net;
 using BM.Models.Shared;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 
 namespace BM.API.Services;
 
@@ -56,6 +57,11 @@ public class DocumentService : IDocumentService
         return data;
     }
 
+    /// <summary>
+    /// lấy danh sách chi tiết đơn hàng
+    /// </summary>
+    /// <param name="pDocEntry"></param>
+    /// <returns></returns>
     public async Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry)
     {
         Dictionary<string, string>? data = null;
@@ -76,7 +82,7 @@ public class DocumentService : IDocumentService
         inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
         inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
         inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
-        where T0.DocEntry = @DocEntry";
+        where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
             if(ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
@@ -157,6 +163,7 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             string queryString = "";
+            bool isUpdated = false;
             DocumentModel oDraft = JsonConvert.DeserializeObject<DocumentModel>(pRequest.Json + "")!;
             List<DocumentDetailModel> lstDraftDetails = JsonConvert.DeserializeObject<List<DocumentDetailModel>>(pRequest.JsonDetail + "");
             SqlParameter[] sqlParameters = new SqlParameter[1];
@@ -175,7 +182,6 @@ public class DocumentService : IDocumentService
             {
                 case nameof(EnumType.Add):
                     int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[Drafts] with(nolock)");
-                    await _context.BeginTranAsync();
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore]
                                    ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore
@@ -196,8 +202,9 @@ public class DocumentService : IDocumentService
                     sqlParameters[11] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     sqlParameters[12] = new SqlParameter("@BranchId", oDraft.BranchId);
                     sqlParameters[13] = new SqlParameter("@BaseEntry", oDraft.BaseEntry);
-                    bool isAdded = await ExecQuery();
-                    if(isAdded)
+                    await _context.BeginTranAsync();
+                    isUpdated = await ExecQuery();
+                    if(isUpdated)
                     {
                         
                         foreach(var oDraftDetails in lstDraftDetails)
@@ -223,19 +230,97 @@ public class DocumentService : IDocumentService
                             sqlParameters[11] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                             sqlParameters[12] = new SqlParameter("@WarrantyPeriod", oDraftDetails.WarrantyPeriod);
                             sqlParameters[13] = new SqlParameter("@QtyWarranty", oDraftDetails.QtyWarranty);
-                            isAdded = await ExecQuery();
-                            if(!isAdded)
+                            isUpdated = await ExecQuery();
+                            if(!isUpdated)
                             {
                                 await _context.RollbackAsync();
                                 break;
                             }    
                         }    
-                        if(isAdded) await _context.CommitTranAsync();
+                        if(isUpdated) await _context.CommitTranAsync();
                         break;
                     }
                     await _context.RollbackAsync();
                     break;
                 case nameof(EnumType.Update):
+                    // kiểm tra mã lệnh
+                    queryString = @"Update [dbo].[Drafts]
+                                       set [DiscountCode] = @DiscountCode, [Total] = @Total, [GuestsPay] = @GuestsPay
+                                         , [StatusBefore] = @StatusBefore, [HealthStatus] = @HealthStatus, [NoteForAll] = @NoteForAll
+                                         , [StatusId] = @StatusId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                         , [Debt] = @Debt
+                                     where [DocEntry] = @DocEntry";
+                    sqlParameters = new SqlParameter[11];
+                    sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
+                    sqlParameters[1] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
+                    sqlParameters[2] = new SqlParameter("@Total", oDraft.Total);
+                    sqlParameters[3] = new SqlParameter("@GuestsPay", oDraft.GuestsPay);
+                    sqlParameters[4] = new SqlParameter("@Debt", oDraft.Debt);
+                    sqlParameters[5] = new SqlParameter("@StatusBefore", oDraft.StatusBefore ?? (object)DBNull.Value);
+                    sqlParameters[6] = new SqlParameter("@HealthStatus", oDraft.HealthStatus ?? (object)DBNull.Value);
+                    sqlParameters[7] = new SqlParameter("@NoteForAll", oDraft.NoteForAll ?? (object)DBNull.Value);
+                    sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
+                    sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    await _context.BeginTranAsync();
+                    isUpdated = await ExecQuery();
+                    if(isUpdated)
+                    {
+                        foreach (var oDraftDetails in lstDraftDetails)
+                        {
+                            sqlParameters = new SqlParameter[14];
+                            sqlParameters[0] = new SqlParameter("@ServiceCode", oDraftDetails.ServiceCode);
+                            sqlParameters[1] = new SqlParameter("@Qty", oDraftDetails.Qty);
+                            sqlParameters[2] = new SqlParameter("@Price", oDraftDetails.Price);
+                            sqlParameters[3] = new SqlParameter("@LineTotal", oDraftDetails.LineTotal);
+                            sqlParameters[4] = new SqlParameter("@ActionType", oDraftDetails.ActionType ?? (object)DBNull.Value);
+                            sqlParameters[5] = new SqlParameter("@ConsultUserId", oDraftDetails.ConsultUserId ?? (object)DBNull.Value);
+                            sqlParameters[6] = new SqlParameter("@ImplementUserId", oDraftDetails.ImplementUserId ?? (object)DBNull.Value);
+                            sqlParameters[7] = new SqlParameter("@ChemicalFormula", oDraftDetails.ChemicalFormula ?? (object)DBNull.Value);
+                            sqlParameters[8] = new SqlParameter("@UserId", pRequest.UserId);
+                            sqlParameters[9] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                            sqlParameters[10] = new SqlParameter("@WarrantyPeriod", oDraftDetails.WarrantyPeriod);
+                            sqlParameters[11] = new SqlParameter("@QtyWarranty", oDraftDetails.QtyWarranty);
+                            sqlParameters[12] = new SqlParameter("@DocEntry", oDraft.DocEntry);
+                            if (oDraftDetails.Id <= 0)
+                            {
+                                // thêm mới
+                                oDraftDetails.Id = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[DraftDetails] with(nolock)"); // gán lại Id
+                                queryString = @"Insert into [dbo].[DraftDetails] ([Id],[ServiceCode],[Qty], [Price],[LineTotal],[DocEntry], [ActionType],[ConsultUserId]
+                                   ,[ImplementUserId],[ChemicalFormula],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
+                                    values (@Id, @ServiceCode, @Qty, @Price, @LineTotal, @DocEntry, @ActionType, @ConsultUserId
+                                   ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0)";
+                                sqlParameters[13] = new SqlParameter("@Id", oDraftDetails.Id);
+                                
+                            }  
+                            else
+                            {
+                                // cập nhật
+                                queryString = @"Update [dbo].[DraftDetails]
+                                                   set [ServiceCode] = @ServiceCode, [Qty] = @Qty, [Price] = @Price, [LineTotal] = @LineTotal, [ActionType] = @ActionType
+                                                     , [ConsultUserId] = @ConsultUserId, [ImplementUserId] = @ImplementUserId,[ChemicalFormula] = @ChemicalFormula
+                                                     , [WarrantyPeriod] = @WarrantyPeriod, [QtyWarranty] = @QtyWarranty, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                                 where [Id] = @Id";
+                                sqlParameters[13] = new SqlParameter("@Id", oDraftDetails.Id);
+                            }
+                            isUpdated = await ExecQuery();
+                            if (!isUpdated)
+                            {
+                                await _context.RollbackAsync();
+                                break;
+                            }
+                        }
+
+                        // xóa các dòng không tồn tại trong danh sách Ids
+                        queryString = "Delete from [dbo].[DraftDetails] where [Id] not in ( select value from STRING_SPLIT(@ListIds, ',') )  and [DocEntry] = @DocEntry";
+                        sqlParameters = new SqlParameter[2];
+                        sqlParameters[0] = new SqlParameter("@ListIds", string.Join(",", lstDraftDetails.Select(m=>m.Id).Distinct()));
+                        sqlParameters[1] = new SqlParameter("@DocEntry", oDraft.DocEntry);
+                        await _context.DeleteDataAsync(queryString, sqlParameters);
+                        if (isUpdated) await _context.CommitTranAsync();
+                        break;
+                    }    
+                    await _context.RollbackAsync();
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;

@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using System;
 using System.Data;
+using Telerik.Blazor;
+using Telerik.Blazor.Resources;
 
 namespace BM.Web.Features.Controllers
 {
@@ -28,9 +30,11 @@ namespace BM.Web.Features.Controllers
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
         public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
         public IEnumerable<IGrouping<string, ServiceModel>>? ListGroupServices { get; set; }
-        public HConfirm? _rDialogs { get; set; }
+        [CascadingParameter]
+        public DialogFactory? _rDialogs { get; set; }
         //
         public bool pIsCreate { get; set; } = false;
+        public int pDocEntry { get; set; } = 0;
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         #endregion
         #region Override Functions
@@ -56,19 +60,6 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.Remark = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.SkinType = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.DateCreate = _dateTimeService!.GetCurrentVietnamTime();
-                // đọc giá tri câu query
-                var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
-                if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
-                {
-                    string key = uri.Query.Substring(5); // để tránh parse lỗi;    
-                    Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
-                    if(pParams != null && pParams.Any())
-                    {
-                        if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
-                        if (pParams.ContainsKey("pDocEntry")) DocumentUpdate.DocEntry = Convert.ToInt32(pParams["pDocEntry"]);
-                        if (pIsCreate && pParams.ContainsKey("pCusNo")) DocumentUpdate.CusNo = pParams["pCusNo"];
-                    }    
-                }    
             }
             catch (Exception ex)
             {
@@ -78,10 +69,24 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
                 {
+                    // đọc giá tri câu query
+                    var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
+                    if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
+                    {
+                        string key = uri.Query.Substring(5); // để tránh parse lỗi;    
+                        Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
+                        if (pParams != null && pParams.Any())
+                        {
+                            if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
+                            if (pParams.ContainsKey("pDocEntry")) pDocEntry = Convert.ToInt32(pParams["pDocEntry"]);
+                            if (pIsCreate && pParams.ContainsKey("pCusNo")) DocumentUpdate.CusNo = pParams["pCusNo"];
+                        }
+                    }
                     await _progressService!.SetPercent(0.4);
                     // lấy thông tin khách hàng
                     if(pIsCreate)
@@ -131,7 +136,12 @@ namespace BM.Web.Features.Controllers
         #region Private Functions
         private async Task showVoucher()
         {
-            Dictionary<string, string>? keyValues = await _documentService!.GetDocByIdAsync(DocumentUpdate.DocEntry);
+            if (pDocEntry <= 0)
+            {
+                ShowWarning("Vui lòng tải lại trang hoặc liên hệ IT để được hổ trợ");
+                return;
+            }    
+            Dictionary<string, string>? keyValues = await _documentService!.GetDocByIdAsync(pDocEntry);
             if (keyValues == null) return;
             if (keyValues.ContainsKey("oHeader")) DocumentUpdate = JsonConvert.DeserializeObject<DocumentModel>(keyValues["oHeader"]);
             if (keyValues.ContainsKey("oLine"))
@@ -235,33 +245,32 @@ namespace BM.Web.Features.Controllers
             }
         }    
 
-        protected async void SaveDocHandler()
+        protected async void SaveDocHandler(EnumType pProcess = EnumType.Update)
         {
             try
             {
-                if(pIsCreate)
+                if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
                 {
-                    if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
-                    {
-                        ShowWarning("Không tìm thấy thông tin khách hàng!");
-                        return;
-                    }
-                    if(ListSalesOrder == null || !ListSalesOrder.Any())
-                    {
-                        ShowWarning("Vui lòng chọn dịch vụ!");
-                        return;
-                    }
-                    if(DocumentUpdate.GuestsPay <=0)
-                    {
-                        ShowWarning("Vui lòng điền số tiền khách trả!");
-                        return;
-                    }    
+                    ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
+                    return;
+                }
+                if (ListSalesOrder == null || !ListSalesOrder.Any())
+                {
+                    ShowWarning("Vui lòng chọn dịch vụ!");
+                    return;
+                }
+                if (pProcess == EnumType.Update)
+                {
+                    string sAction = pIsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
+                    var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin đơn hàng ?", "Thông báo");
+                    if (!isConfirm) return;
                     await ShowLoader();
                     DocumentUpdate.Total = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
                     DocumentUpdate.BranchId = pBranchId;
                     DocumentUpdate.StatusId = nameof(DocStatus.Pending);
                     List<DocumentDetailModel> lstDraftDetails = ListSalesOrder!.Select(m => new DocumentDetailModel()
                     {
+                        Id = m.Id,
                         ServiceCode = m.ServiceCode,
                         ServiceName = m.ServiceName,
                         Price = m.Price,
@@ -275,14 +284,24 @@ namespace BM.Web.Features.Controllers
                         ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements)
                     }).ToList();
                     bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
-                        , JsonConvert.SerializeObject(lstDraftDetails), nameof(EnumType.Add), pUserId);
+                        , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);
+                    if(isSuccess)
+                    {
+
+                    }
+                    return;
                 }    
                 else
                 {
-
+                    if (DocumentUpdate.GuestsPay <= 0)
+                    {
+                        ShowWarning("Vui lòng điền số tiền khách trả!");
+                        return;
+                    }
+                    var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin đơn hàng ?", "Thông báo");
+                    if (!isConfirm) return;
+                    //await ShowLoader();
                 }    
-                
-                await ShowLoader();
             }
             catch (Exception ex)
             {
