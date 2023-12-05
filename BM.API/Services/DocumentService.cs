@@ -70,8 +70,8 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
-            string queryString = @"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
-            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+            string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
+            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate],case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' else N'Chờ xử lý' end as [StatusName]
             ,T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
             ,T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
 	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
@@ -110,6 +110,7 @@ public class DocumentService : IDocumentService
                 oHeader.DiscountCode = Convert.ToString(dr["DiscountCode"]);
                 oHeader.NoteForAll = Convert.ToString(dr["NoteForAll"]);
                 oHeader.StatusId = Convert.ToString(dr["StatusId"]);
+                oHeader.StatusName = Convert.ToString(dr["StatusName"]);
                 oHeader.VoucherNo = Convert.ToString(dr["VoucherNo"]);
                 oHeader.StatusBefore = Convert.ToString(dr["StatusBefore"]);
                 oHeader.HealthStatus = Convert.ToString(dr["HealthStatus"]);

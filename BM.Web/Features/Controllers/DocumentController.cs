@@ -1,5 +1,6 @@
 ﻿using BM.Models;
 using BM.Models.Shared;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -59,6 +60,7 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.Address = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.Remark = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.SkinType = DATA_CUSTOMER_EMPTY;
+                DocumentUpdate.StatusName = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.DateCreate = _dateTimeService!.GetCurrentVietnamTime();
             }
             catch (Exception ex)
@@ -287,7 +289,13 @@ namespace BM.Web.Features.Controllers
                         , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);
                     if(isSuccess)
                     {
-
+                        if(pIsCreate)
+                        {
+                            // back sang link theo dõi đơn hàng
+                            _navigationManager!.NavigateTo("/sales-doclist");
+                            return;
+                        }
+                        await showVoucher();
                     }
                     return;
                 }    
@@ -298,7 +306,10 @@ namespace BM.Web.Features.Controllers
                         ShowWarning("Vui lòng điền số tiền khách trả!");
                         return;
                     }
-                    var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin đơn hàng ?", "Thông báo");
+                    string messageDept = "";
+                    if(DocumentUpdate.Debt > 0) messageDept = $"Có công nợ {string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, DocumentUpdate.Debt)}đ. \n " +
+                            $"\r Số tiền sẽ được lưu vào công nợ của khách hàng {DocumentUpdate.FullName}";
+                    var isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept}. Bạn có chắc muốn hoàn tất thanh toán đơn hàng này?", "Thông báo");
                     if (!isConfirm) return;
                     //await ShowLoader();
                 }    

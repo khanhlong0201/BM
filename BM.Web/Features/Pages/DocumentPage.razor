@@ -3,7 +3,7 @@
 
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/bill.png">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/bill.png" OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
@@ -58,7 +58,17 @@
                                 </div>
                             </div>
                             <div class="mb-2">
-                                Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Tình trạng phiếu: 
+                                        <strong class="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-orange")">
+                                            @($"{DocumentUpdate.StatusName}")
+                                        </strong>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-12">
+                                        Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
@@ -231,7 +241,7 @@
                                 <tr>
                                     <td class="text-center"></td>
                                     <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
-                                    <td colspan="2" class="font-weight-bold text-end">
+                                    <td colspan="2" class="text-red font-weight-bold text-end">
                                         @{
                                             DocumentUpdate.Debt = pSumTotal <= 0 || DocumentUpdate.GuestsPay >= pSumTotal ? 0 
                                             : pSumTotal - DocumentUpdate.GuestsPay;
