@@ -6,6 +6,7 @@ using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Telerik.Blazor.Components;
@@ -19,7 +20,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<SalesDocListController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navManager { get; init; }
-        [Inject] private IDateTimeService _dateTimeService { get; init; }
+        [Inject] private IDateTimeService? _dateTimeService { get; init; }
         #endregion
 
         #region Properties
@@ -64,7 +65,16 @@ namespace BM.Web.Features.Controllers
                 {
                     ItemFilter.StatusId = nameof(DocStatus.Pending);
                     ItemFilter.FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                    ItemFilter.ToDate = _dateTimeService.GetCurrentVietnamTime();
+                    ItemFilter.ToDate = _dateTimeService!.GetCurrentVietnamTime();
+                    // đọc giá tri câu query
+                    var uri = _navManager?.ToAbsoluteUri(_navManager.Uri);
+                    if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
+                    {
+                        string key = uri.Query.Substring(5); // để tránh parse lỗi;    
+                        Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
+                        if (pParams != null && pParams.Any() && pParams.ContainsKey("pStatusId")) ItemFilter.StatusId = pParams["pStatusId"];
+                    }
+                    //
                     await _progressService!.SetPercent(0.4);
                     await getDataDocuments();
                 }

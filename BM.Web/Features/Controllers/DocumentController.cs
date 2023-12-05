@@ -261,44 +261,14 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng chọn dịch vụ!");
                     return;
                 }
-                if (pProcess == EnumType.Update)
+                string sAction = pIsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
+                string sStatusId = "";
+                bool isConfirm = false;
+                if(pProcess == EnumType.Update)
                 {
-                    string sAction = pIsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
-                    var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin đơn hàng ?", "Thông báo");
-                    if (!isConfirm) return;
-                    await ShowLoader();
-                    DocumentUpdate.Total = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
-                    DocumentUpdate.BranchId = pBranchId;
-                    DocumentUpdate.StatusId = nameof(DocStatus.Pending);
-                    List<DocumentDetailModel> lstDraftDetails = ListSalesOrder!.Select(m => new DocumentDetailModel()
-                    {
-                        Id = m.Id,
-                        ServiceCode = m.ServiceCode,
-                        ServiceName = m.ServiceName,
-                        Price = m.Price,
-                        Qty = m.Qty,
-                        LineTotal = m.Amount,
-                        ActionType = nameof(EnumType.Add),
-                        ChemicalFormula = m.ChemicalFormula,
-                        WarrantyPeriod = m.WarrantyPeriod,
-                        QtyWarranty = m.QtyWarranty,
-                        ConsultUserId = m.ListUserAdvise == null || !m.ListUserAdvise.Any() ? "" : string.Join(",", m.ListUserAdvise),
-                        ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements)
-                    }).ToList();
-                    bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
-                        , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);
-                    if(isSuccess)
-                    {
-                        if(pIsCreate)
-                        {
-                            // back sang link theo dõi đơn hàng
-                            _navigationManager!.NavigateTo("/sales-doclist");
-                            return;
-                        }
-                        await showVoucher();
-                    }
-                    return;
-                }    
+                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin đơn hàng ?", "Thông báo");
+                    sStatusId = nameof(DocStatus.Pending);
+                }  
                 else
                 {
                     if (DocumentUpdate.GuestsPay <= 0)
@@ -307,12 +277,51 @@ namespace BM.Web.Features.Controllers
                         return;
                     }
                     string messageDept = "";
-                    if(DocumentUpdate.Debt > 0) messageDept = $"Có công nợ {string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, DocumentUpdate.Debt)}đ. \n " +
-                            $"\r Số tiền sẽ được lưu vào công nợ của khách hàng {DocumentUpdate.FullName}";
-                    var isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept}. Bạn có chắc muốn hoàn tất thanh toán đơn hàng này?", "Thông báo");
-                    if (!isConfirm) return;
-                    //await ShowLoader();
-                }    
+                    if (DocumentUpdate.Debt > 0)
+                    {
+                        messageDept = $"Có công nợ {string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, DocumentUpdate.Debt)}đ. \n " +
+                            $"\r Số tiền sẽ được lưu vào công nợ của khách hàng [{DocumentUpdate.FullName}].";
+                    } 
+                    isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn hoàn tất thanh toán đơn hàng này?", "Thông báo");
+                    sStatusId = nameof(DocStatus.Closed);
+                }
+                if (!isConfirm) return;
+                await ShowLoader();
+                DocumentUpdate.Total = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
+                DocumentUpdate.BranchId = pBranchId;
+                DocumentUpdate.StatusId = sStatusId;
+                List<DocumentDetailModel> lstDraftDetails = ListSalesOrder!.Select(m => new DocumentDetailModel()
+                {
+                    Id = m.Id,
+                    ServiceCode = m.ServiceCode,
+                    ServiceName = m.ServiceName,
+                    Price = m.Price,
+                    Qty = m.Qty,
+                    LineTotal = m.Amount,
+                    ActionType = nameof(EnumType.Add),
+                    ChemicalFormula = m.ChemicalFormula,
+                    WarrantyPeriod = m.WarrantyPeriod,
+                    QtyWarranty = m.QtyWarranty,
+                    ConsultUserId = m.ListUserAdvise == null || !m.ListUserAdvise.Any() ? "" : string.Join(",", m.ListUserAdvise),
+                    ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements)
+                }).ToList();
+                bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
+                    , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);
+                if (isSuccess)
+                {
+                    if (pIsCreate)
+                    {
+                        // back sang link theo dõi đơn hàng
+                        Dictionary<string, string> pParams = new Dictionary<string, string>
+                        {
+                            { "pStatusId", $"{sStatusId}"},
+                        };
+                        string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                        _navigationManager!.NavigateTo($"/sales-doclist?key={key}");
+                        return;
+                    }
+                    await showVoucher();
+                } 
             }
             catch (Exception ex)
             {
