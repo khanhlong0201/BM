@@ -775,9 +775,11 @@ public class MasterDataService : IMasterDataService
             }
 
             // xóa các dòng không tồn tại trong danh sách Ids
-            queryString = @"Delete from [dbo].[TreatmentRegimen] where [Id] not in ( select value from STRING_SPLIT(@ListIds, ',') )";
-            sqlParameters = new SqlParameter[1];
+            queryString = @"Delete from [dbo].[TreatmentRegimen] where [Id] not in ( select value from STRING_SPLIT(@ListIds, ',') )
+                                    and [ServiceCode] = @ServiceCode";
+            sqlParameters = new SqlParameter[2];
             sqlParameters[0] = new SqlParameter("@ListIds", string.Join(",", listTreatments.Select(m => m.Id).Distinct()));
+            sqlParameters[1] = new SqlParameter("@ServiceCode", listTreatments.First().ServiceCode);
             await _context.DeleteDataAsync(queryString, sqlParameters);
 
             if (isUpdated) await _context.CommitTranAsync();
