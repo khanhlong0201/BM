@@ -61,7 +61,7 @@
     </TabStripTab>
     <TabStripTab Title="Quản lý tồn kho">
         <TelerikToolBar Class="border-bottom-0">
-            <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+            <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataInvHandler">Làm mới</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenIntoInvHandler())">Nhập kho</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/remove_grid.png" >Xóa dòng</ToolBarButton>
         </TelerikToolBar>
@@ -76,7 +76,7 @@
                 </Template>
             </TelerikLoaderContainer>
 
-            <TelerikGrid Data="@ListSupplies"
+            <TelerikGrid Data="@ListInvetoryHistory"
                          Height="100%"
                          Width="100%"
                          RowHeight="25"
@@ -88,19 +88,19 @@
                          SelectionMode="@GridSelectionMode.Multiple"
                          ScrollMode="@GridScrollMode.Scrollable"
                          OnRowDoubleClick="@OnRowDoubleClickHandler"
-                         @bind-SelectedItems="@SelectedSupplies">
+                         @bind-SelectedItems="@SelectedInvetoryHistory">
                 <GridSettings>
                     <GridPagerSettings InputType="PagerInputType.Input" />
                 </GridSettings>
                 <GridAggregates>
-                    <GridAggregate Field=@nameof(SuppliesModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+                    <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
                 </GridAggregates>
                 <GridColumns>
                     <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
+                    <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
                         <Template>
                             @{
-                                var model = (context as SuppliesModel);
+                                var model = (context as InvetoryModel);
                                 <span class="h-link">@model!.SuppliesCode</span>
                             }
                         </Template>
@@ -108,14 +108,14 @@
                             Số dòng: @context.Count
                         </FooterTemplate>
                     </GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="170px" Title="Tên vật tư"></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="140px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian nhập kho" Filterable="false"></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.UserNameCreate) Width="140px" Title="Người nhập kho" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian sửa nhập kho" Filterable="false"></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.UserNameUpdate) Width="140px" Title="Người sửa nhập kho" ></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.SuppliesName) Width="170px" Title="Tên vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="140px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian nhập kho" Filterable="false"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.UserNameCreate) Width="140px" Title="Người nhập kho" ></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="140px" Title="Thời gian sửa nhập kho" Filterable="false"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.UserNameUpdate) Width="140px" Title="Người sửa nhập kho" ></GridColumn>
                 </GridColumns>
             </TelerikGrid>
         </div>

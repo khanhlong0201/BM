@@ -34,7 +34,7 @@ public interface ICliMasterDataService
     Task<List<PriceModel>?> GetDataPricesByServiceAsync(string pServiceCode);
     Task<bool> UpdatePriceAsync(string pJson, string pAction, int pUserId);
     Task<List<InvetoryModel>?> GetDataInvetoryAsync();
-    Task<bool> UpdateInvetoryAsync(string pJson, string pAction, int pUserId);
+    Task<bool> UpdateInvetoryAsync(string pJson, string pJsonDetail, string pAction, int pUserId);
 }
 public class CliMasterDataService : CliServiceBase, ICliMasterDataService 
 {
@@ -775,13 +775,14 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     /// <param name="pAction"></param>
     /// <param name="pUserId"></param>
     /// <returns></returns>
-    public async Task<bool> UpdateInvetoryAsync(string pJson, string pAction, int pUserId)
+    public async Task<bool> UpdateInvetoryAsync(string pJson,string pJsonDetail, string pAction, int pUserId)
     {
         try
         {
             RequestModel request = new RequestModel
             {
                 Json = pJson,
+                JsonDetail = pJsonDetail,
                 Type = pAction,
                 UserId = pUserId
             };

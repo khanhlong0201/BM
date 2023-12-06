@@ -62,6 +62,7 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.4);
                     ListEnums = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.Unit));
                     await getData();
+                    await getDataInv();
 
                 }
                 catch (Exception ex)
@@ -160,6 +161,32 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        protected void OnOpenDialogInvHandler(EnumType pAction = EnumType.Add, InvetoryModel? pItemDetails = null)
+        {
+            try
+            {
+                //if (pAction == EnumType.Add)
+                //{
+                //    IsCreate = true;
+                //    SuppliesUpdate = new SuppliesModel();
+                //}
+                //else
+                //{
+                //    SuppliesUpdate.SuppliesCode = pItemDetails!.SuppliesCode;
+                //    SuppliesUpdate.SuppliesName = pItemDetails!.SuppliesName;
+                //    SuppliesUpdate.EnumId = pItemDetails!.EnumId;
+                //    IsCreate = false;
+                //}
+                //IsShowDialog = true;
+                //_EditContext = new EditContext(SuppliesUpdate);
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SuppliesController", "OnOpenDialogInvHandler");
+                ShowError(ex.Message);
+            }
+        }
+
         protected void OnOpenIntoInvHandler()
         {
             try
@@ -218,18 +245,19 @@ namespace BM.Web.Features.Controllers
             {
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 await ShowLoader();
-                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
-                if (isSuccess)
-                {
-                    await getDataInv();
-                    if (pEnum == EnumType.SaveAndCreate)
-                    {
-                        ListInvetoryCreate = new List<InvetoryModel>();
-                        return;
-                    }
-                    IsShowDialog = false;
-                    return;
-                }
+
+                //bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
+                //if (isSuccess)
+                //{
+                //    await getDataInv();
+                //    if (pEnum == EnumType.SaveAndCreate)
+                //    {
+                //        ListInvetoryCreate = new List<InvetoryModel>();
+                //        return;
+                //    }
+                //    IsShowDialog = false;
+                //    return;
+                //}
             }
             catch (Exception ex)
             {
@@ -244,6 +272,7 @@ namespace BM.Web.Features.Controllers
         }
 
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as SuppliesModel);
+        protected void OnRowDoubleClickInvHandler(GridRowClickEventArgs args) => OnOpenDialogInvHandler(EnumType.Update, args.Item as InvetoryModel);
 
         #endregion
     }

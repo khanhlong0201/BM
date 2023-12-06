@@ -60,6 +60,7 @@
     [Inject]  ToastService? _toastService { get; init; }
     [Parameter]
     public List<SuppliesModel> ListSupplies { get; set; }
+
     List<InvetoryModel> listSelect { get; set; }
     [Parameter]
     public List<InvetoryModel> ListSelectReturn {
@@ -87,6 +88,15 @@
         try
         {
             if (supplies == null) return;
+            if(listSelect !=null && listSelect.Count > 0)
+            {
+                var itemSupplies = listSelect.Where(d => d.SuppliesCode == supplies).FirstOrDefault();
+                if (itemSupplies!=null)
+                {
+                     _toastService.ShowWarning("Vật tư đã tồn tại trên lưới, bạn vui lòng chọn vật tư khác !");
+                    return;
+                }
+            }
             invetory.SuppliesCode = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesCode;
             invetory.SuppliesName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesName;
             invetory.Price = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().Price;
@@ -108,23 +118,26 @@
     {
         try
         {
-            if (listSelect != null && listSelect.Count > 0)
+            if (listSelect != null && listSelect.Any())
             {
                 var select = listSelect.LastOrDefault();
                 if(select.SuppliesCode + "" == "")
                 {
                     _toastService.ShowWarning("Vui lòng chọn vật tư !");
-                     return;
+                    return;
                 }
                 if(select.QtyInv <=0)
                 {
-                     _toastService.ShowWarning("Vui lòng nhập số lượng !");
-                     return;
+                    _toastService.ShowWarning("Vui lòng nhập số lượng !");
+                    return;
                 }
             }
-            
-            // Tạo một đối tượng Managers mới với các thuộc tính là rỗng
-            InvetoryModel emptyInv = new InvetoryModel { SuppliesCode= string.Empty, QtyInv = 0, Price = 0, BranchId= "" };
+            if(ListSupplies!=null && ListSupplies.Count == 0)
+            {
+                _toastService.ShowWarning("Bạn đã chọn hết vật tư, bạn cần thêm vật tư mới để nhập vào kho !");
+                    return;
+            }
+            InvetoryModel emptyInv = new InvetoryModel { SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= "" };
             listSelect.Add(emptyInv);
             var temp = new List<InvetoryModel>();
             temp.Add(emptyInv);
@@ -142,7 +155,7 @@
     /// conrfirm xóa 
     /// </summary>
     /// <returns></returns>
-    async Task ConfirmDeleteHandler()
+    async void ConfirmDeleteHandler()
     {
         if (selectedInv == null || !selectedInv.Any())
         {
@@ -154,19 +167,19 @@
         {
             try
             {
-                var oDelete = selectedInv.Select(m => new { m.SuppliesCode });
-                listSelect.RemoveAll(item => oDelete.Contains(item.SuppliesCode));
-                grid?.Rebind():
+                var oDelete = selectedInv.Select(m => m.SuppliesCode).ToList();
+                if (oDelete != null && oDelete.Count > 0)
+                {
+                    listSelect.RemoveAll(x => oDelete.Contains(x.SuppliesCode));
+                }
+                grid?.Rebind();
+                 await InvokeAsync(StateHasChanged);
 
             }
             catch (Exception ex)
             {
                 throw;
-            }
-            finally
-            {
-                await InvokeAsync(StateHasChanged);
-            }
+            }        
         }
     }
 }

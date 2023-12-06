@@ -30,6 +30,8 @@ public interface IMasterDataService
     Task<ResponseModel> DeleteDataAsync(RequestModel pRequest);
     Task<IEnumerable<PriceModel>> GetPriceListByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdatePrice(RequestModel pRequest);
+    Task<IEnumerable<InvetoryModel>> GetInventoryAsync();
+    Task<ResponseModel> UpdateInventory(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -709,7 +711,7 @@ public class MasterDataService : IMasterDataService
 
 
     /// <summary>
-    /// lấy danh sách nhân viên
+    /// lấy danh sách vật tư
     /// </summary>
     /// <returns></returns>
     public async Task<IEnumerable<SuppliesModel>> GetSuppliesAsync()
@@ -732,6 +734,42 @@ public class MasterDataService : IMasterDataService
                   inner join Enums t1 on t0.EnumId = t1.EnumId
                   where t0.IsDelete = 0 and t1.EnumType ='Unit'"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// lấy danh sách nhân viên
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<InvetoryModel>> GetInventoryAsync()
+    {
+        IEnumerable<InvetoryModel> data;
+        try
+        {
+            await _context.Connect();
+            data = await _context.GetDataAsync(@"SELECT t0.[ABSID]
+                                              ,t0.[SuppliesCode]
+                                              ,t0.[BranchId]
+                                              ,t0.[EnumId]
+                                              ,t0.[QtyInv]
+                                              ,t0.[Price]
+                                              ,t0.[DateCreate]
+                                              ,t0.[UserCreate]
+                                              ,t0.[DateUpdate]
+                                              ,t0.[UserUpdate]
+	                                          ,t1.SuppliesName
+	                                          ,t2.EnumName
+                                          FROM [dbo].[Inventory] t0 
+                                          inner join Supplies t1 on t0.SuppliesCode = t1.SuppliesCode
+                                          inner join Enums t2 on t0.EnumId = t2.EnumId
+                                            where t0.IsDelete = 0 and t2.EnumType ='Unit'"
+                    , DataRecordToInvetoryModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -799,6 +837,80 @@ public class MasterDataService : IMasterDataService
                                       ,[DateCreate] = getdate()
                                       ,[UserCreate] = @UserId
                                  WHERE SuppliesCode = @SuppliesCode";
+
+                    setParameter();
+                    await ExecQuery();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
+
+
+    /// <summary>
+    /// Thêm mới/Cập nhật tồn kho
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateInventory(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            InvetoryModel oInvotory = JsonConvert.DeserializeObject<InvetoryModel>(pRequest.Json + "")!;
+            SqlParameter[] sqlParameters;
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[5];
+                sqlParameters[0] = new SqlParameter("@SuppliesCode", oInvotory.SuppliesCode);
+                sqlParameters[1] = new SqlParameter("@QtyInv", oInvotory.QtyInv);
+                sqlParameters[2] = new SqlParameter("@Price", oInvotory.Price);
+                sqlParameters[3] = new SqlParameter("@BranchId", oInvotory.BranchId);
+                sqlParameters[4] = new SqlParameter("@Absid", oInvotory.Absid);
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    queryString = @"INSERT INTO [dbo].[Inventory] ([SuppliesCode] ,[BranchId] ,[EnumId],[QtyInv],[Price] ,[DateCreate] ,[UserCreate],[IsDelete] ))
+                                    values ( @SuppliesCode , @BranchId , @EnumId ,@QtyInv, @Price, getDate(), @UserId, 0 )";
+
+                    setParameter();
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    queryString = @"UPDATE [dbo].[Inventory]
+                               SET [SuppliesCode] = @SuppliesCode
+                                  ,[BranchId] = @BranchId
+                                  ,[EnumId] = @EnumId
+                                  ,[QtyInv] = @QtyInv
+                                  ,[Price] = @Price
+                                  ,[DateUpdate] = getDate()
+                                  ,[UserUpdate] = @UserId
+                                   Where Absid= @Absid";
 
                     setParameter();
                     await ExecQuery();
@@ -1060,7 +1172,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
         return suppplies;
     }
-    
+   
+
     /// <summary>
     /// đoc danh sách bảng giá
     /// </summary>
@@ -1078,6 +1191,28 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
         if (!Convert.IsDBNull(record["IsActive"])) model.IsActive = Convert.ToBoolean(record["IsActive"]);
         return model;
-    }    
+    }
+
+    /// <summary>
+    /// đọc danh sách tồn lại
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private InvetoryModel DataRecordToInvetoryModel(IDataRecord record)
+    {
+        InvetoryModel inv = new();
+        if (!Convert.IsDBNull(record["SuppliesCode"])) inv.SuppliesCode = Convert.ToString(record["SuppliesCode"]);
+        if (!Convert.IsDBNull(record["SuppliesName"])) inv.SuppliesName = Convert.ToString(record["SuppliesName"]);
+        if (!Convert.IsDBNull(record["EnumId"])) inv.EnumId = Convert.ToString(record["EnumId"]);
+        if (!Convert.IsDBNull(record["EnumName"])) inv.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) inv.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) inv.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) inv.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) inv.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["QtyInv"])) inv.QtyInv = Convert.ToDecimal(record["QtyInv"]);
+        if (!Convert.IsDBNull(record["Price"])) inv.Price = Convert.ToDecimal(record["Price"]);
+        return inv;
+    }
+
     #endregion
 }

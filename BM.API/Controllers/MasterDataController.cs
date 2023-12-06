@@ -398,7 +398,6 @@ namespace BM.API.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("DeleteData")]
         public async Task<IActionResult> DeleteData([FromBody] RequestModel request)
@@ -416,6 +415,51 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "UpdateService");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetInventory")]
+        public async Task<IActionResult> GetInventory()
+        {
+            try
+            {
+                var data = await _masterService.GetInventoryAsync();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetInvetory");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+
+        }
+
+        [HttpPost]
+        [Route("UpdateInventory")]
+        public async Task<IActionResult> UpdateInventory([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.UpdateInventory(request);
+
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "UpdateInvetory");
                 return StatusCode(StatusCodes.Status400BadRequest, new
                 {
                     StatusCode = StatusCodes.Status400BadRequest,

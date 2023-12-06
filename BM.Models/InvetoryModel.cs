@@ -4,6 +4,7 @@ namespace BM.Models
 {
     public class InvetoryModel : Auditable
     {
+        public int? Absid { get; set; }
         public string? SuppliesCode { get; set; }
         public string? SuppliesName { get; set; }
         public string? EnumId { get; set; } //đơn vị tính
