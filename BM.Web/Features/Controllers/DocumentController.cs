@@ -113,8 +113,13 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.6);
                     // lấy danh sách dịch vụ
                     var listServices = await _masterDataService!.GetDataServicesAsync();
-                    if(listServices != null && listServices.Any()) ListGroupServices = listServices.GroupBy(m => $"{m.EnumName}");
+                    if(listServices != null && listServices.Any())
+                    {
+                        ListGroupServices = listServices.GroupBy(m => string.IsNullOrEmpty(m.PackageName) ? $"{m.EnumName}" 
+                            : $"{m.EnumName} - {m.PackageName}");
+                    }    
 
+                    // danh sách nhân viên
                     var listUsers = await _masterDataService!.GetDataUsersAsync();
                     if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m=> new ComboboxModel()
                     {
