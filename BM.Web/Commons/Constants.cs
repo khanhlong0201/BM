@@ -10,7 +10,7 @@ public static class DefaultConstants
     public const string FORMAT_GRID_DATE = "{0: dd/MM/yyyy}";
     public const string FORMAT_GRID_DATE_TIME = "{0: HH:mm dd/MM/yyyy}";
     public const string FORMAT_DATE_TIME = "HH:mm dd/MM/yyyy";
-    public const int PAGE_SIZE = 1000;
+    public const int PAGE_SIZE = 100;
 
     public const string MESSAGE_INVALID_DATA = "Không đúng định dạng dữ liệu!";
     public const string MESSAGE_LOGIN_EXPIRED = "Hết phiên đăng nhập!";
@@ -42,6 +42,8 @@ public static class EndpointConstants
     public const string URL_MASTERDATA_UPDATE_SERVICE = "MasterData/UpdateService";
     public const string URL_MASTERDATA_GET_PRICE_BY_SERVICE = "MasterData/GetPricesByService";
     public const string URL_MASTERDATA_UPDATE_PRICE = "MasterData/UpdatePrice";
+    public const string URL_MASTERDATA_GET_TREATMENT_BY_SERVICE = "MasterData/GetTreatmentByService";
+    public const string URL_MASTERDATA_UPDATE_TREATMENT = "MasterData/UpdateTreatment";
 
     public const string URL_MASTERDATA_USER_LOGIN = "MasterData/Login";
     public const string URL_MASTERDATA_DELETE = "MasterData/DeleteData";

@@ -20,7 +20,6 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<SalesDocListController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navManager { get; init; }
-        [Inject] private IDateTimeService? _dateTimeService { get; init; }
         #endregion
 
         #region Properties

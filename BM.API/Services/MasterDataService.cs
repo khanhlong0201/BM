@@ -32,6 +32,8 @@ public interface IMasterDataService
     Task<ResponseModel> UpdatePrice(RequestModel pRequest);
     Task<IEnumerable<InvetoryModel>> GetInventoryAsync();
     Task<ResponseModel> UpdateInventory(RequestModel pRequest);
+    Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
+    Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
 }
 
 public class MasterDataService : IMasterDataService
@@ -676,7 +678,122 @@ public class MasterDataService : IMasterDataService
             await _context.DisConnect();
         }
         return response;
-    }    
+    }
+
+    /// <summary>
+    /// Danh sách Phác đồ điều trị
+    /// </summary>
+    /// <param name="pServiceCode"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode)
+    {
+        IEnumerable<TreatmentRegimenModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@ServiceCode", pServiceCode);
+            data = await _context.GetDataAsync(@"select [Id], [LineNum], [ServiceCode], [Name], [Title],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+                    from [dbo].[TreatmentRegimen] as T0 with(nolock) 
+                   where T0.[ServiceCode] = @ServiceCode order by [LineNum] asc"
+                    , DataRecordToTreatmentRigimenModel, sqlParameters, commandType: CommandType.Text);
+
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// cập nhật thông tin Phác đồ điều trị
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            bool isUpdated = false;
+            List<TreatmentRegimenModel> listTreatments = JsonConvert.DeserializeObject<List<TreatmentRegimenModel>>(pRequest.Json + "")!;
+            if(listTreatments == null || !listTreatments.Any())
+            {
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Message = "Dữ liệu đầu vào không đúng định dạng";
+                return response;
+            }
+            SqlParameter[] sqlParameters;
+            async Task<bool> ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
+                }
+                return false;
+            }
+            await _context.BeginTranAsync();
+            foreach (var oItem in listTreatments)
+            {
+                sqlParameters = new SqlParameter[7];
+                sqlParameters[0] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[1] = new SqlParameter("@Name", oItem.Name);
+                sqlParameters[2] = new SqlParameter("@Title", oItem.Title);
+                sqlParameters[3] = new SqlParameter("@ServiceCode", oItem.ServiceCode);
+                sqlParameters[4] = new SqlParameter("@LineNum", oItem.LineNum);
+                sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                if (oItem.Id <=0)
+                {
+                    // thêm mới
+                    oItem.Id = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[TreatmentRegimen] with(nolock)"); // gán lại Id
+                    queryString = @"Insert into [dbo].[TreatmentRegimen]([Id],[LineNum],[Name],[Title],[ServiceCode], [DateCreate], [UserCreate], [DateUpdate])
+                                            values(@Id, @LineNum, @Name, @Title, @ServiceCode, @DateTimeNow, @UserId, @DateTimeNow)";
+                    sqlParameters[6] = new SqlParameter("@Id", oItem.Id);
+                }    
+                else
+                {
+                    // cập nhật
+                    queryString = @"Update [dbo].[TreatmentRegimen]
+                                       set [Name] = @Name, [Title] = @Title, [ServiceCode] = @ServiceCode
+                                         , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId, [LineNum] = @LineNum
+                                     where [Id] = @Id";
+                    sqlParameters[6] = new SqlParameter("@Id", oItem.Id);
+                }
+                isUpdated = await ExecQuery();
+                if (!isUpdated)
+                {
+                    await _context.RollbackAsync();
+                    break;
+                }
+            }
+
+            // xóa các dòng không tồn tại trong danh sách Ids
+            queryString = @"Delete from [dbo].[TreatmentRegimen] where [Id] not in ( select value from STRING_SPLIT(@ListIds, ',') )";
+            sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@ListIds", string.Join(",", listTreatments.Select(m => m.Id).Distinct()));
+            await _context.DeleteDataAsync(queryString, sqlParameters);
+
+            if (isUpdated) await _context.CommitTranAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
 
     /// <summary>
     /// Đăng nhập
@@ -1214,5 +1331,26 @@ public class MasterDataService : IMasterDataService
         return inv;
     }
 
+    }
+
+    /// <summary>
+    /// đoc danh sách Phác đồ điều trị
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private TreatmentRegimenModel DataRecordToTreatmentRigimenModel(IDataRecord record)
+    {
+        TreatmentRegimenModel model = new TreatmentRegimenModel();
+        if (!Convert.IsDBNull(record["Id"])) model.Id = Convert.ToInt32(record["Id"]);
+        if (!Convert.IsDBNull(record["LineNum"])) model.LineNum = Convert.ToInt32(record["LineNum"]);
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["Name"])) model.Name = Convert.ToString(record["Name"]);
+        if (!Convert.IsDBNull(record["Title"])) model.Title = Convert.ToString(record["Title"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        return model;
+    }
     #endregion
 }

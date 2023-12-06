@@ -65,7 +65,8 @@ public enum EnumTable
     @DraftDetails,
     @Users,
     @Customers,
-    @Prices
+    @Prices,
+    @TreatmentRegimens
 }
 
 public enum DocStatus
