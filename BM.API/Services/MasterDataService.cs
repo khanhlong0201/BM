@@ -1331,8 +1331,6 @@ public class MasterDataService : IMasterDataService
         return inv;
     }
 
-    }
-
     /// <summary>
     /// đoc danh sách Phác đồ điều trị
     /// </summary>

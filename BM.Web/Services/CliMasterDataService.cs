@@ -34,7 +34,6 @@ public interface ICliMasterDataService
     Task<List<PriceModel>?> GetDataPricesByServiceAsync(string pServiceCode);
     Task<bool> UpdatePriceAsync(string pJson, string pAction, int pUserId);
     Task<List<InvetoryModel>?> GetDataInvetoryAsync();
-    Task<bool> UpdateInvetoryAsync(string pJson, string pAction, int pUserId);
     Task<List<TreatmentRegimenModel>?> GetDataTreatmentsByServiceAsync(string pServiceCode);
     Task<bool> UpdateTreatmentRegimenAsync(string pJson, string pAction, int pUserId);
     Task<bool> UpdateInvetoryAsync(string pJson, string pJsonDetail, string pAction, int pUserId);
