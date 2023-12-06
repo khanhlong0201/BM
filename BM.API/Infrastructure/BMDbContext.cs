@@ -19,6 +19,7 @@ public interface IBMDbContext
     Task<DataTable> AddOrUpdateAsync(string commandText, IEnumerable<SqlParameter> sqlParameters, CommandType commandType = CommandType.StoredProcedure);
     Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
     Task<int> ExecuteScalarAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
+    Task<int> DeleteDataAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -269,4 +270,23 @@ public class BMDbContext : IBMDbContext
         int scopeIdentity = Convert.ToInt32(await sqlCommand.ExecuteScalarAsync());
         return scopeIdentity;
     }
+
+    /// <summary>
+    /// xóa dữ liệu
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="sqlParameters"></param>
+    /// <returns>Trả về số lượng dòng được delete</returns>
+    public async Task<int> DeleteDataAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null)
+    {
+        sqlCommand = new SqlCommand();
+        sqlCommand.Connection = sqlConnection;
+        sqlCommand.CommandTimeout = 500;
+        sqlCommand.CommandText = commandText;
+        sqlCommand.CommandType = CommandType.Text;
+        sqlCommand.Transaction = sqlTransaction;
+        if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+        int rowsAffected = await sqlCommand.ExecuteNonQueryAsync();
+        return rowsAffected;
+    }    
 }

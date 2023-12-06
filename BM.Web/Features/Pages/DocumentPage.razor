@@ -2,8 +2,8 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@SaveDocHandler">Lưu thông tin</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/bill.png">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/bill.png" OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
@@ -58,7 +58,17 @@
                                 </div>
                             </div>
                             <div class="mb-2">
-                                Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Tình trạng phiếu: 
+                                        <strong class="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-cyan")">
+                                            @($"{DocumentUpdate.StatusName}")
+                                        </strong>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8 col-sm-12">
+                                        Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">
@@ -159,9 +169,9 @@
                                     <tr>
                                         <td class="text-center">
                                             <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
-                                                title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.Id))"></i>
+                                               title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
                                         </td>
-                                        <td class="text-center">@oItem.Id</td>
+                                        <td class="text-center">@oItem.LineNum</td>
                                         <td>
                                             <p class="strong mb-1">@oItem.ServiceCode</p>
                                             <div class="text-secondary">@oItem.ServiceName</div>
@@ -181,7 +191,7 @@
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
                                         <td class="text-center">
                                             <TelerikMultiSelect Data="@ListUsers"
-                                                @bind-Value="@ListUserAdvise"
+                                                @bind-Value="@oItem.ListUserAdvise"
                                                 ValueField="@nameof(ComboboxModel.Code)"
                                                 TextField="@nameof(ComboboxModel.Name)"
                                                 FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
@@ -191,7 +201,7 @@
                                         </td>
                                         <td class="text-center">
                                             <TelerikMultiSelect Data="@ListUsers"
-                                                        @bind-Value="@ListUserImplements"
+                                                        @bind-Value="@oItem.ListUserImplements"
                                                         ValueField="@nameof(ComboboxModel.Code)"
                                                         TextField="@nameof(ComboboxModel.Name)"
                                                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
@@ -200,7 +210,7 @@
                                             </TelerikMultiSelect>
                                         </td>
                                         <td class="text-center">
-                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFomula" Id="txtChemicalFomula" />
+                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Id="txtChemicalFomula" />
                                         </td>
                                     </tr>
                                 }
@@ -231,7 +241,7 @@
                                 <tr>
                                     <td class="text-center"></td>
                                     <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
-                                    <td colspan="2" class="font-weight-bold text-end">
+                                    <td colspan="2" class="text-red font-weight-bold text-end">
                                         @{
                                             DocumentUpdate.Debt = pSumTotal <= 0 || DocumentUpdate.GuestsPay >= pSumTotal ? 0 
                                             : pSumTotal - DocumentUpdate.GuestsPay;
@@ -250,5 +260,3 @@
     </div>
     
 </div>
-
-<HConfirm @ref="@_rDialogs" />

@@ -19,6 +19,7 @@ public static class DefaultConstants
     public const string MESSAGE_DELETE = "Đã xóa các dòng được chọn!";
     public const string MESSAGE_NO_CHOSE_DATA = "Không có dòng nào được chọn!";
     public const string MESSAGE_CONFIRM_DELETE = "Bạn có chắc muốn xóa các dòng được chọn?";
+    public const string MESSAGE_NO_DATA = "Không tìm thấy dữ liệu. Vui lòng thử lại!";
 }
 
 
@@ -51,4 +52,7 @@ public static class EndpointConstants
 
     public const string URL_MASTERDATA_GET_INVETORY = "MasterData/GetInventory";
     public const string URL_MASTERDATA_UPDATE_INVETORY = "MasterData/UpdateInventory";
+
+    public const string URL_DOCUMENT_GET_SALES_ORDER = "Document/GetDocList";
+    public const string URL_DOCUMENT_GET_DOC_BY_ID = "Document/GetDocById";
 }

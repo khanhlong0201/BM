@@ -683,7 +683,7 @@ public class MasterDataService : IMasterDataService
     /// <returns></returns>
     public async Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest)
     {
-        IEnumerable<UserModel> data= null;
+        IEnumerable<UserModel> data;
         SqlParameter[] sqlParameters;
         string queryString = "";
         try

@@ -16,7 +16,6 @@ namespace BM.Web.Features.Controllers
         #region Dependency Injection
         [Inject] private ILogger<BranchController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
-        [Inject]   private ILocalStorageService _localStorage { get; init; }
         [Inject] NavigationManager? _navigationManager { get; set; }
         #endregion
        
@@ -26,7 +25,12 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
-                await base.OnInitializedAsync(); 
+                await base.OnInitializedAsync();
+                ListBreadcrumbs = new List<BreadcrumbModel>
+                {
+                    new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                };
+                await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
             }
             catch (Exception ex)
             {
@@ -40,15 +44,18 @@ namespace BM.Web.Features.Controllers
             {
                 try
                 {
-                    var authToken = await _localStorage.GetItemAsync<string>("authToken");
-                    if(authToken+""=="")
-                        _navigationManager.NavigateTo($"login");
+                    await _progressService!.SetPercent(0.4);
 
                 }
                 catch (Exception ex)
                 {
                     _logger!.LogError(ex, "OnAfterRenderAsync");
                     ShowError(ex.Message);
+                }
+                finally
+                {
+                    await _progressService!.Done();
+                    await InvokeAsync(StateHasChanged);
                 }
             }
         }

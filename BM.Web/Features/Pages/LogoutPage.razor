@@ -10,8 +10,8 @@
         {
             try
             {
-                _navigationManager.NavigateTo($"login");
                 await _masterDataService.LogoutAsync();
+                _navigationManager.NavigateTo($"login");
             }
             catch (Exception) { }
 

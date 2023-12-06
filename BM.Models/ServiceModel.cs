@@ -43,9 +43,10 @@ public class PriceModel : Auditable
 public class SalesOrderModel
 {
     public int Id { get; set; }
+    public int LineNum { get; set; }
     public string ServiceCode { get; set; } = "";
     public string ServiceName { get; set; } = "";
-    public string ChemicalFomula { get; set; } = ""; // công thức mực
+    public string ChemicalFormula { get; set; } = ""; // công thức mực
     public double WarrantyPeriod { get; set; }
     public int QtyWarranty { get; set; }
     public double Price { get; set; }
@@ -59,4 +60,7 @@ public class SalesOrderModel
         }
         private set { }
     }
+
+    public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
+    public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
 }

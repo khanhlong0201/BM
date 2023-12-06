@@ -1,43 +1,30 @@
 ﻿@page "/"
+@page "/trang-chu"
 @inherits IndexController;
-<TelerikButton OnClick="@ResizeChart">Resize the container and redraw the chart</TelerikButton>
 
-<div style="border: 1px solid red;width:@ContainerWidth; height: @ContainerHeight">
 
-    <TelerikChart Width ="100%" Height="100%" @ref="theChart">
+<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="600px" @bind-View="@CurrView"
+                  AllowCreate="true" AllowDelete="true" AllowUpdate="true"
+                  ConfirmDelete="true">
+    <SchedulerViews>
+        <SchedulerDayView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
+        <SchedulerWeekView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
+        <SchedulerMultiDayView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" NumberOfDays="10" />
+        <SchedulerMonthView></SchedulerMonthView>
+        <SchedulerTimelineView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
+    </SchedulerViews>
+</TelerikScheduler>
 
-        <ChartSeriesItems>
-            <ChartSeries Type="ChartSeriesType.Column" Name="Product 1" Data="@someData">
-            </ChartSeries>
-        </ChartSeriesItems>
-        <ChartCategoryAxes>
-            <ChartCategoryAxis Categories="@xAxisItems"></ChartCategoryAxis>
-        </ChartCategoryAxes>
-        <ChartTitle Text="Quarterly sales trend"></ChartTitle>
 
-    </TelerikChart>
+@code{
+    public DateTime StartDate { get; set; } = new DateTime(2021, 6, 21);
+    public SchedulerView CurrView { get; set; } = SchedulerView.Week;
 
-</div>
+    //the time portions are important
+    public DateTime DayStart { get; set; } = new DateTime(2000, 1, 1, 8, 0, 0);
+    public DateTime DayEnd { get; set; } = new DateTime(2000, 1, 1, 20, 0, 0);
+    public DateTime WorkDayStart { get; set; } = new DateTime(2000, 1, 1, 9, 0, 0);
+    public DateTime WorkDayEnd { get; set; } = new DateTime(2000, 1, 1, 17, 0, 0);
 
-@code {
-    string ContainerWidth { get; set; } = "400px";
-    string ContainerHeight { get; set; } = "300px";
-    Telerik.Blazor.Components.TelerikChart theChart { get; set; }
-
-    async Task ResizeChart()
-    {
-        //resize the container
-        ContainerHeight = "500px";
-        ContainerWidth = "800px";
-
-        //give time to the framework and browser to resize the actual DOM so the chart can use the expected size
-        await Task.Delay(20);
-
-        //redraw the chart
-        theChart.Refresh();
-    }
-
-    public List<object> someData = new List<object>() { 10, 2, 7, 5 };
-
-    public string[] xAxisItems = new string[] { "Q1", "Q2", "Q3", "Q4" };
+    IEnumerable<object> Appointments = new List<object>();
 }

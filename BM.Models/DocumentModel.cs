@@ -18,6 +18,9 @@ public class DocumentModel : Auditable
     public string? HealthStatus { get; set; }
     public string? NoteForAll { get; set; }
     public string? StatusId { get; set; }
+    public string? StatusName { get; set; }
+    public string? VoucherNo { get; set; }
+    public int BaseEntry { get; set; }
 
     #region Thông tin khách hàng
     public string? FullName { get; set; }
@@ -42,6 +45,7 @@ public class DocumentDetailModel : Auditable
     public string? ServiceCode { get; set; }
     public string? ServiceName { get; set; }
     public double Price { get; set; }
+    public double PriceOld { get; set; }
     public int Qty { get; set; }
     public double LineTotal { get; set; }
     public int DocEntry { get; set; }

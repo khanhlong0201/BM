@@ -3,12 +3,15 @@ using BM.Models;
 using BM.Web.Commons;
 using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
+using System.Data;
 
 namespace BM.Web.Services;
 
 public interface ICliDocumentService
 {
     Task<bool> UpdateSalesOrder(string pJson, string pJsonDetail, string pAction, int pUserId);
+    Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch);
+    Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -72,5 +75,79 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách đơn hàng
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch)
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_GET_SALES_ORDER, pSearch);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<DocumentModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách đơn hàng
+    /// </summary>
+    /// <returns></returns>
+    public async Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pDocEntry", $"{pDocEntry}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_GET_DOC_BY_ID, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var dt = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+                    if(dt == null || dt.Keys.Count < 1) _toastService.ShowWarning(DefaultConstants.MESSAGE_NO_DATA);
+                    return dt;
+                    
+                }    
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDocByIdAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
     }
 }
