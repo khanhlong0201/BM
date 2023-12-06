@@ -1,0 +1,172 @@
+﻿<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> AddLineToListInvotory())">Thêm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/remove_grid.png" OnClick="@(()=> ConfirmDeleteHandler())">Xóa dòng</ToolBarButton>
+</TelerikToolBar>
+<div class="h-table-content" style=" height: calc(100vh - 170px);">
+    <TelerikGrid Data="@listSelect"
+                    @ref="@grid"
+                    Height="100%"
+                    Width="100%"
+                    RowHeight="25"
+                    Pageable="true"
+                    PageSize="@DefaultConstants.PAGE_SIZE"
+                    Sortable="true"
+                    Resizable="true"
+                    FilterMode="@GridFilterMode.FilterMenu"
+                    SelectionMode="@GridSelectionMode.Multiple"
+                    ScrollMode="@GridScrollMode.Scrollable"
+                    @bind-SelectedItems="@selectedInv"
+                    >
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
+                <Template>
+                    <TelerikComboBox Value="@((context as InvetoryModel).SuppliesCode)"
+                                       ValueChanged="@((string suppliesCode) => SelectedSuppliesChanged(suppliesCode, context as InvetoryModel))"
+                                         Data="@ListSupplies"
+                                         Placeholder="Chọn vật tư"
+                                         TextField="@nameof(SuppliesModel.SuppliesName)"
+                                         ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                                         Filterable="true"
+                                         ClearButton="false"
+                                         FillMode="@ThemeConstants.TextBox.FillMode.Flat"
+                                         Class="btn-noborder-radius-left"
+                                         Id="txtCategoryId" Width="100%">
+                        </TelerikComboBox>
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="140px" Title="Số lương nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" >
+                <Template>
+                     <TelerikNumericTextBox @bind-Value="@((context as InvetoryModel).QtyInv)" Class="bh-link" Min="1" Id="txtQty" />
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+<HConfirm @ref="@_rDialogs" />
+
+@code{
+    [Inject]  ToastService? _toastService { get; init; }
+    [Parameter]
+    public List<SuppliesModel> ListSupplies { get; set; }
+    List<InvetoryModel> listSelect { get; set; }
+    [Parameter]
+    public List<InvetoryModel> ListSelectReturn {
+        get => listSelect;
+        set
+        {
+            if (listSelect != value) listSelect = value;
+            ListSelectReturnChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<List<InvetoryModel>> ListSelectReturnChanged { get; set; }
+
+    IEnumerable<InvetoryModel> selectedInv { get; set; } = new List<InvetoryModel>();
+    TelerikGrid<InvetoryModel> grid;
+
+    public HConfirm? _rDialogs { get; set; }
+    /// <summary>
+    /// chọn vật tư lấy giá và đơn vị tính
+    /// </summary>
+    /// <param name="supplies"></param>
+    /// <param name="invetory"></param>
+    async void SelectedSuppliesChanged(string supplies, InvetoryModel invetory)
+    {
+        try
+        {
+            if (supplies == null) return;
+            invetory.SuppliesCode = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesCode;
+            invetory.SuppliesName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesName;
+            invetory.Price = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().Price;
+            invetory.EnumName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().EnumName;
+            grid?.Rebind();
+            await InvokeAsync(StateHasChanged);        
+        }catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+
+    /// <summary>
+    ///  Thêm 1 dòng trên lưới 
+    /// </summary>
+    /// <param name="line"></param>
+    async void AddLineToListInvotory()
+    {
+        try
+        {
+            if (listSelect != null && listSelect.Count > 0)
+            {
+                var select = listSelect.LastOrDefault();
+                if(select.SuppliesCode + "" == "")
+                {
+                    _toastService.ShowWarning("Vui lòng chọn vật tư !");
+                     return;
+                }
+                if(select.QtyInv <=0)
+                {
+                     _toastService.ShowWarning("Vui lòng nhập số lượng !");
+                     return;
+                }
+            }
+            
+            // Tạo một đối tượng Managers mới với các thuộc tính là rỗng
+            InvetoryModel emptyInv = new InvetoryModel { SuppliesCode= string.Empty, QtyInv = 0, Price = 0, BranchId= "" };
+            listSelect.Add(emptyInv);
+            var temp = new List<InvetoryModel>();
+            temp.Add(emptyInv);
+            selectedInv = temp.AsEnumerable<InvetoryModel>();
+            grid?.Rebind();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// conrfirm xóa 
+    /// </summary>
+    /// <returns></returns>
+    async Task ConfirmDeleteHandler()
+    {
+        if (selectedInv == null || !selectedInv.Any())
+        {
+            _toastService!.ShowWarning("Vui lòng chọn dòng để xóa");
+            return;
+        }
+        var confirm = await _rDialogs!.ConfirmAsync(" Bạn có chắc muốn xóa các dòng được chọn? ");
+        if (confirm)
+        {
+            try
+            {
+                var oDelete = selectedInv.Select(m => new { m.SuppliesCode });
+                listSelect.RemoveAll(item => oDelete.Contains(item.SuppliesCode));
+                grid?.Rebind():
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+}

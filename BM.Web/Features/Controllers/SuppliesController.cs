@@ -23,9 +23,10 @@ namespace BM.Web.Features.Controllers
         public IEnumerable<SuppliesModel>? SelectedSupplies { get; set; } = new List<SuppliesModel>();
         public SuppliesModel SuppliesUpdate { get; set; } = new SuppliesModel();
         public EditContext? _EditContext { get; set; }
-        public List<InvetoryModel>? ListInvetoryHistory { get; set; }
-        public List<InvetoryModel>? ListInvetoryCreate { get; set; }
-        public InvetoryModel SelectedInvetoryCreate { get; set; } = new InvetoryModel();
+        public List<InvetoryModel>? ListInvetoryHistory { get; set; } = new List<InvetoryModel>();
+        public List<InvetoryModel>? ListInvetoryCreate { get; set; } = new List<InvetoryModel>();
+        public IEnumerable<InvetoryModel>? SelectedInvetoryHistory { get; set; } = new List<InvetoryModel>();
+        public InvetoryModel InvetoryHistoryUpdate { get; set; } = new InvetoryModel();
         public bool IsShowDialog { get; set; }
         public bool IsShowIntoInv { get; set; }
         public bool IsCreate { get; set; } = true;
@@ -78,6 +79,13 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Private Functions
+        private async Task getDataInv()
+        {
+            ListInvetoryHistory = new List<InvetoryModel>();
+            SelectedInvetoryHistory = new List<InvetoryModel>();
+            ListInvetoryHistory = await _masterDataService!.GetDataInvetoryAsync();
+        }
+
         private async Task getData()
         {
             ListSupplies = new List<SuppliesModel>();
@@ -88,6 +96,25 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
+        protected async void ReLoadDataInvHandler()
+        {
+            try
+            {
+                IsInitialDataLoadComplete = false;
+                await getDataInv();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SuppliesController", "ReLoadDataInvHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                IsInitialDataLoadComplete = true;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         protected async void ReLoadDataHandler()
         {
             try
@@ -179,6 +206,43 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
+
+
+        /// <summary>
+        /// tạo và cập nhật tồn kho
+        /// </summary>
+        /// <param name="pEnum"></param>
+        protected async void SaveDataInvHandler(EnumType pEnum = EnumType.SaveAndClose)
+        {
+            try
+            {
+                string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    await getDataInv();
+                    if (pEnum == EnumType.SaveAndCreate)
+                    {
+                        ListInvetoryCreate = new List<InvetoryModel>();
+                        return;
+                    }
+                    IsShowDialog = false;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SuppliesController", "SaveDataInvHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as SuppliesModel);
 
         #endregion
