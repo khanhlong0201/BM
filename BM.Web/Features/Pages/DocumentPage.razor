@@ -2,8 +2,10 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/bill.png" OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
+        OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/bill.png" Enabled="@(!pIsLockPage)"
+        OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
@@ -85,15 +87,15 @@
                                 <div class="row row-gap-2">
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng khách khi sử dụng dịch vụ:
-                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" Enabled="@(!pIsLockPage)" />
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng sức khỏe:
-                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" Enabled="@(!pIsLockPage)" />
                                     </div>
                                     <div class="col-md-4 col-sm-12">
                                         Ghi chú đơn hàng:
-                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+                                        <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" Enabled="@(!pIsLockPage)" />
                                     </div>
                                 </div>
                                 
@@ -104,46 +106,49 @@
             </div>
         </div>
         <div class="row row-gap-2 mt-2">
-            <div class="col-md-4 col-sm-12">
-                <h4 class="mb-1">Sản phẩm | Dịch vụ</h4>
-                <div class="accordion" id="accordion-service">
-                    @if (ListGroupServices != null && ListGroupServices.Any())
-                    {
-                        int iIndex = 0;
-                        @foreach (var oGroup in ListGroupServices)
+            @if (!pIsLockPage)
+            {
+                <div class="col-md-4 col-sm-12">
+                    <h4 class="mb-1">Sản phẩm | Dịch vụ</h4>
+                    <div class="accordion" id="accordion-service">
+                        @if (ListGroupServices != null && ListGroupServices.Any())
                         {
-                            iIndex++;
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-2" style="background-color: rgba(var(--tblr-muted-rgb), 0.04);">
-                                    <button style="padding: 5px 10px" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="@($"#collapse-{iIndex}")" aria-expanded="true">
-                                        @oGroup.Key
-                                    </button>
-                                </h2>
-                                <div id="@($"collapse-{iIndex}")" class="accordion-collapse collapse @(iIndex == 1 ? "show" : "")" data-bs-parent="#accordion-service" style="">
-                                    <div class="list-group list-group-flush">
-                                        @foreach (ServiceModel oItem in oGroup)
-                                        {
-                                            <div class="list-group-item active" style="padding: 5px 10px; background-color: inherit;">
-                                                <div class="row align-items-center">
-                                                    <div class="col">
-                                                        <span class="text-reset d-block">@($"{oItem.ServiceCode} - {oItem.ServiceName}")</span>
-                                                        <div class="d-block text-secondary text-truncate mt-n1">@($"Đơn giá gốc: {oItem.Price.ToString(DefaultConstants.FORMAT_CURRENCY)}")</div>
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <i class="fa-solid fa-plus" style="font-size: 17px;color: #206bc4;cursor: pointer"
-                                                           title="Thêm dịch vụ" @onclick="@(()=> AddItemToSOHandler(oItem))"></i>
+                            int iIndex = 0;
+                            @foreach (var oGroup in ListGroupServices)
+                            {
+                                iIndex++;
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-2" style="background-color: rgba(var(--tblr-muted-rgb), 0.04);">
+                                        <button style="padding: 5px 10px" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="@($"#collapse-{iIndex}")" aria-expanded="true">
+                                            @oGroup.Key
+                                        </button>
+                                    </h2>
+                                    <div id="@($"collapse-{iIndex}")" class="accordion-collapse collapse @(iIndex == 1 ? "show" : "")" data-bs-parent="#accordion-service" style="">
+                                        <div class="list-group list-group-flush">
+                                            @foreach (ServiceModel oItem in oGroup)
+                                            {
+                                                <div class="list-group-item active" style="padding: 5px 10px; background-color: inherit;">
+                                                    <div class="row align-items-center">
+                                                        <div class="col">
+                                                            <span class="text-reset d-block">@($"{oItem.ServiceCode} - {oItem.ServiceName}")</span>
+                                                            <div class="d-block text-secondary text-truncate mt-n1">@($"Đơn giá gốc: {oItem.Price.ToString(DefaultConstants.FORMAT_CURRENCY)}")</div>
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <i class="fa-solid fa-plus" style="font-size: 17px;color: #206bc4;cursor: pointer"
+                                                               title="Thêm dịch vụ" @onclick="@(()=> AddItemToSOHandler(oItem))"></i>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
+                                            }
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            }
                         }
-                    }
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-8 col-sm-12">
+            }
+            <div class="@(pIsLockPage ? "col-sm-12" : "col-md-8 col-sm-12")">
                 <h4 class="mb-1">Đơn hàng</h4>
                 <div class="table-responsive">
                     <table class="table table-transparent">
@@ -155,9 +160,9 @@
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
                                 <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
                                 <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
-                                <th class="text-center" style="width: 170px; min-width: 170px">NV tư vấn</th>
-                                <th class="text-center" style="width: 170px; min-width: 170px">NV thực hiện</th>
-                                <th class="text-center" style="width: 190px; min-width: 190px">Công thức mực</th>
+                                <th class="text-center" style="min-width: 170px">NV tư vấn</th>
+                                <th class="text-center" style="min-width: 170px">NV thực hiện</th>
+                                <th class="text-center" style="min-width: 190px">Công thức mực</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -183,10 +188,10 @@
                                         </td>
                                         <td class="text-end">
                                             <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                                           @bind-Value="@oItem.Price" Arrows="false" />
+                                                           @bind-Value="@oItem.Price" Arrows="false" Enabled="@(!pIsLockPage)" />
                                         </td>
                                         <td class="text-center">
-                                            <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" />
+                                            <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" Enabled="@(!pIsLockPage)" />
                                         </td>
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
                                         <td class="text-center">
@@ -195,6 +200,7 @@
                                                 ValueField="@nameof(ComboboxModel.Code)"
                                                 TextField="@nameof(ComboboxModel.Name)"
                                                 FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                Enabled="@(!pIsLockPage)"
                                                 AutoClose="false" Width="100%"
                                             >
                                             </TelerikMultiSelect>
@@ -205,12 +211,13 @@
                                                         ValueField="@nameof(ComboboxModel.Code)"
                                                         TextField="@nameof(ComboboxModel.Name)"
                                                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                        Enabled="@(!pIsLockPage)"
                                                         AutoClose="false" Width="100%">
 
                                             </TelerikMultiSelect>
                                         </td>
                                         <td class="text-center">
-                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Id="txtChemicalFomula" />
+                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Enabled="@(!pIsLockPage)" Id="txtChemicalFomula" />
                                         </td>
                                     </tr>
                                 }
@@ -233,8 +240,17 @@
                                     <td class="text-center"></td>
                                     <td colspan="3" class="strong text-end">Khách trả:</td>
                                     <td colspan="2" class="text-end">
-                                        <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                             @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" />
+                                        @if(!pIsLockPage)
+                                        {
+                                            <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                                @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" />
+                                        }
+                                        else
+                                        {
+                                            @(DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY))
+                                            <span>đ</span>
+                                        }
+
                                     </td>
                                     <td colspan="3"></td>
                                 </tr>
