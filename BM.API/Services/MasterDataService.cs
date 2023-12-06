@@ -12,7 +12,7 @@ using System.Net;
 namespace BM.API.Services;
 public interface IMasterDataService
 {
-    Task<IEnumerable<BranchModel>> GetBranchsAsync();
+    Task<IEnumerable<BranchModel>> GetBranchsAsync(bool pIsPageLogin = false);
     Task<ResponseModel> UpdateBranchs(RequestModel pRequest);
     Task<IEnumerable<UserModel>> GetUsersAsync();
     Task<ResponseModel> UpdateUsers(RequestModel pRequest);
@@ -52,13 +52,16 @@ public class MasterDataService : IMasterDataService
     /// lấy danh sách chi nhánh
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<BranchModel>> GetBranchsAsync()
+    public async Task<IEnumerable<BranchModel>> GetBranchsAsync(bool pIsPageLogin = false)
     {
         IEnumerable<BranchModel> data;
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"Select * from dbo.[Branchs]", DataRecordToBranchModel, commandType: CommandType.Text);
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@pIsPageLogin", pIsPageLogin);
+            data = await _context.GetDataAsync(@"Select * from dbo.[Branchs] with(nolock)
+                   where @pIsPageLogin = 0 or (@pIsPageLogin = 1 and [IsActive] = 1)", DataRecordToBranchModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally

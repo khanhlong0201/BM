@@ -14,7 +14,7 @@ namespace BM.Web.Services;
 
 public interface ICliMasterDataService
 {
-    Task<List<BranchModel>?> GetDataBranchsAsync();
+    Task<List<BranchModel>?> GetDataBranchsAsync(bool pIsPageLogin = false);
     Task<bool> UpdateBranchAsync(string pJson, string pAction, int pUserId);
     Task<List<UserModel>?> GetDataUsersAsync();
     Task<bool> UpdateUserAsync(string pJson, string pAction, int pUserId);
@@ -56,11 +56,15 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     /// Call API lấy danh sách Chi nhánh
     /// </summary>
     /// <returns></returns>
-    public async Task<List<BranchModel>?> GetDataBranchsAsync()
+    public async Task<List<BranchModel>?> GetDataBranchsAsync(bool pIsPageLogin = false)
     {
         try
         {
-            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GETBRANCH);
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pIsPageLogin", $"{pIsPageLogin}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GETBRANCH, pParams);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else

@@ -13,6 +13,7 @@ namespace BM.Web.Features.Pages
         [Inject] private ILogger<LoginPage>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; set; }
         [Inject] public ToastService? _toastService { get; init; }
+        [Inject] private IProgressService? _progressService { get; init; }
         public LoginViewModel LoginRequest { get; set; } = new LoginViewModel();
         public bool IsLoading { get; set; }
         public string ErrorMessage = "";
@@ -46,7 +47,9 @@ namespace BM.Web.Features.Pages
             {
                 try
                 {
-                    ListBranchs = await _masterDataService!.GetDataBranchsAsync();
+                    await _progressService!.Start();
+                    ListBranchs = await _masterDataService!.GetDataBranchsAsync(pIsPageLogin: true);
+                    await _progressService!.SetPercent(0.6);
                 }
                 catch (Exception ex)
                 {
@@ -54,7 +57,8 @@ namespace BM.Web.Features.Pages
                  
                 }
                 finally
-                {;
+                {
+                    await _progressService!.Done();
                     await InvokeAsync(StateHasChanged);
                 }
             }
