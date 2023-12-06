@@ -263,6 +263,11 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
+                if(pIsLockPage)
+                {
+                    ShowWarning("Đơn hàng này đã được thanh toán!");
+                    return;
+                }    
                 if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
                 {
                     ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
