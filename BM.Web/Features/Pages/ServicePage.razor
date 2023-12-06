@@ -42,8 +42,10 @@
             <GridColumn Field=@nameof(ServiceModel.ServiceCode) Width="130px" MaxResizableWidth="150" Title="Mã dịch vụ">
                 <Template>
                     @{
-                        var model = (context as ServiceModel);
-                        <span class="h-link">@model!.ServiceCode</span>
+                        var model = (context as ServiceModel)!;
+                        <i class="fa-regular fa-pen-to-square h-link text-teal" title="Phát đồ điều trị"
+                            style="font-size: 14px; margin-right: 2px" @onclick="@(()=> EditTreatmentRegimen(model))"></i>
+                        <span class="h-link">@model.ServiceCode</span>
                     }
                 </Template>
                 <FooterTemplate>
@@ -217,6 +219,49 @@
                 </GridColumn>
                 <GridColumn Field=@nameof(PriceModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ tạo"></GridColumn>
                 <GridColumn Field=@nameof(PriceModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ cập nhật"></GridColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </div>
+</HDialog>
+
+<HDialog @bind-IsVisible="@IsShowDialogTreatment"
+    Width="70%"
+    SaveAndClosed="@SaveAndClosedTreatmentHandler"
+    IsShowButtonSaveAdnCreate="false"
+         Title="@($"Phác đồ thực hiện dịch vụ {pServiceCode}")">
+    <TelerikToolBar Class="border-bottom-0">
+        <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@(()=> ReLoadDataHandler(EnumTable.TreatmentRegimens))">Làm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@AddTreatmentRegimenHandler">Thêm mới</ToolBarButton>
+    </TelerikToolBar>
+    <div class="h-table-content" style="height: 300px;">
+        <TelerikGrid Data="@ListTreatments" @ref="@RefListTreatments"
+                     Height="100%"
+                     Width="100%"
+                     RowHeight="25"
+                     Pageable="true"
+                     PageSize="@DefaultConstants.PAGE_SIZE"
+                     Sortable="true"
+                     Resizable="true"
+                     FilterMode="@GridFilterMode.None"
+                     SelectionMode="@GridSelectionMode.Single"
+                     EditMode="@GridEditMode.Incell"
+                     OnUpdate="@UpdateTreatmentRegimenHandler"
+                     ScrollMode="@GridScrollMode.Scrollable">
+            <GridSettings>
+                <GridPagerSettings InputType="PagerInputType.Input" />
+            </GridSettings>
+            <GridColumns>
+                <GridColumn Width="30px" MaxResizableWidth="50" Title="#" Editable="false" TextAlign="@ColumnTextAlign.Center">
+                    <Template>
+                        <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
+                           title="Xóa dịch vụ" @onclick="@(()=> RemoveTreatmentRegimenHandler((context as TreatmentRegimenModel)!.LineNum))"></i>
+                    </Template>
+                </GridColumn>
+                <GridColumn Field=@nameof(TreatmentRegimenModel.LineNum) Width="90px" MaxResizableWidth="90" Title="STT" Editable="false"></GridColumn>
+                <GridColumn Field=@nameof(TreatmentRegimenModel.Name) Width="130px" MaxResizableWidth="130" Title="Bước thực hiện"></GridColumn>
+                <GridColumn Field=@nameof(TreatmentRegimenModel.Title) Width="170px" Title="Nội dung thực hiện"></GridColumn>
+                <GridColumn Field=@nameof(TreatmentRegimenModel.ServiceCode) Width="130px" MaxResizableWidth="150" Title="Mã dịch vụ" Editable="false"></GridColumn>
+                <GridColumn Field=@nameof(TreatmentRegimenModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ cập nhật" Editable="false"></GridColumn>
             </GridColumns>
         </TelerikGrid>
     </div>

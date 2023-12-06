@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
 using Telerik.Blazor;
 using Telerik.Blazor.Components;
+using Telerik.Blazor.Resources;
 
 namespace BM.Web.Features.Controllers
 {
@@ -33,7 +34,9 @@ namespace BM.Web.Features.Controllers
         public IEnumerable<PriceModel>? SelectedPrices { get; set; } = new List<PriceModel>();
         public PriceModel PriceUpdate { get; set; } = new PriceModel();
         public string pServiceCode { get; set; } = "";
-
+        public bool IsShowDialogTreatment { get; set; }
+        public List<TreatmentRegimenModel>? ListTreatments { get; set; }
+        public TelerikGrid<TreatmentRegimenModel>? RefListTreatments { get; set; }
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
         #endregion
@@ -60,6 +63,7 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
@@ -97,6 +101,12 @@ namespace BM.Web.Features.Controllers
             PriceUpdate = new PriceModel();
             ListPrices = await _masterDataService!.GetDataPricesByServiceAsync(pServiceCode);
         }
+
+        private async Task getDataTreatmentRegimens()
+        {
+            ListTreatments = new List<TreatmentRegimenModel>();
+            ListTreatments = await _masterDataService!.GetDataTreatmentsByServiceAsync(pServiceCode);   
+        }
         #endregion
 
         #region Protected Functions
@@ -113,6 +123,10 @@ namespace BM.Web.Features.Controllers
                     case EnumTable.Prices:
                         await ShowLoader();
                         await getDataPricesList();
+                        break;
+                    case EnumTable.TreatmentRegimens:
+                        await ShowLoader();
+                        await getDataTreatmentRegimens();
                         break;
                     default:
                         break;
@@ -295,6 +309,124 @@ namespace BM.Web.Features.Controllers
                 ShowError(ex.Message);
             }
         }
+        #endregion
+
+        #region Phát đồ điều trị
+        protected async void EditTreatmentRegimen(ServiceModel pService)
+        {
+            try
+            {
+                if (pService == null) return;
+                await ShowLoader();
+                pServiceCode = pService.ServiceCode + "";
+                await getDataTreatmentRegimens();
+                IsShowDialogTreatment = true;
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "EditTreatmentRegimen");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected async void AddTreatmentRegimenHandler()
+        {
+            try
+            {
+                if (ListTreatments == null) ListTreatments = new List<TreatmentRegimenModel>();
+                ListTreatments.Add(new TreatmentRegimenModel() { ServiceCode = pServiceCode });
+                // đánh lại số thứ tự
+                for (int i = 0; i < ListTreatments.Count; i++) { ListTreatments[i].LineNum = (i + 1); }
+                RefListTreatments?.Rebind();
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "AddTreatmentRegimenHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        protected void RemoveTreatmentRegimenHandler(int pId)
+        {
+            try
+            {
+                var oItem = ListTreatments!.FirstOrDefault(m => m.LineNum == pId);
+                if (oItem != null)
+                {
+                    ListTreatments!.Remove(oItem);
+                    // đánh lại số thứ tự
+                    for (int i = 0; i < ListTreatments.Count; i++) { ListTreatments[i].LineNum = (i + 1); }
+                    RefListTreatments?.Rebind();
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "AddItemToSOHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        protected void UpdateTreatmentRegimenHandler(GridCommandEventArgs args)
+        {
+            try
+            {
+                TreatmentRegimenModel oItem = (args.Item as TreatmentRegimenModel)!;
+                var target = ListTreatments!.FirstOrDefault(m=>m.LineNum == oItem.LineNum);
+                if (target == null) return;
+                target.Name = oItem.Name;
+                target.Title = oItem.Title;
+                RefListTreatments?.Rebind();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "AddItemToSOHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        protected async void SaveAndClosedTreatmentHandler()
+        {
+            try
+            {
+                if(ListTreatments == null || !ListTreatments.Any())
+                {
+                    ShowWarning("Vui lòng khai báo Phác đồ thực hiện cho dịch vụ!");
+                    return;
+                }
+                if (ListTreatments.Any(m => string.IsNullOrWhiteSpace(m.Name) || string.IsNullOrWhiteSpace(m.Title)))
+                {
+                    ShowWarning("Vui lòng điền đẩy đủ thông tin [Bước] và [Nội dung] thực hiện!");
+                    return;
+                }
+                var isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin Phác đồ điều trị ?", "Thông báo");
+                if (!isConfirm) return;
+                await ShowLoader();
+                PriceUpdate.ServiceCode = pServiceCode;
+                bool isSuccess = await _masterDataService!.UpdateTreatmentRegimenAsync(JsonConvert.SerializeObject(ListTreatments), nameof(EnumType.Add), pUserId);
+                if (isSuccess)
+                {
+                    await getDataTreatmentRegimens();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "ServiceController", "SaveAndClosedTreatmentHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }    
         #endregion
 
         #endregion

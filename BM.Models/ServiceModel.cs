@@ -64,3 +64,14 @@ public class SalesOrderModel
     public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
     public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
 }
+
+public class TreatmentRegimenModel : Auditable
+{
+    public int Id { get; set; }
+    public int LineNum { get; set; }
+    [Required(ErrorMessage = "Vui lòng điền bước thực hiện")]
+    public string? Name { get; set; }
+    [Required(ErrorMessage = "Vui lòng điền nội dung thực hiện")]
+    public string? Title { get; set; }
+    public string? ServiceCode { get; set; }
+}
