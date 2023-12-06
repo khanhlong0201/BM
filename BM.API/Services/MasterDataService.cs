@@ -993,49 +993,62 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             string queryString = "";
+            bool isUpdated = false;
             InvetoryModel oInvotory = JsonConvert.DeserializeObject<InvetoryModel>(pRequest.Json + "")!;
+            List<InvetoryModel> lstInvs = JsonConvert.DeserializeObject<List<InvetoryModel>>(pRequest.JsonDetail + "");
+
             SqlParameter[] sqlParameters;
-            async Task ExecQuery()
+            async Task<bool> ExecQuery()
             {
                 var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 if (data != null && data.Rows.Count > 0)
                 {
                     response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
                     response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
                 }
-            }
-            void setParameter()
-            {
-                sqlParameters = new SqlParameter[5];
-                sqlParameters[0] = new SqlParameter("@SuppliesCode", oInvotory.SuppliesCode);
-                sqlParameters[1] = new SqlParameter("@QtyInv", oInvotory.QtyInv);
-                sqlParameters[2] = new SqlParameter("@Price", oInvotory.Price);
-                sqlParameters[3] = new SqlParameter("@BranchId", oInvotory.BranchId);
-                sqlParameters[4] = new SqlParameter("@Absid", oInvotory.Absid);
+                return false;
             }
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
+                    await _context.BeginTranAsync();
                     queryString = @"INSERT INTO [dbo].[Inventory] ([SuppliesCode] ,[BranchId] ,[EnumId],[QtyInv],[Price] ,[DateCreate] ,[UserCreate],[IsDelete] ))
-                                    values ( @SuppliesCode , @BranchId , @EnumId ,@QtyInv, @Price, getDate(), @UserId, 0 )";
+                                    values ( @SuppliesCode , @BranchId , @EnumId ,@QtyInv, @Price, @DateTimeNow, @UserId, 0 )";
+                    foreach (var oInv in lstInvs)
+                    {
+                        sqlParameters = new SqlParameter[6];
+                        sqlParameters[0] = new SqlParameter("@SuppliesCode", oInv.SuppliesCode);
+                        sqlParameters[1] = new SqlParameter("@QtyInv", oInv.QtyInv);
+                        sqlParameters[2] = new SqlParameter("@Price", oInv.Price);
+                        sqlParameters[3] = new SqlParameter("@BranchId", oInv.BranchId);
+                        sqlParameters[4] = new SqlParameter("@Absid", oInv.Absid);
+                        sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                        sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                        isUpdated = await ExecQuery();
 
-                    setParameter();
-                    await ExecQuery();
+                        if (!isUpdated)
+                        {
+                            await _context.RollbackAsync();
+                            break;
+                        }
+                    }
+                    if (isUpdated) await _context.CommitTranAsync();
                     break;
-                case nameof(EnumType.Update):
-                    queryString = @"UPDATE [dbo].[Inventory]
-                               SET [SuppliesCode] = @SuppliesCode
-                                  ,[BranchId] = @BranchId
-                                  ,[EnumId] = @EnumId
-                                  ,[QtyInv] = @QtyInv
-                                  ,[Price] = @Price
-                                  ,[DateUpdate] = getDate()
-                                  ,[UserUpdate] = @UserId
-                                   Where Absid= @Absid";
+                //case nameof(EnumType.Update):
+                //    queryString = @"UPDATE [dbo].[Inventory]
+                //               SET [SuppliesCode] = @SuppliesCode
+                //                  ,[BranchId] = @BranchId
+                //                  ,[EnumId] = @EnumId
+                //                  ,[QtyInv] = @QtyInv
+                //                  ,[Price] = @Price
+                //                  ,[DateUpdate] = getDate()
+                //                  ,[UserUpdate] = @UserId
+                //                   Where Absid= @Absid";
 
-                    setParameter();
-                    await ExecQuery();
-                    break;
+                //    setParameter();
+                //    await ExecQuery();
+                //    break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     response.Message = "Không xác định được phương thức!";
