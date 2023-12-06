@@ -29,6 +29,7 @@ namespace BM.Web.Features.Controllers
         public bool IsShowDialog { get; set; }
         public bool IsCreate { get; set; } = true;
         public List<EnumModel>? ListServicesType { get; set; } // ds loại dịch vụ
+        public List<EnumModel>? ListPackages { get; set; } // ds gói dịch vụ vụ
         public bool IsShowDialogPriceList { get; set; }
         public List<PriceModel>? ListPrices { get; set; }
         public IEnumerable<PriceModel>? SelectedPrices { get; set; } = new List<PriceModel>();
@@ -71,6 +72,7 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.4);
                     await getDataServices();
                     ListServicesType = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServiceType));
+                    ListPackages = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServicePack));
                 }
                 catch (Exception ex)
                 {
