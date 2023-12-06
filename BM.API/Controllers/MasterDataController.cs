@@ -305,6 +305,48 @@ namespace BM.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetTreatmentByService")]
+        public async Task<IActionResult> GetTreatmentByService(string pServiceCode)
+        {
+            try
+            {
+                var data = await _masterService.GetTreatmentByServiceAsync(pServiceCode);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetPricesByService");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateTreatment")]
+        public async Task<IActionResult> UpdateTreatment([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _masterService.UpdateTreatmentRegime(request);
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "UpdatePrice");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody]  LoginRequestModel loginRequest)

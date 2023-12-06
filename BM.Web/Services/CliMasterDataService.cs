@@ -33,6 +33,8 @@ public interface ICliMasterDataService
     Task<bool> UpdateSuppliesAsync(string pJson, string pAction, int pUserId);
     Task<List<PriceModel>?> GetDataPricesByServiceAsync(string pServiceCode);
     Task<bool> UpdatePriceAsync(string pJson, string pAction, int pUserId);
+    Task<List<TreatmentRegimenModel>?> GetDataTreatmentsByServiceAsync(string pServiceCode);
+    Task<bool> UpdateTreatmentRegimenAsync(string pJson, string pAction, int pUserId);
 }
 public class CliMasterDataService : CliServiceBase, ICliMasterDataService 
 {
@@ -567,6 +569,90 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         catch (Exception ex)
         {
             _logger.LogError(ex, "UpdatePriceAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// lấy danh sách bảng giá theo dịch vụ
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<TreatmentRegimenModel>?> GetDataTreatmentsByServiceAsync(string pServiceCode)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pServiceCode", $"{pServiceCode}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_TREATMENT_BY_SERVICE, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<TreatmentRegimenModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataServicesAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// cập nhật thông tin Phác đồ điều trị
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateTreatmentRegimenAsync(string pJson, string pAction, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                Type = pAction,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_MASTERDATA_UPDATE_TREATMENT, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
+                    _toastService.ShowSuccess($"Đã lưu thông tin Phác đồ điều trị!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdateTreatmentRegimenAsync");
             _toastService.ShowError(ex.Message);
         }
         return false;
