@@ -250,7 +250,7 @@ namespace BM.Web.Features.Controllers
                 if (pEnum == EnumType.Add)
                 {
                     sAction = nameof(EnumType.Add);
-                    sMessage = "Thêm thông tin bảng giá";
+                    sMessage = PriceUpdate.IsActive ? "Thêm thông tin bảng giá và sử dụng đơn giá này" : "Thêm thông tin bảng giá";
                     if(PriceUpdate.Id > 0)
                     {
                         ShowWarning("Vui lòng làm mới lại dữ liệu trước khi thêm mới đơn giá");

@@ -669,6 +669,21 @@ public class MasterDataService : IMasterDataService
                     response.Message = "Không xác định được phương thức!";
                     break;
             }
+
+            // nếu kích hoạt bảng giá -> cập nhật lại các dòng được Active false
+            if(oPrice.IsActive == true)
+            {
+                queryString = @"Update [dbo].[Prices]
+                                   set [IsActive] = 0
+                                     , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                 where [ServiceCode] = @ServiceCode and [Id] <> @Id";
+                sqlParameters = new SqlParameter[4];
+                sqlParameters[0] = new SqlParameter("@Id", oPrice.Id);
+                sqlParameters[1] = new SqlParameter("@ServiceCode", oPrice.ServiceCode);
+                sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            }    
         }
         catch (Exception ex)
         {
