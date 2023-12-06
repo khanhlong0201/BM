@@ -55,6 +55,7 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
@@ -246,18 +247,18 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 await ShowLoader();
 
-                //bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
-                //if (isSuccess)
-                //{
-                //    await getDataInv();
-                //    if (pEnum == EnumType.SaveAndCreate)
-                //    {
-                //        ListInvetoryCreate = new List<InvetoryModel>();
-                //        return;
-                //    }
-                //    IsShowDialog = false;
-                //    return;
-                //}
+                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    await getDataInv();
+                    if (pEnum == EnumType.SaveAndCreate)
+                    {
+                        ListInvetoryCreate = new List<InvetoryModel>();
+                        return;
+                    }
+                    IsShowDialog = false;
+                    return;
+                }
             }
             catch (Exception ex)
             {
