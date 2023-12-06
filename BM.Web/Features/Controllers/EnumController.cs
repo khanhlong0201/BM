@@ -116,7 +116,7 @@ namespace BM.Web.Features.Controllers
             ListEnums = await _masterDataService!.GetDataEnumsAsync(pEnumType);
         }
 
-         void LocationChanged(object sender, LocationChangedEventArgs e)
+        async void LocationChanged(object sender, LocationChangedEventArgs e)
         {
             // Cập nhật giá trị khi location thay đổi
             currentLocation = e.Location;
@@ -125,7 +125,6 @@ namespace BM.Web.Features.Controllers
                 if(currentLocation.Contains("/service-type"))
                 {
                     pEnumType = nameof(EnumType.@ServiceType);
-
                 }
                 else if (currentLocation.Contains("/skin-type"))
                 {
@@ -143,15 +142,15 @@ namespace BM.Web.Features.Controllers
                 {
                     pEnumType = nameof(EnumType.StateOfHealth);
                 }
+                await getDataEnums();
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
                     new BreadcrumbModel() { Text = "Hệ thống" },
                     new BreadcrumbModel() { Text = "Danh mục" },
-                    new BreadcrumbModel() { Text = ListTypeEnums.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
+                    new BreadcrumbModel() { Text = ListTypeEnums?.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
                 };
-                 ListEnums = new List<EnumModel>();
-                 NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+                await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
             }
         }
 
