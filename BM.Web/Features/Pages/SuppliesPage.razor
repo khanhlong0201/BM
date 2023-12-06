@@ -108,7 +108,7 @@
                             Số dòng: @context.Count
                         </FooterTemplate>
                     </GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="270px" Title="Tên vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="170px" Title="Tên vật tư"></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="140px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
@@ -158,54 +158,10 @@
 
 
 <HDialog @bind-IsVisible="@IsShowIntoInv"
-    SaveAndClosed="@(()=> SaveDataHandler())"
-    SaveAndCreate="@(()=> SaveDataHandler(EnumType.SaveAndCreate))"
+    SaveAndClosed="@(()=> SaveDataInvHandler())"
+    SaveAndCreate="@(()=> SaveDataInvHandler(EnumType.SaveAndCreate))"
     Title="Nhập vật tư vào kho">
-   @* <TelerikGrid Data="@ListInvetoryCreate"
-                    Height="100%"
-                    Width="100%"
-                    RowHeight="25"
-                    Pageable="true"
-                    PageSize="@DefaultConstants.PAGE_SIZE"
-                    Sortable="true"
-                    Resizable="true"
-                    FilterMode="@GridFilterMode.FilterMenu"
-                    SelectionMode="@GridSelectionMode.Multiple"
-                    ScrollMode="@GridScrollMode.Scrollable"
-                    @bind-SelectedItems="@SelectedInvetoryCreate">
-        <GridSettings>
-            <GridPagerSettings InputType="PagerInputType.Input" />
-        </GridSettings>
-        <GridAggregates>
-            <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
-        </GridAggregates>
-        <GridColumns>
-            <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
-            <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="130px" MaxResizableWidth="150" Title="Mã vật tư">
-                <Template>
-                     <TelerikComboBox Data="@ListSupplies"
-                        Value="@SelectedInvetoryCreate.SuppliesCode"
-                        ValueExpression="@(() => SelectedInvetoryCreate.SuppliesCode)"
-                        ValueChanged="@((string value) => SelectedInvetoryCreate.SuppliesCode = value)"
-                        Placeholder="Chọn đơn vị tính"
-                        TextField="@nameof(SuppliesModel.SuppliesName)"
-                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
-                        Filterable="true"
-                        ClearButton="false"
-                        Id="cbbBranch"
-                        Class="btn-noborder-radius-left"
-                        Width="100%">
-                    </TelerikComboBox>
-                </Template>
-                <FooterTemplate>
-                    Số dòng: @context.Count
-                </FooterTemplate>
-            </GridColumn>
-            <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="140px" Title="Đơn vị tính" ></GridColumn>
-            <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="140px" Title="Tổng số lượng trong kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-            <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá hiện tại" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
-        </GridColumns>
-    </TelerikGrid>*@
+    <HListInvetoryCreate ListSelectReturn="@ListInvetoryCreate" ListSupplies="@ListSupplies"></HListInvetoryCreate>
 </HDialog>
 
 <HConfirm @ref="@_rDialogs" />
