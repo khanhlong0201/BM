@@ -92,6 +92,7 @@
             <TelerikNumericTextBox 
                 Format="@DefaultConstants.FORMAT_CURRENCY" 
                 Step="1000.0"
+                Min="1000.0"
                 Enabled="@IsCreate"
                 @bind-Value="@ServiceUpdate.Price" 
                 Id="numPrice" />

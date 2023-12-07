@@ -28,4 +28,7 @@ public class UserModel : Auditable
     public DateTime? DateOfBirth { get; set; }
     public DateTime? DateOfWork { get; set; }
     public bool IsAdmin { get; set; }
+
+    [Required(ErrorMessage = "Vui lòng điền nhập lại Mật khẩu")]
+    public string? ReEnterPassword { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿<TelerikToolBar Class="border-bottom-0">
+﻿@inherits BMControllerBase;
+<TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> AddLineToListInvotory())">Thêm mới</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/remove_grid.png" OnClick="@(()=> ConfirmDeleteHandler())">Xóa dòng</ToolBarButton>
 </TelerikToolBar>
@@ -35,9 +36,8 @@
                                          ValueField="@nameof(SuppliesModel.SuppliesCode)"
                                          Filterable="true"
                                          ClearButton="false"
-                                         FillMode="@ThemeConstants.TextBox.FillMode.Flat"
                                          Class="btn-noborder-radius-left"
-                                         Id="txtCategoryId" Width="100%">
+                                         Id="txtSuppliesCode" Width="100%">
                         </TelerikComboBox>
                 </Template>
                 <FooterTemplate>
@@ -50,7 +50,11 @@
                      <TelerikNumericTextBox @bind-Value="@((context as InvetoryModel).QtyInv)" Class="bh-link" Min="1" Id="txtQty" />
                 </Template>
             </GridColumn>
-            <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Field=@nameof(InvetoryModel.Price) Width="140px" Title="Giá nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" >
+                <Template>
+                     <TelerikNumericTextBox Min="1000"  Step="1000"  @bind-Value="@((context as InvetoryModel).Price)" Class="bh-link" Id="txtQty" />
+                </Template>
+            </GridColumn>
         </GridColumns>
     </TelerikGrid>
 </div>
@@ -58,6 +62,9 @@
 
 @code{
     [Inject]  ToastService? _toastService { get; init; }
+
+    [Parameter] public string BranchId { get; set; }
+
     [Parameter]
     public List<SuppliesModel> ListSupplies { get; set; }
 
@@ -132,13 +139,18 @@
                     _toastService.ShowWarning("Vui lòng nhập số lượng !");
                     return;
                 }
+                 if(select.Price <=0)
+                {
+                    _toastService.ShowWarning("Vui lòng nhập giá !");
+                    return;
+                }
             }
             if(ListSupplies!=null && ListSupplies.Count == 0)
             {
                 _toastService.ShowWarning("Bạn đã chọn hết vật tư, bạn cần thêm vật tư mới để nhập vào kho !");
                     return;
             }
-            InvetoryModel emptyInv = new InvetoryModel {Absid = -1, SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= "" };
+            InvetoryModel emptyInv = new InvetoryModel {Absid = -1, SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= BranchId };
             listSelect.Add(emptyInv);
             var temp = new List<InvetoryModel>();
             temp.Add(emptyInv);

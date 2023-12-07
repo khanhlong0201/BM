@@ -151,6 +151,12 @@ public class UserController : BMControllerBase
             string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
             var checkData = _EditContext!.Validate();
             if (!checkData) return;
+            if(UserUpdate.Password +"" != UserUpdate.ReEnterPassword + "")
+            {
+                ShowWarning("Nhập lại mật khẩu không đúng !. Vui lòng nhập lại mật khẩu.");
+                return;
+            }
+
             await ShowLoader();
             bool isSuccess = await _masterDataService!.UpdateUserAsync(JsonConvert.SerializeObject(UserUpdate), sAction, pUserId);
             if (isSuccess)
