@@ -893,7 +893,7 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
                 if (httpResponse.IsSuccessStatusCode)
                 {
                     string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
-                    _toastService.ShowSuccess($"{sMessage} Vật tư!");
+                    _toastService.ShowSuccess($"{sMessage} tồn kho!");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");

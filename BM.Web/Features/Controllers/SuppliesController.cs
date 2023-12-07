@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
 using Telerik.Blazor.Components;
-
+using BM.Web.Commons;
 namespace BM.Web.Features.Controllers
 {
     public class SupliesController : BMControllerBase
@@ -274,6 +274,66 @@ namespace BM.Web.Features.Controllers
 
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as SuppliesModel);
         protected void OnRowDoubleClickInvHandler(GridRowClickEventArgs args) => OnOpenDialogInvHandler(EnumType.Update, args.Item as InvetoryModel);
+
+        protected async void DeleteDataHandler()
+        {
+            try
+            {
+                if (SelectedSupplies == null || !SelectedSupplies.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Supplies), "", string.Join(",", SelectedSupplies.Select(m => m.SuppliesCode)), pUserId);
+                if (isSuccess)
+                {
+                    await getData();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected async void DeleteDataInvHandler()
+        {
+            try
+            {
+                if (SelectedInvetoryHistory == null || !SelectedInvetoryHistory.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Inventory), "", string.Join(",", SelectedInvetoryHistory.Select(m => m.Absid)), pUserId);
+                if (isSuccess)
+                {
+                    await getDataInv();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataInvHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
 
         #endregion
     }

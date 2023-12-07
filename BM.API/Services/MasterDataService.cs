@@ -883,7 +883,7 @@ public class MasterDataService : IMasterDataService
     }
 
     /// <summary>
-    /// lấy danh sách nhân viên
+    /// lấy danh sách tồn kho
     /// </summary>
     /// <returns></returns>
     public async Task<IEnumerable<InvetoryModel>> GetInventoryAsync()
@@ -1031,11 +1031,11 @@ public class MasterDataService : IMasterDataService
             {
                 case nameof(EnumType.Add):
                     await _context.BeginTranAsync();
-                    queryString = @"INSERT INTO [dbo].[Inventory] ([SuppliesCode] ,[BranchId] ,[EnumId],[QtyInv],[Price] ,[DateCreate] ,[UserCreate],[IsDelete] ))
+                    queryString = @"INSERT INTO [dbo].[Inventory] ([SuppliesCode] ,[BranchId] ,[EnumId],[QtyInv],[Price] ,[DateCreate] ,[UserCreate],[IsDelete])
                                     values ( @SuppliesCode , @BranchId , @EnumId ,@QtyInv, @Price, @DateTimeNow, @UserId, 0 )";
                     foreach (var oInv in lstInvs)
                     {
-                        sqlParameters = new SqlParameter[6];
+                        sqlParameters = new SqlParameter[8];
                         sqlParameters[0] = new SqlParameter("@SuppliesCode", oInv.SuppliesCode);
                         sqlParameters[1] = new SqlParameter("@QtyInv", oInv.QtyInv);
                         sqlParameters[2] = new SqlParameter("@Price", oInv.Price);
@@ -1043,6 +1043,7 @@ public class MasterDataService : IMasterDataService
                         sqlParameters[4] = new SqlParameter("@Absid", oInv.Absid);
                         sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                         sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                        sqlParameters[7] = new SqlParameter("@EnumId", oInv.EnumId);
                         isUpdated = await ExecQuery();
 
                         if (!isUpdated)
@@ -1109,6 +1110,26 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
+                    break;
+                case nameof(EnumTable.Supplies):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[SuppliesCode] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[3];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    response = await deleteDataAsync(nameof(EnumTable.Supplies), queryString, sqlParameters);
+                    break;
+                case nameof(EnumTable.Inventory):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[ABSID] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[3];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    response = await deleteDataAsync(nameof(EnumTable.Inventory), queryString, sqlParameters);
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -1355,6 +1376,7 @@ public class MasterDataService : IMasterDataService
     private InvetoryModel DataRecordToInvetoryModel(IDataRecord record)
     {
         InvetoryModel inv = new();
+        if (!Convert.IsDBNull(record["ABSID"])) inv.Absid = Convert.ToInt32(record["ABSID"]);
         if (!Convert.IsDBNull(record["SuppliesCode"])) inv.SuppliesCode = Convert.ToString(record["SuppliesCode"]);
         if (!Convert.IsDBNull(record["SuppliesName"])) inv.SuppliesName = Convert.ToString(record["SuppliesName"]);
         if (!Convert.IsDBNull(record["EnumId"])) inv.EnumId = Convert.ToString(record["EnumId"]);

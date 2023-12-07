@@ -100,6 +100,7 @@
             invetory.SuppliesCode = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesCode;
             invetory.SuppliesName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesName;
             invetory.Price = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().Price;
+            invetory.EnumId = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().EnumId;
             invetory.EnumName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().EnumName;
             grid?.Rebind();
             await InvokeAsync(StateHasChanged);        
@@ -137,7 +138,7 @@
                 _toastService.ShowWarning("Bạn đã chọn hết vật tư, bạn cần thêm vật tư mới để nhập vào kho !");
                     return;
             }
-            InvetoryModel emptyInv = new InvetoryModel { SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= "" };
+            InvetoryModel emptyInv = new InvetoryModel {Absid = -1, SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= "" };
             listSelect.Add(emptyInv);
             var temp = new List<InvetoryModel>();
             temp.Add(emptyInv);
