@@ -29,6 +29,7 @@ namespace BM.Web.Features.Controllers
         public bool IsShowDialog { get; set; }
         public bool IsCreate { get; set; } = true;
         public List<EnumModel>? ListServicesType { get; set; } // ds loại dịch vụ
+        public List<EnumModel>? ListPackages { get; set; } // ds gói dịch vụ vụ
         public bool IsShowDialogPriceList { get; set; }
         public List<PriceModel>? ListPrices { get; set; }
         public IEnumerable<PriceModel>? SelectedPrices { get; set; } = new List<PriceModel>();
@@ -71,6 +72,7 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.4);
                     await getDataServices();
                     ListServicesType = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServiceType));
+                    ListPackages = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServicePack));
                 }
                 catch (Exception ex)
                 {
@@ -248,7 +250,7 @@ namespace BM.Web.Features.Controllers
                 if (pEnum == EnumType.Add)
                 {
                     sAction = nameof(EnumType.Add);
-                    sMessage = "Thêm thông tin bảng giá";
+                    sMessage = PriceUpdate.IsActive ? "Thêm thông tin bảng giá và sử dụng đơn giá này" : "Thêm thông tin bảng giá";
                     if(PriceUpdate.Id > 0)
                     {
                         ShowWarning("Vui lòng làm mới lại dữ liệu trước khi thêm mới đơn giá");

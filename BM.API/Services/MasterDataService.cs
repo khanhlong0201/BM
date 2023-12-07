@@ -12,7 +12,7 @@ using System.Net;
 namespace BM.API.Services;
 public interface IMasterDataService
 {
-    Task<IEnumerable<BranchModel>> GetBranchsAsync();
+    Task<IEnumerable<BranchModel>> GetBranchsAsync(bool pIsPageLogin = false);
     Task<ResponseModel> UpdateBranchs(RequestModel pRequest);
     Task<IEnumerable<UserModel>> GetUsersAsync();
     Task<ResponseModel> UpdateUsers(RequestModel pRequest);
@@ -52,13 +52,16 @@ public class MasterDataService : IMasterDataService
     /// lấy danh sách chi nhánh
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<BranchModel>> GetBranchsAsync()
+    public async Task<IEnumerable<BranchModel>> GetBranchsAsync(bool pIsPageLogin = false)
     {
         IEnumerable<BranchModel> data;
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"Select * from dbo.[Branchs]", DataRecordToBranchModel, commandType: CommandType.Text);
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@pIsPageLogin", pIsPageLogin);
+            data = await _context.GetDataAsync(@"Select * from dbo.[Branchs] with(nolock)
+                   where @pIsPageLogin = 0 or (@pIsPageLogin = 1 and [IsActive] = 1)", DataRecordToBranchModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -483,11 +486,12 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[Description],[WarrantyPeriod],[QtyWarranty]
-                         ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
+            data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[PackageId],T2.[EnumName] as [PackageName]
+                         ,T0.[Description],[WarrantyPeriod],[QtyWarranty],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
                          ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [Price]
                     from [dbo].[Services] as T0 with(nolock) 
               inner join [dbo].[Enums] as T1 with(nolock) on T0.[EnumId] = T1.[EnumId]
+               left join [dbo].[Enums] as T2 with(nolock) on T0.[PackageId] = T2.[EnumId]
                    where T0.[IsDelete] = 0 order by [ServiceCode] desc"
                     , DataRecordToServiceModel, commandType: CommandType.Text);
         }
@@ -524,7 +528,7 @@ public class MasterDataService : IMasterDataService
             }
             void setParameter()
             {
-                sqlParameters = new SqlParameter[7];
+                sqlParameters = new SqlParameter[8];
                 sqlParameters[0] = new SqlParameter("@ServiceCode", oService.ServiceCode);
                 sqlParameters[1] = new SqlParameter("@ServiceName", oService.ServiceName);
                 sqlParameters[2] = new SqlParameter("@EnumId", oService.EnumId);
@@ -532,6 +536,7 @@ public class MasterDataService : IMasterDataService
                 sqlParameters[4] = new SqlParameter("@WarrantyPeriod", oService.WarrantyPeriod);
                 sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
                 sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[7] = new SqlParameter("@PackageId", oService.PackageId);
             }
             switch (pRequest.Type)
             {
@@ -539,8 +544,8 @@ public class MasterDataService : IMasterDataService
                     sqlParameters = new SqlParameter[1];
                     sqlParameters[0] = new SqlParameter("@Type", "Services");
                     oService.ServiceCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã dịch vụ
-                    queryString = @"Insert into [dbo].[Services] ([ServiceCode],[ServiceName],[EnumId],[Description],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
-                                    values (@ServiceCode, @ServiceName, @EnumId, @Description, @WarrantyPeriod, @QtyWarranty, getdate(), @UserId, 0)";
+                    queryString = @"Insert into [dbo].[Services] ([ServiceCode],[ServiceName],[EnumId],[PackageId],[Description],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
+                                    values (@ServiceCode, @ServiceName, @EnumId, @PackageId, @Description, @WarrantyPeriod, @QtyWarranty, getdate(), @UserId, 0)";
                     setParameter();
                     int iPriceId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
                     await _context.BeginTranAsync();
@@ -560,7 +565,7 @@ public class MasterDataService : IMasterDataService
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Services]
                                        set [ServiceName] = @ServiceName , [EnumId] = @EnumId, [Description] = @Description
-                                         , [WarrantyPeriod] = @WarrantyPeriod , [QtyWarranty] = @QtyWarranty
+                                         , [WarrantyPeriod] = @WarrantyPeriod , [QtyWarranty] = @QtyWarranty, [PackageId] = @PackageId
                                          , [DateUpdate] = getdate(), [UserUpdate] = @UserId
                                      where [ServiceCode] = @ServiceCode";
                     setParameter();
@@ -667,6 +672,21 @@ public class MasterDataService : IMasterDataService
                     response.Message = "Không xác định được phương thức!";
                     break;
             }
+
+            // nếu kích hoạt bảng giá -> cập nhật lại các dòng được Active false
+            if(oPrice.IsActive == true)
+            {
+                queryString = @"Update [dbo].[Prices]
+                                   set [IsActive] = 0
+                                     , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                 where [ServiceCode] = @ServiceCode and [Id] <> @Id";
+                sqlParameters = new SqlParameter[4];
+                sqlParameters[0] = new SqlParameter("@Id", oPrice.Id);
+                sqlParameters[1] = new SqlParameter("@ServiceCode", oPrice.ServiceCode);
+                sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            }    
         }
         catch (Exception ex)
         {
@@ -1275,6 +1295,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
         if (!Convert.IsDBNull(record["EnumId"])) model.EnumId = Convert.ToString(record["EnumId"]);
         if (!Convert.IsDBNull(record["EnumName"])) model.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["PackageId"])) model.PackageId = Convert.ToString(record["PackageId"]);
+        if (!Convert.IsDBNull(record["PackageName"])) model.PackageName = Convert.ToString(record["PackageName"]);
         if (!Convert.IsDBNull(record["Description"])) model.Description = Convert.ToString(record["Description"]);
         if (!Convert.IsDBNull(record["WarrantyPeriod"])) model.WarrantyPeriod = Convert.ToDouble(record["WarrantyPeriod"]);
         if (!Convert.IsDBNull(record["QtyWarranty"])) model.QtyWarranty = Convert.ToInt16(record["QtyWarranty"]);

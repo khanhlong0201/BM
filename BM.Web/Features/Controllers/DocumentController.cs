@@ -35,6 +35,7 @@ namespace BM.Web.Features.Controllers
         public DialogFactory? _rDialogs { get; set; }
         //
         public bool pIsCreate { get; set; } = false;
+        public bool pIsLockPage { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         #endregion
@@ -111,10 +112,17 @@ namespace BM.Web.Features.Controllers
                         await showVoucher();
                     }
                     await _progressService!.SetPercent(0.6);
-                    // lấy danh sách dịch vụ
-                    var listServices = await _masterDataService!.GetDataServicesAsync();
-                    if(listServices != null && listServices.Any()) ListGroupServices = listServices.GroupBy(m => $"{m.EnumName}");
-
+                    if(!pIsLockPage)
+                    {
+                        // lấy danh sách dịch vụ
+                        var listServices = await _masterDataService!.GetDataServicesAsync();
+                        if (listServices != null && listServices.Any())
+                        {
+                            ListGroupServices = listServices.GroupBy(m => string.IsNullOrEmpty(m.PackageName) ? $"{m.EnumName}"
+                                : $"{m.EnumName} - {m.PackageName}");
+                        }
+                    }    
+                    // danh sách nhân viên
                     var listUsers = await _masterDataService!.GetDataUsersAsync();
                     if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m=> new ComboboxModel()
                     {
@@ -145,7 +153,11 @@ namespace BM.Web.Features.Controllers
             }    
             Dictionary<string, string>? keyValues = await _documentService!.GetDocByIdAsync(pDocEntry);
             if (keyValues == null) return;
-            if (keyValues.ContainsKey("oHeader")) DocumentUpdate = JsonConvert.DeserializeObject<DocumentModel>(keyValues["oHeader"]);
+            if (keyValues.ContainsKey("oHeader"))
+            {
+                DocumentUpdate = JsonConvert.DeserializeObject<DocumentModel>(keyValues["oHeader"]);
+                pIsLockPage = DocumentUpdate.StatusId == nameof(DocStatus.Closed); // lock page
+            }    
             if (keyValues.ContainsKey("oLine"))
             {
                 ListSalesOrder = new List<SalesOrderModel>();
@@ -251,6 +263,11 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
+                if(pIsLockPage)
+                {
+                    ShowWarning("Đơn hàng này đã được thanh toán!");
+                    return;
+                }    
                 if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
                 {
                     ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");

@@ -28,11 +28,11 @@ namespace BM.API.Controllers
 
         [HttpGet]
         [Route("GetBranchs")]
-        public async Task<IActionResult> GetDataBranchs()
+        public async Task<IActionResult> GetDataBranchs(bool pIsPageLogin = false)
         {
             try
             {
-                var data = await _masterService.GetBranchsAsync();
+                var data = await _masterService.GetBranchsAsync(pIsPageLogin);
                 return Ok(data);
             }
             catch (Exception ex)

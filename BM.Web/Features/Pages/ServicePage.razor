@@ -52,7 +52,7 @@
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ServiceModel.ServiceName) Width="270px" Title="Tên dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.ServiceName) Width="250px" Title="Tên dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.Price) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="130px" Title="Đơn giá">
                 <Template>
                     @{
@@ -63,10 +63,11 @@
                     }
                 </Template>
             </GridColumn>
-            <GridColumn Field=@nameof(ServiceModel.EnumName) Width="170px" Title="Loại dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.EnumName) Width="160px" Title="Loại dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.PackageName) Width="190px" Title="Gói dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.Description) Width="190px" Title="Mô tả"></GridColumn>
-            <GridColumn Field=@nameof(ServiceModel.WarrantyPeriod) Width="190px" Title="Số tháng bảo hành"></GridColumn>
-            <GridColumn Field=@nameof(ServiceModel.QtyWarranty) Width="190px" Title="Số lần bảo hành"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.WarrantyPeriod) Width="170px" Title="Số tháng bảo hành"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.QtyWarranty) Width="170px" Title="Số lần bảo hành"></GridColumn>
         </GridColumns>
     </TelerikGrid>
 </div>
@@ -97,21 +98,40 @@
             <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.Price)" Id="numPrice" />
         </div>
         <div class="mt-2">
-            <HLabel For="cbbTypeEnum" Value="Loại dịch vụ:" IsRequired="true" />
-            <TelerikComboBox Data="@ListServicesType"
-                Value="@ServiceUpdate.EnumId"
-                ValueExpression="@(() => ServiceUpdate.EnumId)"
-                ValueChanged="@((string value) => ServiceUpdate.EnumId = value)"
-                Placeholder="Chọn dịch vụ"
-                TextField="@nameof(EnumModel.EnumName)"
-                ValueField="@nameof(EnumModel.EnumId)"
-                Filterable="true"
-                ClearButton="false"
-                Id="cbbTypeEnum"
-                Class="btn-noborder-radius-left"
-                Width="100%">
-            </TelerikComboBox>
-            <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.EnumId)" Id="cbbTypeEnum" />
+            <div class="row row-gap-2">
+                <div class="col-md-6 col-sm-12">
+                    <HLabel For="cbbTypeEnum" Value="Loại dịch vụ:" IsRequired="true" />
+                    <TelerikComboBox Data="@ListServicesType"
+                                     Value="@ServiceUpdate.EnumId"
+                                     ValueExpression="@(() => ServiceUpdate.EnumId)"
+                                     ValueChanged="@((string value) => ServiceUpdate.EnumId = value)"
+                                     Placeholder="Chọn dịch vụ"
+                                     TextField="@nameof(EnumModel.EnumName)"
+                                     ValueField="@nameof(EnumModel.EnumId)"
+                                     Filterable="true"
+                                     ClearButton="false"
+                                     Id="cbbTypeEnum"
+                                     Class="btn-noborder-radius-left"
+                                     Width="100%">
+                    </TelerikComboBox>
+                    <HValidationTooltip ValidationFor="@(()=> ServiceUpdate.EnumId)" Id="cbbTypeEnum" />
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <HLabel For="cbbPackageId" Value="Gói dịch vụ:"/>
+                    <TelerikComboBox Data="@ListPackages"
+                                     @bind-Value="@ServiceUpdate.PackageId"
+                                     Placeholder="Chọn dịch vụ"
+                                     TextField="@nameof(EnumModel.EnumName)"
+                                     ValueField="@nameof(EnumModel.EnumId)"
+                                     Filterable="true"
+                                     ClearButton="false"
+                                     Id="cbbPackageId"
+                                     Class="btn-noborder-radius-left"
+                                     Width="100%">
+                    </TelerikComboBox>
+                </div>
+            </div>
+            
         </div>
         <div class="mt-2">
             <div class="row row-gap-2">

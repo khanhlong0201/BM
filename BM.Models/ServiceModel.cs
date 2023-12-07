@@ -16,13 +16,15 @@ public class ServiceModel : Auditable
     [Required(ErrorMessage = "Vui lòng điền Tên dịch vụ")]
     public string? ServiceName { get; set; }
     [Required(ErrorMessage = "Vui lòng chọn Loại dịch vụ")]
-    public string? EnumId { get; set; }
+    public string? EnumId { get; set; } // loại dịch vụ
     [Range(1000, double.MaxValue, ErrorMessage = "Vui lòng nhập đơn giá")]
     public double Price { get; set; }
     public string? EnumName { get; set; }
     public string? Description { get; set; }
     public double WarrantyPeriod { get; set; } // số tháng bảo thành
     public int QtyWarranty { get; set; } // số lần bảo hành
+    public string? PackageId { get; set; } // gói dịch vụ
+    public string? PackageName { get; set; }
 }
 
 /// <summary>
