@@ -1,8 +1,11 @@
 ﻿using BM.Models;
+using BM.Models.Shared;
 using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json;
 
 namespace BM.Web.Features.Controllers
 {
@@ -11,7 +14,11 @@ namespace BM.Web.Features.Controllers
         #region Dependency Injection
         [Inject] private ILogger<CustomerDetailsController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
-        [Inject] private NavigationManager? _navManager { get; init; }
+        [Inject] private NavigationManager? _navigationManager { get; init; }
+        #region Properties
+        public CustomerModel CustomerUpdate = new CustomerModel();
+        public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
+        #endregion
         #endregion
 
         #region Override Functions
@@ -27,6 +34,15 @@ namespace BM.Web.Features.Controllers
                     new BreadcrumbModel() { Text = "Thông tin chi tiết" },
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+                CustomerUpdate.BranchName = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.FullName = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.CINo = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.Phone1 = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.Zalo = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.FaceBook = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.Address = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.Remark = DATA_CUSTOMER_EMPTY;
+                CustomerUpdate.SkinType = DATA_CUSTOMER_EMPTY;
             }
             catch (Exception ex)
             {
@@ -41,8 +57,31 @@ namespace BM.Web.Features.Controllers
             {
                 try
                 {
+                    // đọc giá tri câu query
+                    var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
+                    if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
+                    {
+                        string key = uri.Query.Substring(5); // để tránh parse lỗi;    
+                        Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
+                        if (pParams != null && pParams.Any() && pParams.ContainsKey("pCusNo")) CustomerUpdate.CusNo = pParams["pCusNo"];
+                    }    
                     await _progressService!.SetPercent(0.4);
-
+                    if(string.IsNullOrWhiteSpace(CustomerUpdate.CusNo))
+                    {
+                        ShowWarning("Vui lòng tải lại trang hoặc liên hệ IT để được hổ trợ");
+                        return;
+                    }
+                    var oCustomer = await _masterDataService!.GetCustomerByIdAsync(CustomerUpdate.CusNo);
+                    if (oCustomer == null) return;
+                    CustomerUpdate.BranchName = oCustomer.BranchName ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.FullName = oCustomer.FullName ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.CINo = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.Phone1 = oCustomer.Phone1 ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.Zalo = oCustomer.Zalo ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.FaceBook = oCustomer.FaceBook ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
+                    CustomerUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
                 }
                 catch (Exception ex)
                 {
