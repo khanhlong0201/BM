@@ -29,9 +29,10 @@
                                         FillMode="@ThemeConstants.TextBox.FillMode.Flat" Id="txtUserName" />
                         <HValidationTooltip ValidationFor="@(()=> LoginRequest.UserName)" Id="txtUserName" />
                     </div>
-                    <div class="mt-2">
+                    <div class="mt-2" style="display: flex">
                         <TelerikTextBox FillMode="@ThemeConstants.TextBox.FillMode.Flat" Id="txtPassword"
-                                        PlaceHolder="Mật khẩu*:" @bind-Value="@LoginRequest.Password" Password="true" />
+                                        PlaceHolder="Mật khẩu*:" @bind-Value="@LoginRequest.Password" Password="@isPasswordHidden" />
+                        <i @onclick="@(() => HiddenPassword())" class="@(isPasswordHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-top:7px; cursor: pointer;"></i>  
                         <HValidationTooltip ValidationFor="@(()=> LoginRequest.Password)" Id="txtPassword" />
                     </div>
                     <div class="mt-2">
@@ -64,3 +65,12 @@
         </div>
     </div>
 </div>
+
+@code {
+    private bool isPasswordHidden = true;
+
+    private void HiddenPassword()
+    {
+        isPasswordHidden = !isPasswordHidden;
+    }
+}
