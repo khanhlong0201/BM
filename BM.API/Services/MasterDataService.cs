@@ -867,10 +867,14 @@ public class MasterDataService : IMasterDataService
                       ,t0.[UserCreate]
 	                  ,t0.[DateUpdate]
                       ,t0.[UserUpdate]
+					  ,t3.FullName as 'UserNameCreate'
+						,t4.FullName as 'UserNameUpdate'
 	                  , (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode) as QtyInv
 	                  , (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode order by t1.DateCreate desc) as Price
                   FROM [dbo].[Supplies] t0 
                   inner join Enums t1 on t0.EnumId = t1.EnumId
+				  inner join Users t3 on t0.UserCreate = t3.Id
+					left join Users t4 on t0.UserUpdate = t4.Id
                   where t0.IsDelete = 0 and t1.EnumType ='Unit'"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
         }
@@ -893,21 +897,25 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             data = await _context.GetDataAsync(@"SELECT t0.[ABSID]
-                                              ,t0.[SuppliesCode]
-                                              ,t0.[BranchId]
-                                              ,t0.[EnumId]
-                                              ,t0.[QtyInv]
-                                              ,t0.[Price]
-                                              ,t0.[DateCreate]
-                                              ,t0.[UserCreate]
-                                              ,t0.[DateUpdate]
-                                              ,t0.[UserUpdate]
-	                                          ,t1.SuppliesName
-	                                          ,t2.EnumName
-                                          FROM [dbo].[Inventory] t0 
-                                          inner join Supplies t1 on t0.SuppliesCode = t1.SuppliesCode
-                                          inner join Enums t2 on t0.EnumId = t2.EnumId
-                                            where t0.IsDelete = 0 and t2.EnumType ='Unit'"
+                                            ,t0.[SuppliesCode]
+                                            ,t0.[BranchId]
+                                            ,t0.[EnumId]
+                                            ,t0.[QtyInv]
+                                            ,t0.[Price]
+                                            ,t0.[DateCreate]
+                                            ,t0.[UserCreate]
+                                            ,t0.[DateUpdate]
+                                            ,t0.[UserUpdate]
+	                                        ,t1.SuppliesName
+	                                        ,t2.EnumName
+	                                        ,t3.FullName as 'UserNameCreate'
+	                                        ,t4.FullName as 'UserNameUpdate'
+                                        FROM [dbo].[Inventory] t0 
+                                        inner join Supplies t1 on t0.SuppliesCode = t1.SuppliesCode
+                                        inner join Enums t2 on t0.EnumId = t2.EnumId
+                                        inner join Users t3 on t0.UserCreate = t3.Id
+                                        left join Users t4 on t0.UserUpdate = t4.Id
+                                        where t0.IsDelete = 0 and t2.EnumType ='Unit'"
                     , DataRecordToInvetoryModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -1035,6 +1043,7 @@ public class MasterDataService : IMasterDataService
                                     values ( @SuppliesCode , @BranchId , @EnumId ,@QtyInv, @Price, @DateTimeNow, @UserId, 0 )";
                     foreach (var oInv in lstInvs)
                     {
+
                         sqlParameters = new SqlParameter[8];
                         sqlParameters[0] = new SqlParameter("@SuppliesCode", oInv.SuppliesCode);
                         sqlParameters[1] = new SqlParameter("@QtyInv", oInv.QtyInv);
@@ -1054,20 +1063,28 @@ public class MasterDataService : IMasterDataService
                     }
                     if (isUpdated) await _context.CommitTranAsync();
                     break;
-                //case nameof(EnumType.Update):
-                //    queryString = @"UPDATE [dbo].[Inventory]
-                //               SET [SuppliesCode] = @SuppliesCode
-                //                  ,[BranchId] = @BranchId
-                //                  ,[EnumId] = @EnumId
-                //                  ,[QtyInv] = @QtyInv
-                //                  ,[Price] = @Price
-                //                  ,[DateUpdate] = getDate()
-                //                  ,[UserUpdate] = @UserId
-                //                   Where Absid= @Absid";
+                case nameof(EnumType.Update):
+                    queryString = @"UPDATE [dbo].[Inventory]
+                               SET [SuppliesCode] = @SuppliesCode
+                                  ,[BranchId] = @BranchId
+                                  ,[EnumId] = @EnumId
+                                  ,[QtyInv] = @QtyInv
+                                  ,[Price] = @Price
+                                  ,[DateUpdate] = @DateTimeNow
+                                  ,[UserUpdate] = @UserId
+                                   Where Absid= @Absid";
+                    sqlParameters = new SqlParameter[8];
+                    sqlParameters[0] = new SqlParameter("@SuppliesCode", oInvotory.SuppliesCode);
+                    sqlParameters[1] = new SqlParameter("@QtyInv", oInvotory.QtyInv);
+                    sqlParameters[2] = new SqlParameter("@Price", oInvotory.Price);
+                    sqlParameters[3] = new SqlParameter("@BranchId", oInvotory.BranchId);
+                    sqlParameters[4] = new SqlParameter("@Absid", oInvotory.Absid);
+                    sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[7] = new SqlParameter("@EnumId", oInvotory.EnumId);
 
-                //    setParameter();
-                //    await ExecQuery();
-                //    break;
+                    await ExecQuery();
+                    break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     response.Message = "Không xác định được phương thức!";
@@ -1343,6 +1360,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) suppplies.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) suppplies.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) suppplies.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["UserNameCreate"])) suppplies.UserNameCreate = Convert.ToString(record["UserNameCreate"]);
+        if (!Convert.IsDBNull(record["UserNameUpdate"])) suppplies.UserNameUpdate = Convert.ToString(record["UserNameUpdate"]);
         if (!Convert.IsDBNull(record["QtyInv"])) suppplies.QtyInv = Convert.ToDecimal(record["QtyInv"]);
         if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
         return suppplies;
@@ -1385,6 +1404,9 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) inv.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) inv.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) inv.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["UserNameCreate"])) inv.UserNameCreate = Convert.ToString(record["UserNameCreate"]);
+        if (!Convert.IsDBNull(record["UserNameUpdate"])) inv.UserNameUpdate = Convert.ToString(record["UserNameUpdate"]);
+        if (!Convert.IsDBNull(record["BranchId"])) inv.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["QtyInv"])) inv.QtyInv = Convert.ToDecimal(record["QtyInv"]);
         if (!Convert.IsDBNull(record["Price"])) inv.Price = Convert.ToDecimal(record["Price"]);
         return inv;

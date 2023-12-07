@@ -23,12 +23,14 @@ namespace BM.Web.Features.Controllers
         public IEnumerable<SuppliesModel>? SelectedSupplies { get; set; } = new List<SuppliesModel>();
         public SuppliesModel SuppliesUpdate { get; set; } = new SuppliesModel();
         public EditContext? _EditContext { get; set; }
+        public EditContext? _EditInvContext { get; set; }
         public List<InvetoryModel>? ListInvetoryHistory { get; set; } = new List<InvetoryModel>();
         public List<InvetoryModel>? ListInvetoryCreate { get; set; } = new List<InvetoryModel>();
         public IEnumerable<InvetoryModel>? SelectedInvetoryHistory { get; set; } = new List<InvetoryModel>();
         public InvetoryModel InvetoryHistoryUpdate { get; set; } = new InvetoryModel();
         public bool IsShowDialog { get; set; }
         public bool IsShowIntoInv { get; set; }
+        public bool IsShowIntoUpdateInv { get; set; }
         public bool IsCreate { get; set; } = true;
         public HConfirm? _rDialogs { get; set; }
         #endregion
@@ -42,8 +44,7 @@ namespace BM.Web.Features.Controllers
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
-                    new BreadcrumbModel() { Text = "Kho" },
-                    new BreadcrumbModel() { Text = "Vật tư- tồn kho" }
+                    new BreadcrumbModel() { Text = "Quản lý vật tư tồn kho" }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
             }
@@ -162,24 +163,33 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        /// <summary>
+        /// mở sửa tồn kho
+        /// </summary>
+        /// <param name="pAction"></param>
+        /// <param name="pItemDetails"></param>
         protected void OnOpenDialogInvHandler(EnumType pAction = EnumType.Add, InvetoryModel? pItemDetails = null)
         {
             try
             {
-                //if (pAction == EnumType.Add)
-                //{
-                //    IsCreate = true;
-                //    SuppliesUpdate = new SuppliesModel();
-                //}
-                //else
-                //{
-                //    SuppliesUpdate.SuppliesCode = pItemDetails!.SuppliesCode;
-                //    SuppliesUpdate.SuppliesName = pItemDetails!.SuppliesName;
-                //    SuppliesUpdate.EnumId = pItemDetails!.EnumId;
-                //    IsCreate = false;
-                //}
-                //IsShowDialog = true;
-                //_EditContext = new EditContext(SuppliesUpdate);
+                if (pAction == EnumType.Add)
+                {
+                    IsCreate = true;
+                    InvetoryHistoryUpdate = new InvetoryModel();
+                }
+                else
+                {
+                    InvetoryHistoryUpdate.Absid = pItemDetails!.Absid;
+                    InvetoryHistoryUpdate.SuppliesCode = pItemDetails!.SuppliesCode;
+                    InvetoryHistoryUpdate.EnumId = pItemDetails!.EnumId;
+                    InvetoryHistoryUpdate.EnumName = pItemDetails!.EnumName;
+                    InvetoryHistoryUpdate.QtyInv = pItemDetails!.QtyInv;
+                    InvetoryHistoryUpdate.Price = pItemDetails!.Price;
+                    InvetoryHistoryUpdate.BranchId = pItemDetails!.BranchId;
+                    IsCreate = false;
+                }
+                IsShowIntoUpdateInv = true;
+                _EditInvContext = new EditContext(InvetoryHistoryUpdate);
             }
             catch (Exception ex)
             {
@@ -187,7 +197,9 @@ namespace BM.Web.Features.Controllers
                 ShowError(ex.Message);
             }
         }
-
+        /// <summary>
+        /// mở nhập kho
+        /// </summary>
         protected void OnOpenIntoInvHandler()
         {
             try
@@ -201,6 +213,10 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        /// <summary>
+        /// lưu vật tư
+        /// </summary>
+        /// <param name="pEnum"></param>
         protected async void SaveDataHandler(EnumType pEnum = EnumType.SaveAndClose)
         {
             try
@@ -209,7 +225,7 @@ namespace BM.Web.Features.Controllers
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
                 await ShowLoader();
-                bool isSuccess = await _masterDataService!.UpdateSuppliesAsync(JsonConvert.SerializeObject(SuppliesUpdate), sAction, pUserId);
+                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
                 if (isSuccess)
                 {
                     await getData();
@@ -237,7 +253,7 @@ namespace BM.Web.Features.Controllers
 
 
         /// <summary>
-        /// tạo và cập nhật tồn kho
+        /// lưu nhập kho
         /// </summary>
         /// <param name="pEnum"></param>
         protected async void SaveDataInvHandler(EnumType pEnum = EnumType.SaveAndClose)
@@ -256,7 +272,8 @@ namespace BM.Web.Features.Controllers
                         ListInvetoryCreate = new List<InvetoryModel>();
                         return;
                     }
-                    IsShowDialog = false;
+                    IsShowIntoInv = false;
+                    IsShowIntoUpdateInv = false;
                     return;
                 }
             }
@@ -272,9 +289,23 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        /// <summary>
+        /// sửa vật tư
+        /// </summary>
+        /// <param name="args"></param>
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as SuppliesModel);
+       
+        
+        /// <summary>
+        /// sửa tồn kho
+        /// </summary>
+        /// <param name="args"></param>
         protected void OnRowDoubleClickInvHandler(GridRowClickEventArgs args) => OnOpenDialogInvHandler(EnumType.Update, args.Item as InvetoryModel);
 
+
+        /// <summary>
+        /// xóa vật tư
+        /// </summary>
         protected async void DeleteDataHandler()
         {
             try
@@ -305,6 +336,9 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+        /// <summary>
+        /// xóa tồn kho
+        /// </summary>
         protected async void DeleteDataInvHandler()
         {
             try
