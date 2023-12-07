@@ -22,14 +22,27 @@
                         <div class="accordion-body pt-0">
                             <div class="mb-2">
                                 <div class="row row-gap-2">
-                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Số phiếu: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Tình trạng phiếu:
+                                        <strong class="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-cyan")">
+                                            @($"{DocumentUpdate.StatusName}")
+                                        </strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Ngày tạo: <strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="row row-gap-2">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
                                         Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
                                     </div>
-                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                    <div class="col-lg-8 col-md-8 col-sm-12">
                                         Cơ sở: <strong>@DocumentUpdate.BranchName</strong>
-                                    </div>
-                                    <div class="col-lg-4 col-md-6 col-sm-12">
-                                        Ngày tạo: <strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>
                                     </div>
                                 </div>
                             </div>
@@ -59,29 +72,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-2">
-                                <div class="row row-gap-2">
-                                    <div class="col-lg-4 col-md-4 col-sm-12">
-                                        Tình trạng phiếu: 
-                                        <strong class="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-cyan")">
-                                            @($"{DocumentUpdate.StatusName}")
-                                        </strong>
-                                    </div>
-                                    <div class="col-lg-8 col-md-8 col-sm-12">
-                                        Địa chỉ: <strong>@DocumentUpdate.Address</strong>
-                                    </div>
-                                </div>
-                            </div>
+                            
                             <div class="mb-2">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
                                     </div>
-                                    <div class="col-lg-8 col-md-8 col-sm-12">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
                                         Loại da: <strong>@DocumentUpdate.SkinType</strong>
                                     </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                                    </div>
                                 </div>
-                                
                             </div>
                             <div class="mb-2">
                                 <div class="row row-gap-2">

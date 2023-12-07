@@ -192,13 +192,10 @@ public class DocumentService : IDocumentService
             {
                 case nameof(EnumType.Add):
                     int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[Drafts] with(nolock)");
-                    if (oDraft.StatusId == nameof(DocStatus.Closed))
-                    {
-                        // nếu status == Closed -> đánh mã chứng từ
-                        sqlParameters = new SqlParameter[1];
-                        sqlParameters[0] = new SqlParameter("@Type", "Drafts");
-                        oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
-                    }
+                    // nếu status == Closed -> đánh mã chứng từ
+                    sqlParameters = new SqlParameter[1];
+                    sqlParameters[0] = new SqlParameter("@Type", "Drafts");
+                    oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore], [VoucherNo]
                                    ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore, @VoucherNo
@@ -261,27 +258,14 @@ public class DocumentService : IDocumentService
                     await _context.RollbackAsync();
                     break;
                 case nameof(EnumType.Update):
-                    if (oDraft.StatusId == nameof(DocStatus.Closed))
-                    {
-                        // nếu status == Closed & chưa có mã chứng từ -> đánh mã chứng từ
-                        sqlParameters = new SqlParameter[1];
-                        sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
-                        int checkVoucherNo = await _context.ExecuteScalarAsync("select COUNT(*) from [dbo].[Drafts] with(nolock) where [DocEntry] = @DocEntry and isnull(VoucherNo, '') = ''", sqlParameters);
-                        if(checkVoucherNo > 0)
-                        {
-                            sqlParameters = new SqlParameter[1];
-                            sqlParameters[0] = new SqlParameter("@Type", "Drafts");
-                            oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
-                        }    
-                    }
                     // kiểm tra mã lệnh
                     queryString = @"Update [dbo].[Drafts]
                                        set [DiscountCode] = @DiscountCode, [Total] = @Total, [GuestsPay] = @GuestsPay
                                          , [StatusBefore] = @StatusBefore, [HealthStatus] = @HealthStatus, [NoteForAll] = @NoteForAll
                                          , [StatusId] = @StatusId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
-                                         , [Debt] = @Debt, [VoucherNo] = @VoucherNo
+                                         , [Debt] = @Debt
                                      where [DocEntry] = @DocEntry";
-                    sqlParameters = new SqlParameter[12];
+                    sqlParameters = new SqlParameter[11];
                     sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
                     sqlParameters[1] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
                     sqlParameters[2] = new SqlParameter("@Total", oDraft.Total);
@@ -293,7 +277,6 @@ public class DocumentService : IDocumentService
                     sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                    sqlParameters[11] = new SqlParameter("@VoucherNo", oDraft.VoucherNo);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
                     if(isUpdated)

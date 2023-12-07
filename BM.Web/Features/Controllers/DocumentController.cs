@@ -52,6 +52,7 @@ namespace BM.Web.Features.Controllers
                     new BreadcrumbModel() { Text = "Lập đơn hàng" }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+                DocumentUpdate.VoucherNo = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.BranchName = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.FullName = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.CINo = DATA_CUSTOMER_EMPTY;
