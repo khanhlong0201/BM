@@ -261,21 +261,27 @@ public class DocumentService : IDocumentService
                     await _context.RollbackAsync();
                     break;
                 case nameof(EnumType.Update):
-                    if (oDraft.StatusId == nameof(DocStatus.Closed) && string.IsNullOrWhiteSpace(oDraft.VoucherNo))
+                    if (oDraft.StatusId == nameof(DocStatus.Closed))
                     {
                         // nếu status == Closed & chưa có mã chứng từ -> đánh mã chứng từ
                         sqlParameters = new SqlParameter[1];
-                        sqlParameters[0] = new SqlParameter("@Type", "Drafts");
-                        oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
+                        sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
+                        int checkVoucherNo = await _context.ExecuteScalarAsync("select COUNT(*) from [dbo].[Drafts] with(nolock) where [DocEntry] = @DocEntry and isnull(VoucherNo, '') = ''", sqlParameters);
+                        if(checkVoucherNo > 0)
+                        {
+                            sqlParameters = new SqlParameter[1];
+                            sqlParameters[0] = new SqlParameter("@Type", "Drafts");
+                            oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
+                        }    
                     }
                     // kiểm tra mã lệnh
                     queryString = @"Update [dbo].[Drafts]
                                        set [DiscountCode] = @DiscountCode, [Total] = @Total, [GuestsPay] = @GuestsPay
                                          , [StatusBefore] = @StatusBefore, [HealthStatus] = @HealthStatus, [NoteForAll] = @NoteForAll
                                          , [StatusId] = @StatusId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
-                                         , [Debt] = @Debt
+                                         , [Debt] = @Debt, [VoucherNo] = @VoucherNo
                                      where [DocEntry] = @DocEntry";
-                    sqlParameters = new SqlParameter[11];
+                    sqlParameters = new SqlParameter[12];
                     sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
                     sqlParameters[1] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
                     sqlParameters[2] = new SqlParameter("@Total", oDraft.Total);
@@ -287,6 +293,7 @@ public class DocumentService : IDocumentService
                     sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[11] = new SqlParameter("@VoucherNo", oDraft.VoucherNo);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
                     if(isUpdated)
