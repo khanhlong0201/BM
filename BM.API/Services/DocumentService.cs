@@ -261,6 +261,13 @@ public class DocumentService : IDocumentService
                     await _context.RollbackAsync();
                     break;
                 case nameof(EnumType.Update):
+                    if (oDraft.StatusId == nameof(DocStatus.Closed) && string.IsNullOrWhiteSpace(oDraft.VoucherNo))
+                    {
+                        // nếu status == Closed & chưa có mã chứng từ -> đánh mã chứng từ
+                        sqlParameters = new SqlParameter[1];
+                        sqlParameters[0] = new SqlParameter("@Type", "Drafts");
+                        oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
+                    }
                     // kiểm tra mã lệnh
                     queryString = @"Update [dbo].[Drafts]
                                        set [DiscountCode] = @DiscountCode, [Total] = @Total, [GuestsPay] = @GuestsPay

@@ -39,7 +39,8 @@
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
             <GridCommandColumn Width="40px" MaxResizableWidth="40">
-                <i class="fa-regular fa-pen-to-square h-link" title="Xem lịch sử" style="font-size: 14px;"></i>
+                <i class="fa-solid fa-circle-info h-link" title="Xem thông tin chi tiết" style="font-size: 14px;"
+                    @onclick="@(()=> ReviewCustomerInfoHandler((context as CustomerModel)))"></i>
             </GridCommandColumn>
             <GridColumn Field=@nameof(CustomerModel.CusNo) Width="150px" MaxResizableWidth="150" Title="Mã khách hàng" ShowFilterCellButtons="false">
                 <Template>
