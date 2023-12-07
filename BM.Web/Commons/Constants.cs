@@ -57,4 +57,5 @@ public static class EndpointConstants
 
     public const string URL_DOCUMENT_GET_SALES_ORDER = "Document/GetDocList";
     public const string URL_DOCUMENT_GET_DOC_BY_ID = "Document/GetDocById";
+    public const string URL_DOCUMENT_GET_DOC_BY_CUSNO = "Document/GetDocClosedByGuest";
 }

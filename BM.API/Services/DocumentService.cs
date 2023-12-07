@@ -15,6 +15,7 @@ public interface IDocumentService
     Task<ResponseModel> UpdateSalesOrder(RequestModel pRequest);
     Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(SearchModel pSearchData);
     Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry);
+    Task<IEnumerable<DocumentModel>> GetSalesOrderClosedByGuest(string pCusNo);
 }
 public class DocumentService : IDocumentService
 {
@@ -197,9 +198,9 @@ public class DocumentService : IDocumentService
                     sqlParameters[0] = new SqlParameter("@Type", "Drafts");
                     oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore], [VoucherNo]
-                                   ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
+                                   ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[DateUpdate],[IsDelete])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore, @VoucherNo
-                                   ,@BranchId,@BaseEntry,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, 0)";
+                                   ,@BranchId,@BaseEntry,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, @DateTimeNow, 0)";
 
                     sqlParameters = new SqlParameter[15];
                     sqlParameters[0] = new SqlParameter("@DocEntry", iDocentry);
@@ -357,6 +358,34 @@ public class DocumentService : IDocumentService
         return response;
     }
 
+    /// <summary>
+    /// lấy danh sách đơn hàng hoàn thành theo khách hàng
+    /// </summary>
+    /// <param name="pCusNo"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<DocumentModel>> GetSalesOrderClosedByGuest(string pCusNo)
+    {
+        IEnumerable<DocumentModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
+            data = await _context.GetDataAsync(@$"Select [DocEntry],[VoucherNo],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry], T1.[BranchId],T1.[BranchName]
+                            ,N'Hoàn thành' as [StatusName],T0.[DateUpdate]
+                      from [dbo].[Drafts] as T0 with(nolock) 
+                inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
+                     where T0.[StatusId] = '{nameof(DocStatus.Closed)}' and T0.[CusNo] = @CusNo
+                  order by [DateUpdate] desc"
+                    , DataRecordToDocumentByGuestModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
     #region Private Funtions
 
     /// <summary>
@@ -390,5 +419,23 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
         return model;
     }
+    
+    private DocumentModel DataRecordToDocumentByGuestModel(IDataRecord record)
+    {
+        DocumentModel model = new();
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["BaseEntry"])) model.BaseEntry = Convert.ToInt32(record["BaseEntry"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["Total"])) model.Total = Convert.ToDouble(record["Total"]);
+        if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
+        if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
+        if (!Convert.IsDBNull(record["StatusId"])) model.StatusId = Convert.ToString(record["StatusId"]);
+        if (!Convert.IsDBNull(record["StatusName"])) model.StatusName = Convert.ToString(record["StatusName"]);
+        if (!Convert.IsDBNull(record["NoteForAll"])) model.NoteForAll = Convert.ToString(record["NoteForAll"]);
+        if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+        return model;
+    }    
     #endregion
 }

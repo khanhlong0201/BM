@@ -64,7 +64,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "DocumentController", "GetDataDocuments");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
@@ -81,7 +85,32 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "DocumentController", "GetDocById");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
+        }
+
+        [HttpGet]
+        [Route("GetDocClosedByGuest")]
+        public async Task<IActionResult> GetDocClosedByGuest(string pCusNo)
+        {
+            try
+            {
+                var data = await _documentervice.GetSalesOrderClosedByGuest(pCusNo);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetDocClosedByGuest");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }

@@ -15,9 +15,11 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<CustomerDetailsController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
         [Inject] private NavigationManager? _navigationManager { get; init; }
+        [Inject] private ICliDocumentService? _documentService { get; init; }
         #region Properties
-        public CustomerModel CustomerUpdate = new CustomerModel();
+        public CustomerModel CustomerUpdate { get; set; } = new CustomerModel();
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
+        public List<DocumentModel>? ListDocHis { get; set; }
         #endregion
         #endregion
 
@@ -82,6 +84,9 @@ namespace BM.Web.Features.Controllers
                     CustomerUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
                     CustomerUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
                     CustomerUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
+
+                    // call lấy danh sách chi tiết
+                    ListDocHis = await _documentService!.GetDocByCusNoAsync(CustomerUpdate.CusNo + "");
                 }
                 catch (Exception ex)
                 {
