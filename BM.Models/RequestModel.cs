@@ -66,7 +66,9 @@ public enum EnumTable
     @Users,
     @Customers,
     @Prices,
-    @TreatmentRegimens
+    @TreatmentRegimens,
+    @Supplies,
+    @Inventory
 }
 
 public enum DocStatus
