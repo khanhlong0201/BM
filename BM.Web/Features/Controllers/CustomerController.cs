@@ -54,6 +54,7 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
@@ -228,6 +229,25 @@ namespace BM.Web.Features.Controllers
             catch (Exception ex)
             {
                 _logger!.LogError(ex, "CustomerController", "CreateTicketHandler");
+                ShowError(ex.Message);
+            }
+        }  
+        
+        protected void ReviewCustomerInfoHandler(CustomerModel pCustomer)
+        {
+            try
+            {
+                if (pCustomer == null) return;
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pCusNo", $"{pCustomer.CusNo}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navManager!.NavigateTo($"/customer-details?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "CustomerController", "ReviewCustomerInfoHandler");
                 ShowError(ex.Message);
             }
         }    

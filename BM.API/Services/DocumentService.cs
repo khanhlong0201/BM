@@ -192,13 +192,10 @@ public class DocumentService : IDocumentService
             {
                 case nameof(EnumType.Add):
                     int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[Drafts] with(nolock)");
-                    if (oDraft.StatusId == nameof(DocStatus.Closed))
-                    {
-                        // nếu status == Closed -> đánh mã chứng từ
-                        sqlParameters = new SqlParameter[1];
-                        sqlParameters[0] = new SqlParameter("@Type", "Drafts");
-                        oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số hóa đơn;
-                    }
+                    // nếu status == Closed -> đánh mã chứng từ
+                    sqlParameters = new SqlParameter[1];
+                    sqlParameters[0] = new SqlParameter("@Type", "Drafts");
+                    oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore], [VoucherNo]
                                    ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[IsDelete])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore, @VoucherNo
