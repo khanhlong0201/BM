@@ -10,6 +10,7 @@ public static class DefaultConstants
     public const string FORMAT_GRID_DATE = "{0: dd/MM/yyyy}";
     public const string FORMAT_GRID_DATE_TIME = "{0: HH:mm dd/MM/yyyy}";
     public const string FORMAT_DATE_TIME = "HH:mm dd/MM/yyyy";
+    public const string FORMAT_TIME = "HH:mm";
     public const int PAGE_SIZE = 100;
 
     public const string MESSAGE_INVALID_DATA = "Không đúng định dạng dữ liệu!";

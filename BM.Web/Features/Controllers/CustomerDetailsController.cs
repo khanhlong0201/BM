@@ -6,6 +6,7 @@ using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using Telerik.Blazor.Components;
 
 namespace BM.Web.Features.Controllers
 {
@@ -98,6 +99,28 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.Done();
                     await InvokeAsync(StateHasChanged);
                 }
+            }
+        }
+        #endregion
+
+        #region Protected Functions
+        protected void OnViewDerailsHandler(DocumentModel oItem)
+        {
+            try
+            {
+                if (oItem == null) return;
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pDocEntry", $"{oItem.DocEntry}"},
+                    { "pIsCreate", $"{false}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navigationManager!.NavigateTo($"/create-ticket?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "CustomerDetailsController", "OnViewDerailsHandler");
+                ShowError(ex.Message);
             }
         }
         #endregion

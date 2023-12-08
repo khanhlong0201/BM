@@ -372,11 +372,17 @@ public class DocumentService : IDocumentService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
             data = await _context.GetDataAsync(@$"Select [DocEntry],[VoucherNo],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry], T1.[BranchId],T1.[BranchName]
-                            ,N'Hoàn thành' as [StatusName],T0.[DateUpdate]
+                            ,N'Hoàn thành' as [StatusName],T0.[DateCreate],T2.[FullName] as [UserNameCreate]
+                            ,(select string_agg(CONCAT(T00.ServiceName, ' ', T02.EnumName), ', ') 
+                                from [dbo].[Services] as T00 with(nolock)
+						  inner join [dbo].[DraftDetails] as T01 with(nolock) on T00.ServiceCode = T01.ServiceCode 
+						   left join [dbo].[Enums] as T02 with(nolock) on T00.PackageId = T02.EnumId
+							where T01.DocEntry = T0.DocEntry) as [Service]
                       from [dbo].[Drafts] as T0 with(nolock) 
                 inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
+                 left join [dbo].[Users] as T2 with(nolock) on T0.UserCreate = T2.Id
                      where T0.[StatusId] = '{nameof(DocStatus.Closed)}' and T0.[CusNo] = @CusNo
-                  order by [DateUpdate] desc"
+                  order by [DateCreate] desc"
                     , DataRecordToDocumentByGuestModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -425,7 +431,8 @@ public class DocumentService : IDocumentService
         DocumentModel model = new();
         if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
         if (!Convert.IsDBNull(record["BaseEntry"])) model.BaseEntry = Convert.ToInt32(record["BaseEntry"]);
-        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserNameCreate"])) model.UserNameCreate = Convert.ToString(record["UserNameCreate"]);
         if (!Convert.IsDBNull(record["Total"])) model.Total = Convert.ToDouble(record["Total"]);
         if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
         if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
@@ -435,6 +442,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
         if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+        if (!Convert.IsDBNull(record["Service"])) model.Service = Convert.ToString(record["Service"]);
         return model;
     }    
     #endregion
