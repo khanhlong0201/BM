@@ -21,9 +21,6 @@ namespace BM.Models
         public string? Remark { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? BranchName { get; set; }
-        public string? StatusBefore { get; set; }
-        public string? HealthStatus { get; set; }
-        public string? NoteForAll { get; set; }
-        public string? Status { get; set; }
+        public double TotalDebtAmount { get; set; }
     }
 }

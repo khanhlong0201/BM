@@ -115,7 +115,7 @@
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                             <path d="M9 6l6 6l-6 6"></path>
                         </svg>
-                        Công nợ: <span class="badge bg-purple-lt">5.000.000đ</span>
+                        Công nợ: <span class="badge bg-purple-lt">@CustomerUpdate.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
                     </div>
 
                     
@@ -148,13 +148,13 @@
                                             </p>
                                             <div class="row row-gap-1">
                                                 <div class="col-md-4 col-sm-12">
-                                                    <p class="text-secondary mb-1">Tổng tiền: <span>@oItem.Total.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                    <p class="text-secondary mb-0">Tổng tiền: <span>@oItem.Total.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
                                                 </div>
                                                 <div class="col-md-4 col-sm-12">
-                                                    <p class="text-secondary mb-1">Khách trả: <span>@oItem.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                    <p class="text-secondary mb-0">Khách trả: <span>@oItem.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
                                                 </div>
-                                                <div class="col-md-4 col-sm-12 mb-1">
-                                                    <p class="text-secondary">Còn nợ: <span style="color: red">@oItem.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                <div class="col-md-4 col-sm-12">
+                                                    <p class="text-secondary mb-0">Còn nợ: <span style="color: red">@oItem.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
                                                 </div>
                                             </div>
                                             <p class="text-secondary mb-1">Dịch vụ: @oItem.Service</p>

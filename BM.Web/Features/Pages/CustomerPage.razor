@@ -35,12 +35,13 @@
         </GridSettings>
         <GridAggregates>
             <GridAggregate Field=@nameof(CustomerModel.CusNo) Aggregate="@GridAggregateType.Count" />
+            <GridAggregate Field=@nameof(CustomerModel.TotalDebtAmount) Aggregate="@GridAggregateType.Sum" />
         </GridAggregates>
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
             <GridCommandColumn Width="40px" MaxResizableWidth="40">
                 <i class="fa-solid fa-circle-info h-link" title="Xem thông tin chi tiết" style="font-size: 14px;"
-                    @onclick="@(()=> ReviewCustomerInfoHandler((context as CustomerModel)))"></i>
+                    @onclick="@(()=> ReviewCustomerInfoHandler((context as CustomerModel)!))"></i>
             </GridCommandColumn>
             <GridColumn Field=@nameof(CustomerModel.CusNo) Width="150px" MaxResizableWidth="150" Title="Mã khách hàng" ShowFilterCellButtons="false">
                 <Template>
@@ -54,6 +55,11 @@
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(CustomerModel.FullName) Width="210px" Title="Tên khách hàng" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
+            <GridColumn Field=@nameof(CustomerModel.TotalDebtAmount) Width="170px" Title="Công nợ" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Filterable="false">
+                <FooterTemplate>
+                    Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
+                </FooterTemplate>
+            </GridColumn>
             <GridColumn Field=@nameof(CustomerModel.Phone1) Width="140px" Title="SĐT 1" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
             <GridColumn Field=@nameof(CustomerModel.Phone2) Width="140px" Title="SĐT 2" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
             <GridColumn Field=@nameof(CustomerModel.CINo) Width="140px" Title="CCCD" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
