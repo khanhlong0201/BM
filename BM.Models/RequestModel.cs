@@ -75,5 +75,6 @@ public enum DocStatus
 {
     @Pending,
     @Closed,
-    @All
+    @All,
+    @Cancled
 }

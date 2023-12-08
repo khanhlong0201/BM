@@ -16,6 +16,7 @@ public interface IDocumentService
     Task<IEnumerable<DocumentModel>> GetSalesOrdersAsync(SearchModel pSearchData);
     Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry);
     Task<IEnumerable<DocumentModel>> GetSalesOrderClosedByGuest(string pCusNo);
+    Task<ResponseModel> CancleDocList(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -48,8 +49,10 @@ public class DocumentService : IDocumentService
             sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
             data = await _context.GetDataAsync(@$"select [DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo]
                             ,T1.[BranchId],T1.[BranchName],T0.[CusNo],T2.[FullName],T2.[Phone1],T2.[Remark]
-                            ,case [StatusId]  when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' else N'Chờ xử lý' end as [StatusName]
-                            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+                            ,case [StatusId]  when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
+                             when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn'
+                             else N'Chờ xử lý' end as [StatusName]
+                            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
                       from [dbo].[Drafts] as T0 with(nolock) 
                 inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
                 inner join [dbo].[Customers] as T2 with(nolock) on T0.CusNo = T2.CusNo
@@ -81,7 +84,8 @@ public class DocumentService : IDocumentService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
             string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
-            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate],case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' else N'Chờ xử lý' end as [StatusName]
+            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
+            ,case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
             ,T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
             ,T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
 	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
@@ -128,6 +132,7 @@ public class DocumentService : IDocumentService
                 if (!Convert.IsDBNull(dr["UserCreate"])) oHeader.UserCreate = Convert.ToInt32(dr["UserCreate"]);
                 if (!Convert.IsDBNull(dr["DateUpdate"])) oHeader.DateUpdate = Convert.ToDateTime(dr["DateUpdate"]);
                 if (!Convert.IsDBNull(dr["UserUpdate"])) oHeader.UserUpdate = Convert.ToInt32(dr["UserUpdate"]);
+                oHeader.ReasonDelete = Convert.ToString(dr["ReasonDelete"]);
                 List<DocumentDetailModel> lstDetails = new List<DocumentDetailModel>();
                 foreach(DataRow item in dt.Rows)
                 {
@@ -392,6 +397,44 @@ public class DocumentService : IDocumentService
         }
         return data;
     }
+    
+    public async Task<ResponseModel> CancleDocList(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters;
+            string queryString = @$"UPDATE [dbo].[Drafts] 
+                                      set [StatusId] = '{nameof(DocStatus.Cancled)}', [ReasonDelete] = @ReasonDelete, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                    where [DocEntry] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+            sqlParameters = new SqlParameter[4];
+            sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+            sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+            sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+            sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            if (data != null && data.Rows.Count > 0)
+            {
+                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            }
+
+            if (response.StatusCode == 0) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #region Private Funtions
 
     /// <summary>
@@ -423,6 +466,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["ReasonDelete"])) model.ReasonDelete = Convert.ToString(record["ReasonDelete"]);
         return model;
     }
     

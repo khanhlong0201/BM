@@ -46,6 +46,9 @@
 </div>
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/remove_grid.png" 
+        Enabled="@(ItemFilter.StatusId == nameof(DocStatus.Pending))"
+        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-table-content" style=" height: calc(100vh - 230px);">
     <TelerikLoaderContainer OverlayThemeColor="light"
@@ -91,8 +94,8 @@
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(DocumentModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="160px" Title="Ngày giờ tạo"></GridColumn>
-            <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="140px" Title="Số lệnh"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Ngày giờ tạo"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="135px" Title="Số lệnh"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.CusNo) Width="125px" Title="Mã KH"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.Total) Width="170px" Title="Tổng tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
@@ -110,7 +113,10 @@
                 <Template>
                     @{
                         var model = (context as DocumentModel);
-                        <span class="@(model!.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-cyan")">@model!.StatusName</span>
+                        string color = "text-cyan";
+                        if (model!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
+                        else if (model!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
+                        <span class="@(color)">@model!.StatusName</span>
                     }
                 </Template>
             </GridColumn>
@@ -120,7 +126,18 @@
             <GridColumn Field=@nameof(DocumentModel.BranchId) Width="120px" Title="Mã CN"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.BranchName) Width="170px" Title="Tên chi nhánh"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="165px" Title="Ngày giờ cập nhật"></GridColumn>
+            <GridColumn Field=@nameof(DocumentModel.ReasonDelete) Width="170px" Title="Lý do hủy"></GridColumn>
         </GridColumns>
     </TelerikGrid>
 </div>
 
+<HDialog @bind-IsVisible="@IsShowDialogDelete"
+         SaveAndClosed="@(()=> CancleDocListHandler())"
+         IsShowButtonSaveAdnCreate="false"
+         Width="50%"
+         Title="Xác nhận hủy đơn hàng">
+    <div>
+        <HLabel For="txtReason" Value="Lý do hủy đơn:" IsRequired="true" />
+        <TelerikTextBox @bind-Value="@ReasonDeny" Id="txtReason" />
+    </div>
+</HDialog>

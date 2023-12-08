@@ -157,7 +157,7 @@ namespace BM.Web.Features.Controllers
             if (keyValues.ContainsKey("oHeader"))
             {
                 DocumentUpdate = JsonConvert.DeserializeObject<DocumentModel>(keyValues["oHeader"]);
-                pIsLockPage = DocumentUpdate.StatusId == nameof(DocStatus.Closed); // lock page
+                pIsLockPage = DocumentUpdate.StatusId != nameof(DocStatus.Pending); // lock page
             }    
             if (keyValues.ContainsKey("oLine"))
             {

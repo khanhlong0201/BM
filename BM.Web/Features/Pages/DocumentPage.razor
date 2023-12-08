@@ -27,9 +27,14 @@
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Tình trạng phiếu:
-                                        <strong class="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed) ? "text-green" : "text-cyan")">
-                                            @($"{DocumentUpdate.StatusName}")
-                                        </strong>
+                                        @{
+                                            string color = "text-cyan";
+                                            if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
+                                            else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
+                                            <strong class="@(color)">
+                                                @($"{DocumentUpdate.StatusName}")
+                                            </strong>
+                                        }
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Ngày tạo: <strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>
