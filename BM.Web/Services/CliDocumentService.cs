@@ -12,6 +12,7 @@ public interface ICliDocumentService
     Task<bool> UpdateSalesOrder(string pJson, string pJsonDetail, string pAction, int pUserId);
     Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch);
     Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
+    Task<List<DocumentModel>?> GetDocByCusNoAsync(string pCusNo);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -146,6 +147,42 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "GetDocByIdAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách đơn hàng theo khach hàng
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<DocumentModel>?> GetDocByCusNoAsync(string pCusNo)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pCusNo", $"{pCusNo}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_GET_DOC_BY_CUSNO, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<DocumentModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDocByCusNoAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;

@@ -35,7 +35,7 @@ public class DocumentModel : Auditable
     public string? Remark { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public string? BranchName { get; set; }
-    public string? Status { get; set; }
+    public string? Service { get; set; }
     #endregion
 }
 

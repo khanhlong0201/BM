@@ -350,7 +350,7 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth],[SkinType]
-                    ,[BranchId],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0 order by [CusNo] desc"
+                    ,[BranchId], '' as [BranchName],[Remark],[DateCreate],[UserCreate],[DateUpdate],[UserUpdate] from [dbo].[Customers] where [IsDelete] = 0 order by [CusNo] desc"
                     , DataRecordToCustomerModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -457,14 +457,15 @@ public class MasterDataService : IMasterDataService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
             string queryString = @"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
-                                    ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], string_agg(T0.EnumName, ', ') as [SkinType]
-                              from (select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
-                                           ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], EnumName
-					                  from [dbo].[Customers] as T0 
+                                    ,T0.[BranchId],T0.[BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], string_agg(T0.EnumName, ', ') as [SkinType]
+                              from (select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],T0.[Address],[DateOfBirth]
+                                           ,T0.[BranchId],T2.[BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], EnumName
+					                  from [dbo].[Customers] as T0
+                                inner join [dbo].[Branchs] as T2 on T0.[BranchId] = T2.[BranchId]
 			           cross apply (select EnumName from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T0.SkinType like '%""'+T00.EnumId+'""%' ) as T1
 			                 where T0.[IsDelete] = 0 and [CusNo] = @CusNo) as T0
                           group by [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],[Address],[DateOfBirth]
-                                   ,[BranchId],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]";
+                                   ,[BranchId],[BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]";
             oCustomer = await _context.GetDataByIdAsync(queryString, DataRecordToCustomerModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -1293,6 +1294,7 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["DateOfBirth"])) model.DateOfBirth = Convert.ToDateTime(record["DateOfBirth"]);
         if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
         if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);

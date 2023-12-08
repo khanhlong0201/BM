@@ -1,3 +1,172 @@
 ﻿@page "/customer-details"
 @inherits CustomerDetailsController
 
+<div class="h-content-filter">
+    <div class="row row-gap-2">
+        <div class="col-lg-3 col-md-4 col-sm-12">
+            <div class="card">
+                <div class="card-header" style="padding: 10px 20px">
+                    <h4 class="mb-0">Thông tin khách hàng</h4>
+                </div>
+                <div class="card-body" style="padding: 10px 20px">
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Mã khách hàng: <strong>@($"{CustomerUpdate.CusNo}")</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Tên khách hàng: <strong>@($"{CustomerUpdate.FullName}")</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Cơ sở: <strong>@CustomerUpdate.BranchName</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Ngày sinh: <strong>@(CustomerUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY : CustomerUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Số điện thoại: <strong>@CustomerUpdate.Phone1</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Zalo: <strong>@CustomerUpdate.Zalo</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Facebook: <strong>@CustomerUpdate.FaceBook</strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Loại da: <strong>
+                            <span class="flag flag-country-si"></span>
+                            @CustomerUpdate.SkinType
+                        </strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Đặc điểm: <strong>
+                            <span class="flag flag-country-si"></span>
+                            @CustomerUpdate.Remark
+                        </strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Địa chỉ: <strong>
+                            <span class="flag flag-country-si"></span>
+                            @CustomerUpdate.Address
+                        </strong>
+                    </div>
+                    <div class="mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
+                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M9 6l6 6l-6 6"></path>
+                        </svg>
+                        Công nợ: <span class="badge bg-purple-lt">5.000.000đ</span>
+                    </div>
+
+                    
+                    
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9 col-md-8 col-sm-12">
+            <div class="card">
+                <div class="card-header" style="padding: 10px 20px">
+                    <h4 class="mb-0">Thông tin chi tiết</h4>
+                </div>
+                <div class="card-body" style="padding: 10px 20px">
+                    @if(ListDocHis != null && ListDocHis.Any())
+                    {
+                        
+                        <ul class="timeline">
+                            @foreach (var oItem in ListDocHis)
+                            {
+                                <li class="timeline-event">
+                                    <div class="timeline-event-icon bg-twitter-lt" style="border-radius: 50%">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M5 12l5 5l10 -10"></path></svg>
+                                    </div>
+                                    <div class="card timeline-event-card">
+                                        <div class="card-body">
+                                            <div class="text-secondary float-end">@(oItem.DateCreate == null ? DATA_CUSTOMER_EMPTY : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_DATE))</div>
+                                            <h4 class="mb-1 h-link" @onclick="@(()=> OnViewDerailsHandler(oItem))">@(oItem.VoucherNo)</h4>
+                                            <p class="text-secondary mb-1">
+                                                @(oItem.DateCreate == null ? "" : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_TIME)) - @oItem.UserNameCreate
+                                            </p>
+                                            <div class="row row-gap-1">
+                                                <div class="col-md-4 col-sm-12">
+                                                    <p class="text-secondary mb-1">Tổng tiền: <span>@oItem.Total.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                </div>
+                                                <div class="col-md-4 col-sm-12">
+                                                    <p class="text-secondary mb-1">Khách trả: <span>@oItem.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                </div>
+                                                <div class="col-md-4 col-sm-12 mb-1">
+                                                    <p class="text-secondary">Còn nợ: <span style="color: red">@oItem.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                </div>
+                                            </div>
+                                            <p class="text-secondary mb-1">Dịch vụ: @oItem.Service</p>
+                                            <p class="text-secondary mb-1">Ghi chú: @oItem.NoteForAll</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
