@@ -8,7 +8,7 @@
             <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/remove_grid.png"  OnClick="@(()=> DeleteDataHandler())">Xóa dòng</ToolBarButton>
         </TelerikToolBar>
-        <div class="h-table-content" style=" height: calc(100vh - 170px);">
+        <div class="h-table-content" style=" height: calc(100vh - 210px);">
             <TelerikLoaderContainer OverlayThemeColor="light"
                                     Visible="@(!IsInitialDataLoadComplete)"
                                     Text="@null" Class="grid-initial-data-loader">
@@ -69,7 +69,7 @@
             <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenIntoInvHandler())">Nhập kho</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/remove_grid.png"OnClick="@(()=> DeleteDataInvHandler())" >Xóa dòng</ToolBarButton>
         </TelerikToolBar>
-        <div class="h-table-content" style=" height: calc(100vh - 170px);">
+        <div class="h-table-content" style=" height: calc(100vh - 210px);">
             <TelerikLoaderContainer OverlayThemeColor="light"
                                     Visible="@(!IsInitialDataLoadComplete)"
                                     Text="@null" Class="grid-initial-data-loader">

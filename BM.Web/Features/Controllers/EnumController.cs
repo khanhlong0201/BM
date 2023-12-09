@@ -49,7 +49,6 @@ namespace BM.Web.Features.Controllers
                     new ComboboxModel() {Code = nameof(EnumType.@StateOfHealth), Name = "Tình trạng sức khỏe"}
                 };
                 pEnumType = nameof(EnumType.ServiceType);
-                pEnumTypeName = ListTypeEnums.Where(d => d.Code == pEnumType).First().Name;
                 var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
                 switch (uri.AbsolutePath?.ToUpper())
                 {
@@ -65,17 +64,17 @@ namespace BM.Web.Features.Controllers
                     case "/UNIT":
                         pEnumType = nameof(EnumType.@Unit);
                         break;
-                    case "/STATE-OF-HEAlTH":
+                    case "/STATE-OF-HEALTH":
                         pEnumType = nameof(EnumType.@StateOfHealth);
                         break;
                 }
-                pEnumTypeName = ListTypeEnums.Where(d => d.Code == pEnumType).First().Name;
+                pEnumTypeName = ListTypeEnums.FirstOrDefault(m => m.Code == pEnumType)?.Name + "";
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
                     new BreadcrumbModel() { Text = "Hệ thống" },
                     new BreadcrumbModel() { Text = "Danh mục" },
-                    new BreadcrumbModel() { Text = ListTypeEnums.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
+                    new BreadcrumbModel() { Text =  pEnumTypeName}
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
                 _navManager.LocationChanged += LocationChanged;
@@ -119,43 +118,76 @@ namespace BM.Web.Features.Controllers
             ListEnums = await _masterDataService!.GetDataEnumsAsync(pEnumType);
         }
 
+        async Task setDataBreadCrumChanged(string location = "")
+        {
+            switch (location.ToUpper())
+            {
+                case "/SERVICE-TYPE":
+                    pEnumType = nameof(EnumType.@ServiceType);
+                    break;
+                case "/SKIN-TYPE":
+                    pEnumType = nameof(EnumType.@SkinType);
+                    break;
+                case "/SERVICE-PACK":
+                    pEnumType = nameof(EnumType.@ServicePack);
+                    break;
+                case "/UNIT":
+                    pEnumType = nameof(EnumType.@Unit);
+                    break;
+                case "/STATE-OF-HEALTH":
+                    pEnumType = nameof(EnumType.@StateOfHealth);
+                    break;
+            }
+            pEnumTypeName = ListTypeEnums?.FirstOrDefault(m => m.Code == pEnumType)?.Name + "";
+            ListBreadcrumbs = new List<BreadcrumbModel>
+                    {
+                        new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                        new BreadcrumbModel() { Text = "Hệ thống" },
+                        new BreadcrumbModel() { Text = "Danh mục" },
+                        new BreadcrumbModel() { Text = pEnumTypeName }
+                    };
+            await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+            await getDataEnums();
+        }
+
+
         async void LocationChanged(object sender, LocationChangedEventArgs e)
         {
-            // Cập nhật giá trị khi location thay đổi
-            currentLocation = e.Location;
-            if(currentLocation != null)
+            try
             {
-                if(currentLocation.Contains("/service-type"))
+                // Cập nhật giá trị khi location thay đổi
+                currentLocation = e.Location;
+                if (currentLocation != null)
                 {
-                    pEnumType = nameof(EnumType.@ServiceType);
+                    if (currentLocation.Contains("/service-type"))
+                    {
+                        await setDataBreadCrumChanged("/service-type");
+                    }
+                    else if (currentLocation.Contains("/skin-type"))
+                    {
+                        await setDataBreadCrumChanged("/skin-type");
+                    }
+                    else if (currentLocation.Contains("/service-pack"))
+                    {
+                        await setDataBreadCrumChanged("/service-pack");
+                    }
+                    else if (currentLocation.Contains("/unit"))
+                    {
+                        await setDataBreadCrumChanged("/unit");
+                    }
+                    else if (currentLocation.Contains("/state-of-health"))
+                    {
+                        await setDataBreadCrumChanged("/state-of-health");
+                    }
                 }
-                else if (currentLocation.Contains("/skin-type"))
-                {
-                    pEnumType = nameof(EnumType.@SkinType);
-                }
-                else if (currentLocation.Contains("/service-pack"))
-                {
-                    pEnumType = nameof(EnumType.ServicePack);
-                }
-                else if (currentLocation.Contains("/unit"))
-                {
-                    pEnumType = nameof(EnumType.Unit);
-                }
-                else if (currentLocation.Contains("/state-of-health"))
-                {
-                    pEnumType = nameof(EnumType.StateOfHealth);
-                }
-                await getDataEnums();
-                ListBreadcrumbs = new List<BreadcrumbModel>
-                {
-                    new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
-                    new BreadcrumbModel() { Text = "Hệ thống" },
-                    new BreadcrumbModel() { Text = "Danh mục" },
-                    new BreadcrumbModel() { Text = ListTypeEnums?.FirstOrDefault(m=>m.Code == pEnumType)?.Name }
-                };
-                await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "EnumController", "LocationChanged");
+                ShowError(ex.Message);
             }
         }
+
 
         void IDisposable.Dispose()
         {
