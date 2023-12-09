@@ -57,3 +57,14 @@ public class DocumentDetailModel : Auditable
     public int QtyWarranty { get; set; }
 }
 
+public class CustomerDebtsModel
+{
+    public int Id { get; set; }
+    public int DocEntry { get; set; }
+    public string? CusNo { get; set; }
+    public string? FullName { get; set; }
+    public double TotalDebtAmount { get; set; }
+    public DateTime? DateCreate { get; set; }
+    public int? UserCreate { get; set; }
+}
+

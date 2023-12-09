@@ -32,8 +32,12 @@ namespace BM.Web.Features.Controllers
         public SearchModel ItemFilter = new SearchModel();
         public string? ReasonDeny { get; set; } // lý do hủy
         public bool IsShowDialogDelete { get; set; }
+        public bool IsShowDialogDebts { get; set; }
+        public double pPrice { get; set; }
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+
+        public List<CustomerDebtsModel>? ListCusDebts { get; set; }
         #endregion
 
         #region Override Functions
@@ -165,15 +169,16 @@ namespace BM.Web.Features.Controllers
         protected void OpenDialogDeleteHandler()
         {
             try
-            {
-                if(ItemFilter.StatusId != nameof(DocStatus.Pending))
-                {
-                    ShowWarning("Chỉ được phép hủy các đơn hàng có tình trạng [Chờ xử lý]!");
-                    return;
-                }    
+            {   
                 if(SelectedDocuments == null || !SelectedDocuments.Any())
                 {
                     ShowWarning("Vui lòng chọn dòng để hủy!");
+                    return;
+                }
+                var checkData = SelectedDocuments.FirstOrDefault(m => m.StatusId != nameof(DocStatus.Pending));
+                if (checkData != null)
+                {
+                    ShowWarning("Chỉ được phép hủy các đơn hàng có tình trạng [Chờ xử lý]!");
                     return;
                 }
                 ReasonDeny = "";
@@ -218,6 +223,25 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
+        
+        /// <summary>
+        /// Xem lịch sử thanh toán
+        /// </summary>
+        /// <param name="pDocument"></param>
+        protected void OpenDialogDebtsHandler(DocumentModel pDocument)
+        {
+            try
+            {
+                if (pDocument == null) return;
+                IsShowDialogDebts = true;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "OpenDialogDebtsHandler");
+                ShowError(ex.Message);
+            }
+        }    
         #endregion
     }
 }
