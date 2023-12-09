@@ -29,6 +29,7 @@ namespace BM.Web.Features.Controllers
         public bool IsCreate { get; set; } = true;
         public HConfirm? _rDialogs { get; set; }
         public string pEnumType = "";
+        public string pEnumTypeName = "";
         private string currentLocation = "";
         #endregion
 
@@ -48,6 +49,7 @@ namespace BM.Web.Features.Controllers
                     new ComboboxModel() {Code = nameof(EnumType.@StateOfHealth), Name = "Tình trạng sức khỏe"}
                 };
                 pEnumType = nameof(EnumType.ServiceType);
+                pEnumTypeName = ListTypeEnums.Where(d => d.Code == pEnumType).First().Name;
                 var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
                 switch (uri.AbsolutePath?.ToUpper())
                 {
@@ -67,6 +69,7 @@ namespace BM.Web.Features.Controllers
                         pEnumType = nameof(EnumType.@StateOfHealth);
                         break;
                 }
+                pEnumTypeName = ListTypeEnums.Where(d => d.Code == pEnumType).First().Name;
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
@@ -190,12 +193,14 @@ namespace BM.Web.Features.Controllers
                     IsCreate = true;
                     EnumUpdate = new EnumModel();
                     EnumUpdate.EnumType = pEnumType;
+                    EnumUpdate.EnumTypeName = pEnumTypeName;
                 }
                 else
                 {
                     EnumUpdate.EnumId = pItemDetails!.EnumId;
                     EnumUpdate.EnumName = pItemDetails!.EnumName;
                     EnumUpdate.EnumType = pItemDetails!.EnumType;
+                    EnumUpdate.EnumTypeName = pItemDetails!.EnumTypeName;
                     EnumUpdate.Description = pItemDetails!.Description;
                     IsCreate = false;
                 }

@@ -299,25 +299,27 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[0] = new SqlParameter("@Type", "Enums");
                     sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
                     oEnum.EnumId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã loại
-                    queryString = @"Insert into [dbo].[Enums] ([EnumId], [EnumType], [EnumName], [Description], [DateCreate], [UserCreate], [IsDelete]) 
-                                    values (@EnumId, @EnumType, @EnumName, @Description, getdate(), @UserId, 0)";
-                    sqlParameters = new SqlParameter[5];
+                    queryString = @"Insert into [dbo].[Enums] ([EnumId], [EnumType], [EnumName], [Description], [DateCreate], [UserCreate], [IsDelete], [EnumTypeName]) 
+                                    values (@EnumId, @EnumType, @EnumName, @Description, getdate(), @UserId, 0,@EnumTypeName)";
+                    sqlParameters = new SqlParameter[6];
                     sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
                     sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
                     sqlParameters[2] = new SqlParameter("@EnumName", oEnum.EnumName);
                     sqlParameters[3] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
                     sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[5] = new SqlParameter("@EnumTypeName", oEnum.EnumTypeName);
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Enums]
-                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = getdate(), [UserUpdate] = @UserId,EnumTypeName=@EnumTypeName
                                      where [EnumId] = @EnumId";
-                    sqlParameters = new SqlParameter[4];
+                    sqlParameters = new SqlParameter[5];
                     sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
                     sqlParameters[1] = new SqlParameter("@EnumName", oEnum.EnumName);
                     sqlParameters[2] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
                     sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[4] = new SqlParameter("@EnumTypeName", oEnum.EnumTypeName);
                     await ExecQuery();
                     break;
                 default:
@@ -539,7 +541,7 @@ public class MasterDataService : IMasterDataService
                 sqlParameters[4] = new SqlParameter("@WarrantyPeriod", oService.WarrantyPeriod);
                 sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
                 sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
-                sqlParameters[7] = new SqlParameter("@PackageId", oService.PackageId);
+                sqlParameters[7] = new SqlParameter("@PackageId", oService.PackageId+ "");
             }
             switch (pRequest.Type)
             {

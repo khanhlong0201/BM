@@ -225,7 +225,7 @@ namespace BM.Web.Features.Controllers
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
                 await ShowLoader();
-                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
+                bool isSuccess = await _masterDataService!.UpdateSuppliesAsync(JsonConvert.SerializeObject(SuppliesUpdate), sAction, pUserId);
                 if (isSuccess)
                 {
                     await getData();
