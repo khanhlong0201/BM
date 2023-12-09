@@ -156,7 +156,7 @@
         </div>
         <div class="mt-2">
             <HLabel For="txtDescription" Value="Mô tả:" />
-            <TelerikTextBox @bind-Value="@ServiceUpdate.Description" Id="txtDescription" />
+            <TelerikTextArea @bind-Value="@ServiceUpdate.Description" AutoSize="true" Size="500" Id="txtDescription" />
         </div>
     </EditForm>
 </HDialog>
