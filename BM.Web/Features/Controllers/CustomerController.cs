@@ -128,6 +128,7 @@ namespace BM.Web.Features.Controllers
                     if (ListSkinsType != null && ListSkinsType.Any()) ListSkinsType.ForEach(item => item.IsCheck = false);
                     IsCreate = true;
                     CustomerUpdate = new CustomerModel();
+                    CustomerUpdate.BranchId = pBranchId;
                 }
                 else
                 {
