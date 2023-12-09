@@ -50,48 +50,16 @@
                                 <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h3 class="card-title">Last updates</h3>
+                                            <h3 class="card-title">Thông báo</h3>
                                         </div>
                                         <div class="list-group list-group-flush list-group-hoverable">
                                             <div class="list-group-item">
                                                 <div class="row align-items-center">
                                                     <div class="col-auto"><span class="status-dot status-dot-animated bg-red d-block"></span></div>
                                                     <div class="col text-truncate">
-                                                        <a href="#" class="text-body d-block">Example 1</a>
+                                                        <a href="#" class="text-body d-block">Nhắc nợ</a>
                                                         <div class="d-block text-muted text-truncate mt-n1">
-                                                            Change deprecated html tags to text decoration classes (#29604)
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <a href="#" class="list-group-item-actions">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="list-group-item">
-                                                <div class="row align-items-center">
-                                                    <div class="col-auto"><span class="status-dot d-block"></span></div>
-                                                    <div class="col text-truncate">
-                                                        <a href="#" class="text-body d-block">Example 2</a>
-                                                        <div class="d-block text-muted text-truncate mt-n1">
-                                                            justify-content:between ⇒ justify-content:space-between (#29734)
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <a href="#" class="list-group-item-actions show">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-yellow" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="list-group-item">
-                                                <div class="row align-items-center">
-                                                    <div class="col-auto"><span class="status-dot d-block"></span></div>
-                                                    <div class="col text-truncate">
-                                                        <a href="#" class="text-body d-block">Example 3</a>
-                                                        <div class="d-block text-muted text-truncate mt-n1">
-                                                            Update change-version.js (#29736)
+                                                            Lê Thị Mỹ Hạnh còn thiếu 500.000 vnđ từ ngày 09/10/2023
                                                         </div>
                                                     </div>
                                                     <div class="col-auto">
@@ -105,9 +73,9 @@
                                                 <div class="row align-items-center">
                                                     <div class="col-auto"><span class="status-dot status-dot-animated bg-green d-block"></span></div>
                                                     <div class="col text-truncate">
-                                                        <a href="#" class="text-body d-block">Example 4</a>
+                                                        <a href="#" class="text-body d-block">Nhắc liệu trình</a>
                                                         <div class="d-block text-muted text-truncate mt-n1">
-                                                            Regenerate package-lock.json (#29730)
+                                                            Lê Thị Kim Ngân ngày 10/10/2023 cần thực hiện liệu trình 2 của dịch vụ MixBrow
                                                         </div>
                                                     </div>
                                                     <div class="col-auto">
@@ -147,7 +115,7 @@
             <div class="navbar">
                 <div class="container-fluid">
                     <ul class="navbar-nav">
-                        <li class="nav-item active">
+                        <li class="nav-item @(PageActive == "/trang-chu" ? "active": "")">
                             <a class="nav-link" href="trang-chu">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l-2 0l9 -9l9 9l-2 0" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" /><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" /></svg>
@@ -157,27 +125,32 @@
                                 </span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item @(PageActive == "/customer" ? "active": "")">
                             <a class="nav-link" href="customer">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
+                                      <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/>
+                                    </svg>
                                 </span>
                                 <span class="nav-link-title">
                                     Hồ sơ khách hàng
                                 </span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item @(PageActive == "/sales-doclist" ? "active": "")">
                             <a class="nav-link" href="sales-doclist">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
+                                      <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                                      <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
+                                    </svg>
                                 </span>
                                 <span class="nav-link-title">
                                     Theo dõi đơn hàng
                                 </span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <li class="nav-item @(PageActive == "/supplies" ? "active": "")">
                             <a class="nav-link" href="supplies">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-database-gear" viewBox="0 0 16 16">
                                   <path d="M12.096 6.223A4.92 4.92 0 0 0 13 5.698V7c0 .289-.213.654-.753 1.007a4.493 4.493 0 0 1 1.753.25V4c0-1.007-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1s-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4v9c0 1.007.875 1.755 1.904 2.223C4.978 15.71 6.427 16 8 16c.536 0 1.058-.034 1.555-.097a4.525 4.525 0 0 1-.813-.927C8.5 14.992 8.252 15 8 15c-1.464 0-2.766-.27-3.682-.687C3.356 13.875 3 13.373 3 13v-1.302c.271.202.58.378.904.525C4.978 12.71 6.427 13 8 13h.027a4.552 4.552 0 0 1 0-1H8c-1.464 0-2.766-.27-3.682-.687C3.356 10.875 3 10.373 3 10V8.698c.271.202.58.378.904.525C4.978 9.71 6.427 10 8 10c.262 0 .52-.008.774-.024a4.525 4.525 0 0 1 1.102-1.132C9.298 8.944 8.666 9 8 9c-1.464 0-2.766-.27-3.682-.687C3.356 7.875 3 7.373 3 7V5.698c.271.202.58.378.904.525C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777M3 4c0-.374.356-.875 1.318-1.313C5.234 2.271 6.536 2 8 2s2.766.27 3.682.687C12.644 3.125 13 3.627 13 4c0 .374-.356.875-1.318 1.313C10.766 5.729 9.464 6 8 6s-2.766-.27-3.682-.687C3.356 4.875 3 4.373 3 4"/>
@@ -188,28 +161,11 @@
                                 </span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#navbar-pspent" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l-2 0l9 -9l9 9l-2 0" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" /><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" /></svg>
-                                </span>
-                                <span class="nav-link-title">
-                                    Hệ thống
-                                </span>
-                            </a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item text-pink" href="service">
-                                    Dịch vụ
-                                </a>
-                                <a class="dropdown-item" href="branch">
-                                    Chi nhánh
-                                </a>
-                                <a class="dropdown-item" href="user">
-                                    Người dùng
-                                </a>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown active">
+                        <li class="nav-item dropdown @(PageActive == "/service-type" 
+                                || PageActive == "/skin-type" 
+                                || PageActive == "/service-pack" 
+                                || PageActive == "/unit"
+                                || PageActive == "/state-of-health"? "active": "")">
                             <a class="nav-link dropdown-toggle" href="#navbar-pspent" data-bs-toggle="dropdown" role="button" aria-expanded="false">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
@@ -239,6 +195,58 @@
                                 </a>
                             </div>
                         </li>
+                        <li class="nav-item dropdown @(PageActive == "/service"
+                       || PageActive == "/branch"
+                        || PageActive == "/user" ? "active": "")">
+                            <a class="nav-link dropdown-toggle" href="#navbar-pspent" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                      <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                      <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">
+                                    Hệ thống
+                                </span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="service">
+                                    Dịch vụ
+                                </a>
+                                <a class="dropdown-item" href="branch">
+                                    Chi nhánh
+                                </a>
+                                <a class="dropdown-item" href="user">
+                                    Người dùng
+                                </a>
+                            </div>
+                        </li>
+                         <li class="nav-item dropdown @(PageActive == "/report-sales"
+                       || PageActive == "/report-service"
+                        || PageActive == "/report-customer" ? "active": "")">
+                            <a class="nav-link dropdown-toggle" href="#navbar-pspent" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart" viewBox="0 0 16 16">
+                                      <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">
+                                    Báo cáo
+                                </span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="report-sales">
+                                    Báo cáo doanh thu
+                                </a>
+                                <a class="dropdown-item" href="report-service">
+                                    Báo cáo theo dịch vụ
+                                </a>
+                                <a class="dropdown-item" href="report-customer">
+                                    Báo cáo KPI nhân viên
+                                </a>
+                            </div>
+                        </li>
+                        
                        @* <li class="nav-item">
                             <a class="nav-link" href="./icons.html">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
