@@ -148,6 +148,7 @@ namespace BM.Web.Features.Controllers
                     };
             await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
             await getDataEnums();
+            await InvokeAsync(StateHasChanged);
         }
 
 

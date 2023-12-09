@@ -3,28 +3,16 @@
 @inherits IndexController;
 
 
-<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="600px" @bind-View="@CurrView"
-                  AllowCreate="true" AllowDelete="true" AllowUpdate="true"
-                  ConfirmDelete="true">
+<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="calc(100vh - 125px)" @bind-View="@CurrView">
     <SchedulerViews>
-        <SchedulerDayView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
-        <SchedulerWeekView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
-        <SchedulerMultiDayView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" NumberOfDays="10" />
         <SchedulerMonthView></SchedulerMonthView>
-        <SchedulerTimelineView StartTime="@DayStart" EndTime="@DayEnd" WorkDayStart="@WorkDayStart" WorkDayEnd="@WorkDayEnd" />
+        <SchedulerDayView StartTime="@( new DateTime(2023, 12, 1, 7, 0, 0) )"></SchedulerDayView>
     </SchedulerViews>
 </TelerikScheduler>
 
 
 @code{
-    public DateTime StartDate { get; set; } = new DateTime(2021, 6, 21);
-    public SchedulerView CurrView { get; set; } = SchedulerView.Week;
-
-    //the time portions are important
-    public DateTime DayStart { get; set; } = new DateTime(2000, 1, 1, 8, 0, 0);
-    public DateTime DayEnd { get; set; } = new DateTime(2000, 1, 1, 20, 0, 0);
-    public DateTime WorkDayStart { get; set; } = new DateTime(2000, 1, 1, 9, 0, 0);
-    public DateTime WorkDayEnd { get; set; } = new DateTime(2000, 1, 1, 17, 0, 0);
-
+    public DateTime StartDate { get; set; } = new DateTime(2023, 12, 01);
+    public SchedulerView CurrView { get; set; } = SchedulerView.Month;
     IEnumerable<object> Appointments = new List<object>();
 }
