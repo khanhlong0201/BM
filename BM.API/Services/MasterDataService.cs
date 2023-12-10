@@ -14,7 +14,7 @@ public interface IMasterDataService
 {
     Task<IEnumerable<BranchModel>> GetBranchsAsync(bool pIsPageLogin = false);
     Task<ResponseModel> UpdateBranchs(RequestModel pRequest);
-    Task<IEnumerable<UserModel>> GetUsersAsync();
+    Task<IEnumerable<UserModel>> GetUsersAsync(int pUserId = -1);
     Task<ResponseModel> UpdateUsers(RequestModel pRequest);
     Task<IEnumerable<EnumModel>> GetEnumsAsync(string pEnumType);
     Task<ResponseModel> UpdateEnums(RequestModel pRequest);
@@ -129,16 +129,18 @@ public class MasterDataService : IMasterDataService
     /// lấy danh sách nhân viên
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<UserModel>> GetUsersAsync()
+    public async Task<IEnumerable<UserModel>> GetUsersAsync(int pUserid = -1)
     {
         IEnumerable<UserModel> data;
         try
         {
             await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@UserId", pUserid);
             data = await _context.GetDataAsync(@"Select [Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber]
                     , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] 
-                    from [dbo].[Users] where [IsDelete] = 0"
-                    , DataRecordToUserModel, commandType: CommandType.Text);
+                    from [dbo].[Users] where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId)"
+                    , DataRecordToUserModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -190,7 +192,7 @@ public class MasterDataService : IMasterDataService
 
                     int iUserId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from Users with(nolock)");
                     string sPassword = EncryptHelper.Encrypt(oUser.Password + "");
-                    sqlParameters = new SqlParameter[14];
+                    sqlParameters = new SqlParameter[13];
                     sqlParameters[0] = new SqlParameter("@Id", iUserId);
                     sqlParameters[1] = new SqlParameter("@EmpNo", oUser.EmpNo);
                     sqlParameters[2] = new SqlParameter("@UserName", oUser.UserName);
@@ -204,7 +206,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[10] = new SqlParameter("@DateOfWork", oUser.DateOfWork ?? (object)DBNull.Value);
                     sqlParameters[11] = new SqlParameter("@IsAdmin", oUser.IsAdmin);
                     sqlParameters[12] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
-                    sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);  
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
@@ -224,6 +226,17 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[7] = new SqlParameter("@IsAdmin", oUser.IsAdmin);
                     sqlParameters[8] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.@ChangePassWord):
+                    queryString = @"Update [dbo].[Users]
+                                    set Password = @PasswordNew, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                    where [Id] = @Id";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@Id", oUser.Id);
+                    sqlParameters[1] = new SqlParameter("@PasswordNew", EncryptHelper.Encrypt(oUser.PasswordNew + ""));
+                    sqlParameters[2] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
                     await ExecQuery();
                     break;
                 default:

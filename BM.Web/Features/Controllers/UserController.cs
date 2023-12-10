@@ -153,7 +153,7 @@ public class UserController : BMControllerBase
             if (!checkData) return;
             if(UserUpdate.Password +"" != UserUpdate.ReEnterPassword + "")
             {
-                ShowWarning("Nhập lại mật khẩu không đúng !. Vui lòng nhập lại mật khẩu.");
+                ShowWarning("Nhập lại mật khẩu không đúng so với mật khẩu! Vui lòng nhập lại.");
                 return;
             }
 

@@ -99,7 +99,7 @@
                                 </div>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <a href="./profile.html" class="dropdown-item">Thông tin cá nhân</a>
+                                <a onclick="@(()=> OnOpenDialogHandler())" class="dropdown-item">Thay đổi mật khẩu</a>
                                 <a href="/logout" class="dropdown-item">Đăng xuất</a>
                             </div>
                         </div> 
@@ -299,3 +299,66 @@
         <BM.Web.Features.Pages.RedirectToLogin />
     </NotAuthorized>
 </AuthorizeView>
+
+@*Thay đổi thông tin cá nhân*@
+<HDialog @bind-IsVisible="@IsShowDialogProfile"
+         SaveAndClosed="@(()=> SaveDataHandler())"
+         IsShowButtonSaveAndCreates="false"
+         Title="Thay đổi mật khẩu">
+    <EditForm EditContext="@_EditProfileContext">
+        <DataAnnotationsValidator />
+        <div>
+            <HLabel Value="Mã người dùng:"/>
+            <TelerikTextBox @bind-Value="@UserUpdate!.EmpNo" Class="h-link" Enabled="false"  />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtFullName" Value="Họ tên người dùng:" />
+            <TelerikTextBox @bind-Value="@UserUpdate.FullName" Id="txtFullName" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtUserName" Value="Tên đăng nhập:"/>
+            <TelerikTextBox @bind-Value="@UserUpdate.UserName" Id="txtUserName" Enabled="false" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtPassWord" Value="Mật khẩu hiện tại:" IsRequired="true" />
+            <div style="display: flex">
+                <TelerikTextBox Password="@isPasswordHidden" @bind-Value="@UserUpdate.Password" Id="txtPassWord" />
+                <i @onclick="@(() => HiddenPassword())" class="@(isPasswordHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px; margin-top:7px; cursor: pointer;"></i>  
+            </div>
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.Password)" Id="txtPassWord" />
+        </div>
+         <div class="mt-2">
+            <HLabel For="txtPassWordNew" Value="Mật khẩu mới:" IsRequired="true" />
+            <div style="display: flex">
+                <TelerikTextBox Password="@isReEnterPasswordAgainHidden" @bind-Value="@UserUpdate.PasswordNew" Id="txtPassWord" />
+                <i @onclick="@(() => HiddenReEnterPassword())" class="@(isReEnterPasswordAgainHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px;margin-top:7px; cursor: pointer;"></i>  
+            </div>
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.PasswordNew)" Id="txtPassWordNew" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtRePassWordNew" Value="Nhập lại mật khẩu mới:" IsRequired="true" />
+            <div style="display: flex">
+                <TelerikTextBox Password="@isReEnterPasswordAgainHidden" @bind-Value="@UserUpdate.ReEnterPasswordNew" Id="txtPassWord" />
+                <i @onclick="@(() => HiddenReEnterPassword())" class="@(isReEnterPasswordAgainHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px;margin-top:7px; cursor: pointer;"></i>  
+            </div>
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.ReEnterPasswordNew)" Id="txtRePassWordNew" />
+        </div> 
+    </EditForm>
+</HDialog>
+
+
+<HConfirm @ref="@_rDialogProfiles" />
+@code {
+    private bool isPasswordHidden = true;
+     private bool isReEnterPasswordAgainHidden = true;
+
+    private void HiddenPassword()
+    {
+        isPasswordHidden = !isPasswordHidden;
+    }
+
+     private void HiddenReEnterPassword()
+    {
+        isReEnterPasswordAgainHidden = !isReEnterPasswordAgainHidden;
+    }
+}

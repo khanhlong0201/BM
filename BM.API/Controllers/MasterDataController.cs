@@ -72,11 +72,11 @@ namespace BM.API.Controllers
 
         [HttpGet]
         [Route("GetUsers")]
-        public async Task<IActionResult> GetDataUsers()
+        public async Task<IActionResult> GetDataUsers(int pUserId=-1)
         {
             try
             {
-                var data = await _masterService.GetUsersAsync();
+                var data = await _masterService.GetUsersAsync(pUserId);
                 return Ok(data);
             }
             catch (Exception ex)
@@ -364,6 +364,7 @@ namespace BM.API.Controllers
                 {
                     new Claim("UserId", oUser.Id + ""),
                     new Claim("EmpNo", oUser.EmpNo + ""),
+                    new Claim("UserName", oUser.UserName + ""),
                     new Claim("FullName", oUser.FullName + ""),
                     new Claim("IsAdmin", oUser.IsAdmin + ""),
                     new Claim("BranchId", oUser.BranchId + ""),
