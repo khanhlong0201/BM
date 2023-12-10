@@ -188,11 +188,11 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[0] = new SqlParameter("@Type", "Users");
                     oUser.EmpNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy mã Nhân viên
                     queryString = @"Insert into [dbo].[Users] ([Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber], [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [IsDelete])
-                                    values ( @Id , @EmpNo , @UserName , @Password , @LastPassword, @FullName, @PhoneNumber , @Email, @Address, @DateOfBirth, @DateOfWork, @IsAdmin, @BranchId, getDate(), @UserId, 0 )";
+                                    values ( @Id , @EmpNo , @UserName , @Password , @LastPassword, @FullName, @PhoneNumber , @Email, @Address, @DateOfBirth, @DateOfWork, @IsAdmin, @BranchId, @DateTimeNow, @UserId, 0 )";
 
                     int iUserId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from Users with(nolock)");
                     string sPassword = EncryptHelper.Encrypt(oUser.Password + "");
-                    sqlParameters = new SqlParameter[13];
+                    sqlParameters = new SqlParameter[15];
                     sqlParameters[0] = new SqlParameter("@Id", iUserId);
                     sqlParameters[1] = new SqlParameter("@EmpNo", oUser.EmpNo);
                     sqlParameters[2] = new SqlParameter("@UserName", oUser.UserName);
@@ -206,16 +206,17 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[10] = new SqlParameter("@DateOfWork", oUser.DateOfWork ?? (object)DBNull.Value);
                     sqlParameters[11] = new SqlParameter("@IsAdmin", oUser.IsAdmin);
                     sqlParameters[12] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
-                    sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);  
+                    sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[14] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Users]
                                        set [FullName] = @FullName , [PhoneNumber] = @PhoneNumber, [Email] = @Email, [Address] = @Address, [DateOfBirth] = @DateOfBirth, [DateOfWork] = @DateOfWork
-                                         , [IsAdmin] = @IsAdmin, [BranchId] = @BranchId, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                         , [IsAdmin] = @IsAdmin, [BranchId] = @BranchId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                      where [Id] = @Id";
 
-                    sqlParameters = new SqlParameter[10];
+                    sqlParameters = new SqlParameter[11];
                     sqlParameters[0] = new SqlParameter("@Id", oUser.Id);
                     sqlParameters[1] = new SqlParameter("@FullName", oUser.FullName);
                     sqlParameters[2] = new SqlParameter("@PhoneNumber", oUser.PhoneNumber ?? (object)DBNull.Value);
@@ -226,6 +227,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[7] = new SqlParameter("@IsAdmin", oUser.IsAdmin);
                     sqlParameters[8] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await ExecQuery();
                     break;
                 case nameof(EnumType.@ChangePassWord):
@@ -313,26 +315,28 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
                     oEnum.EnumId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã loại
                     queryString = @"Insert into [dbo].[Enums] ([EnumId], [EnumType], [EnumName], [Description], [DateCreate], [UserCreate], [IsDelete], [EnumTypeName]) 
-                                    values (@EnumId, @EnumType, @EnumName, @Description, getdate(), @UserId, 0,@EnumTypeName)";
-                    sqlParameters = new SqlParameter[6];
+                                    values (@EnumId, @EnumType, @EnumName, @Description, @DateTimeNow, @UserId, 0,@EnumTypeName)";
+                    sqlParameters = new SqlParameter[7];
                     sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
                     sqlParameters[1] = new SqlParameter("@EnumType", oEnum.EnumType);
                     sqlParameters[2] = new SqlParameter("@EnumName", oEnum.EnumName);
                     sqlParameters[3] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
                     sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[5] = new SqlParameter("@EnumTypeName", oEnum.EnumTypeName);
+                    sqlParameters[6] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Enums]
-                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = getdate(), [UserUpdate] = @UserId,EnumTypeName=@EnumTypeName
+                                       set [EnumName] = @EnumName , [Description] = @Description, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId,EnumTypeName=@EnumTypeName
                                      where [EnumId] = @EnumId";
-                    sqlParameters = new SqlParameter[5];
+                    sqlParameters = new SqlParameter[6];
                     sqlParameters[0] = new SqlParameter("@EnumId", oEnum.EnumId);
                     sqlParameters[1] = new SqlParameter("@EnumName", oEnum.EnumName);
                     sqlParameters[2] = new SqlParameter("@Description", oEnum.Description ?? (object)DBNull.Value);
                     sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[4] = new SqlParameter("@EnumTypeName", oEnum.EnumTypeName);
+                    sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await ExecQuery();
                     break;
                 default:
@@ -405,7 +409,7 @@ public class MasterDataService : IMasterDataService
             }
             void setParameter()
             {
-                sqlParameters = new SqlParameter[14];
+                sqlParameters = new SqlParameter[15];
                 sqlParameters[0] = new SqlParameter("@CusNo", oCustomer.CusNo);
                 sqlParameters[1] = new SqlParameter("@FullName", oCustomer.FullName);
                 sqlParameters[2] = new SqlParameter("@Phone1", oCustomer.Phone1 ?? (object)DBNull.Value);
@@ -420,6 +424,7 @@ public class MasterDataService : IMasterDataService
                 sqlParameters[11] = new SqlParameter("@BranchId", oCustomer.BranchId);
                 sqlParameters[12] = new SqlParameter("@Remark", oCustomer.Remark ?? (object)DBNull.Value);
                 sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[14] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             }
             switch (pRequest.Type)
             {
@@ -430,7 +435,7 @@ public class MasterDataService : IMasterDataService
                     queryString = @"Insert into [dbo].[Customers] ([CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo]
                                     ,[Address],[DateOfBirth],[SkinType],[BranchId],[Remark],[DateCreate],[UserCreate],[IsDelete]) 
                                     values (@CusNo, @FullName, @Phone1, @Phone2, @CINo, @Email, @FaceBook, @Zalo
-                                    ,@Address, @DateOfBirth, @SkinType, @BranchId, @Remark, getdate(), @UserId, 0)";
+                                    ,@Address, @DateOfBirth, @SkinType, @BranchId, @Remark, @DateTimeNow, @UserId, 0)";
                     setParameter();
                     await ExecQuery();
                     break;
@@ -439,7 +444,7 @@ public class MasterDataService : IMasterDataService
                                        set [FullName] = @FullName , [Phone1] = @Phone1, [Phone2] = @Phone2
                                          , [CINo] = @CINo , [Email] = @Email, [FaceBook] = @FaceBook, [Zalo] = @Zalo, [Remark] = @Remark
                                          , [Address] = @Address , [DateOfBirth] = @DateOfBirth, [SkinType] = @SkinType, [BranchId] = @BranchId
-                                         , [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                         , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                      where [CusNo] = @CusNo";
                     setParameter();
                     await ExecQuery();
@@ -546,7 +551,7 @@ public class MasterDataService : IMasterDataService
             }
             void setParameter()
             {
-                sqlParameters = new SqlParameter[8];
+                sqlParameters = new SqlParameter[9];
                 sqlParameters[0] = new SqlParameter("@ServiceCode", oService.ServiceCode);
                 sqlParameters[1] = new SqlParameter("@ServiceName", oService.ServiceName);
                 sqlParameters[2] = new SqlParameter("@EnumId", oService.EnumId);
@@ -555,6 +560,7 @@ public class MasterDataService : IMasterDataService
                 sqlParameters[5] = new SqlParameter("@QtyWarranty", oService.QtyWarranty);
                 sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
                 sqlParameters[7] = new SqlParameter("@PackageId", oService.PackageId+ "");
+                sqlParameters[8] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             }
             switch (pRequest.Type)
             {
@@ -563,7 +569,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[0] = new SqlParameter("@Type", "Services");
                     oService.ServiceCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy mã dịch vụ
                     queryString = @"Insert into [dbo].[Services] ([ServiceCode],[ServiceName],[EnumId],[PackageId],[Description],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
-                                    values (@ServiceCode, @ServiceName, @EnumId, @PackageId, @Description, @WarrantyPeriod, @QtyWarranty, getdate(), @UserId, 0)";
+                                    values (@ServiceCode, @ServiceName, @EnumId, @PackageId, @Description, @WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0)";
                     setParameter();
                     int iPriceId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[Prices] with(nolock)");
                     await _context.BeginTranAsync();
@@ -571,12 +577,13 @@ public class MasterDataService : IMasterDataService
  
                     // thêm vào bảng giá
                     queryString = @"Insert into [dbo].[Prices] ([Id],[ServiceCode],[Price],[DateCreate],[UserCreate],[IsActive])
-                                    values (@Id, @ServiceCode, @Price, getdate(), @UserId, 1)";
-                    sqlParameters = new SqlParameter[4];
+                                    values (@Id, @ServiceCode, @Price, @DateTimeNow, @UserId, 1)";
+                    sqlParameters = new SqlParameter[5];
                     sqlParameters[0] = new SqlParameter("@Id", iPriceId);
                     sqlParameters[1] = new SqlParameter("@ServiceCode", oService.ServiceCode);
                     sqlParameters[2] = new SqlParameter("@Price", oService.Price);
                     sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[4] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await ExecQuery();
                     await _context.CommitTranAsync();
                     break;
@@ -584,7 +591,7 @@ public class MasterDataService : IMasterDataService
                     queryString = @"Update [dbo].[Services]
                                        set [ServiceName] = @ServiceName , [EnumId] = @EnumId, [Description] = @Description
                                          , [WarrantyPeriod] = @WarrantyPeriod , [QtyWarranty] = @QtyWarranty, [PackageId] = @PackageId
-                                         , [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                         , [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                      where [ServiceCode] = @ServiceCode";
                     setParameter();
                     await ExecQuery();
@@ -969,11 +976,12 @@ public class MasterDataService : IMasterDataService
             }
             void setParameter()
             {
-                sqlParameters = new SqlParameter[4];
+                sqlParameters = new SqlParameter[5];
                 sqlParameters[0] = new SqlParameter("@SuppliesCode", oSupplies.SuppliesCode);
                 sqlParameters[1] = new SqlParameter("@SuppliesName", oSupplies.SuppliesName);
                 sqlParameters[2] = new SqlParameter("@EnumId", oSupplies.EnumId);
                 sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[4] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             }
             switch (pRequest.Type)
             {
@@ -990,7 +998,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[0] = new SqlParameter("@Type", "Supplies");
                     oSupplies.SuppliesCode = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy mã vật tư
                     queryString = @"INSERT INTO [dbo].[Supplies] ([SuppliesCode] ,[SuppliesName],[EnumId],[DateCreate],[UserCreate],[IsDelete])
-                                    values ( @SuppliesCode , @SuppliesName , @EnumId , getDate(), @UserId, 0 )";
+                                    values ( @SuppliesCode , @SuppliesName , @EnumId , @DateTimeNow, @UserId, 0 )";
 
                     setParameter();
                      await ExecQuery();
@@ -999,7 +1007,7 @@ public class MasterDataService : IMasterDataService
                     queryString = @"UPDATE [dbo].[Supplies]
                                    SET [SuppliesName] = @SuppliesName
                                       ,[EnumId] = @EnumId
-                                      ,[DateCreate] = getdate()
+                                      ,[DateCreate] = @DateTimeNow
                                       ,[UserCreate] = @UserId
                                  WHERE SuppliesCode = @SuppliesCode";
 
@@ -1140,30 +1148,35 @@ public class MasterDataService : IMasterDataService
                     // kiểm tra điều kiện trước khi xóa
                     //
                     queryString = "[Id] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
-                    sqlParameters = new SqlParameter[3];
+                    sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
                     response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Supplies):
                     // kiểm tra điều kiện trước khi xóa
                     //
                     queryString = "[SuppliesCode] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
-                    sqlParameters = new SqlParameter[3];
+                    sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     response = await deleteDataAsync(nameof(EnumTable.Supplies), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Inventory):
                     // kiểm tra điều kiện trước khi xóa
                     //
                     queryString = "[ABSID] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
-                    sqlParameters = new SqlParameter[3];
+                    sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
                     response = await deleteDataAsync(nameof(EnumTable.Inventory), queryString, sqlParameters);
                     break;
                 default:
@@ -1198,7 +1211,7 @@ public class MasterDataService : IMasterDataService
         {
             await _context.BeginTranAsync();
             string queryString = @$"UPDATE [dbo].[{pTableName}] 
-                                set [IsDelete] = 1, [ReasonDelete] = @ReasonDelete, [DateUpdate] = getdate(), [UserUpdate] = @UserId
+                                set [IsDelete] = 1, [ReasonDelete] = @ReasonDelete, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                 where {pCondition}";
 
             var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
