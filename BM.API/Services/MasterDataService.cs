@@ -855,14 +855,14 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-            queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId
-                                                 from dbo.[Users] t0 where t0.UserName = @UserName and t0.Password = @Password
-                                                 and t0.BranchId = @BranchId";
+                queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId, t1.BranchName
+                                    from dbo.[Users] t0 
+                                    inner join Branchs t1 on t0.BranchId = t1.BranchId
+                                                    where t0.UserName = @UserName and t0.Password = @Password";
             //setParameter();
-            sqlParameters = new SqlParameter[3];
+            sqlParameters = new SqlParameter[2];
             sqlParameters[0] = new SqlParameter("@UserName", pRequest.UserName);
             sqlParameters[1] = new SqlParameter("@Password", pRequest.Password);
-            sqlParameters[2] = new SqlParameter("@BranchId", pRequest.BranchId);
             data = await _context.GetDataAsync(queryString, DataRecordToUserModelByLogin, sqlParameters, CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -1373,6 +1373,7 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["FullName"])) user.FullName = Convert.ToString(record["FullName"]);
         if (!Convert.IsDBNull(record["IsAdmin"])) user.IsAdmin = Convert.ToBoolean(record["IsAdmin"]);
         if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) user.BranchName = Convert.ToString(record["BranchName"]);
         return user;
     }
 

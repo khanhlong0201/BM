@@ -32,6 +32,7 @@ public class UserModel : Auditable
     [Required(ErrorMessage = "Vui lòng điền nhập lại Mật khẩu")]
     public string? ReEnterPassword { get; set; }
     public string? PasswordNew { get; set; }
+    public string? BranchName { get; set; }
 }
 
 /// <summary>

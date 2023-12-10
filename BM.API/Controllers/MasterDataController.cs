@@ -354,12 +354,20 @@ namespace BM.API.Controllers
             try
             {
                 var data = await _masterService.Login(loginRequest);
-                if (data == null || data.Count() ==0) return BadRequest(new
-                {
+                if (data == null || data.Count() ==0) 
+                return BadRequest(new {
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
                 });
                 UserModel oUser = data.First();
+                var dataBranch = await _masterService.GetBranchsAsync(true);
+                BranchModel branch = dataBranch.Where(d =>d.BranchId+""== loginRequest?.BranchId+"").First();
+                if (oUser?.IsAdmin == false && oUser?.BranchId+"" != loginRequest?.BranchId + "")
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = $"Tài khoản không thuộc chi nhánh {branch?.BranchName+""}"
+                });
                 var claims = new[]
                 {
                     new Claim("UserId", oUser.Id + ""),
