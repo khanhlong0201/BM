@@ -26,3 +26,13 @@ new MutationObserver((mutations, observer) => {
     attributeOldValue: true,
     characterDataOldValue: true,
 });
+
+//print
+function printHtml(html) {
+    var printWindow = window.open("", "_blank");
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.close();
+}

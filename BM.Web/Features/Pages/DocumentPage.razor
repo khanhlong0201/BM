@@ -6,7 +6,7 @@
         OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/bill.png" Enabled="@(!pIsLockPage)"
         OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/printer.png">In hóa đơn</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" Enabled="@(DocumentUpdate.DocEntry > 0)" OnClick="@(()=> PrintDocHandler())">In hóa đơn</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
     <div class="card card-lg mt-1" style="padding: 5px">
