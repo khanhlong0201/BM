@@ -44,6 +44,7 @@ public class PriceModel : Auditable
 /// </summary>
 public class SalesOrderModel
 {
+    public bool IsCheck { get; set; }
     public int Id { get; set; }
     public int LineNum { get; set; }
     public string ServiceCode { get; set; } = "";

@@ -6,7 +6,8 @@
         OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/bill.png" Enabled="@(!pIsLockPage)"
         OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/printer.png" Enabled="@(DocumentUpdate.DocEntry > 0)" OnClick="@(()=> PrintDocHandler())">In hóa đơn</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" Enabled="@(DocumentUpdate.DocEntry > 0)" OnClick="@(()=> PrintDocHandler())">In hồ sơ</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" OnClick="@(()=> PrintCommitedDocHander())">In cam kết</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
     <div class="card card-lg mt-1" style="padding: 5px">
@@ -183,6 +184,7 @@
                                         <td class="text-center">
                                             <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
                                                title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
+                                            <TelerikCheckBox @bind-Value="@oItem.IsCheck" Title="" />
                                         </td>
                                         <td class="text-center">@oItem.LineNum</td>
                                         <td>

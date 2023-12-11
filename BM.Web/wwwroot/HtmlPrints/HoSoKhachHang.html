@@ -14,152 +14,133 @@
 
         span {
             color: #333 !important;
-            font-size: 13pt !important;
+            font-size: 12pt !important;
             font-weight: normal !important;
-            line-height: 32pt !important;
             text-align: justify !important;
         }
 
         .info-customer {
             font-size: 13pt;
         }
-
-            .info-customer p {
-                font-weight: bold;
-                color: #333;
-                margin-top: 0px;
-                margin-bottom: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-            }
     </style>
 </head>
 <body>
     <div>
         <!--Header-->
         <div class="header">
-            <p style="margin-top:0pt">TRANG KIM PHUN XĂM THẨM MỸ</p>
-            <p style="margin-top:-6pt">Cơ sở 1: Chợ Cái Tắt </p>
-            <p style="margin-top:-6pt">Cơ sở 2: Nguyễn Trãi, TP. Cần Thơ </p>
-            <p style="margin-top:-6pt">Hotline: 0901219718</p>
+            <p style="margin-bottom: 0px;">TRANG KIM PHUN XĂM THẨM MỸ</p>
+            <p style="margin-top:5px;margin-bottom: 0px;">Cơ sở 1: Chợ Cái Tắt </p>
+            <p style="margin-top:5px;margin-bottom: 0px;">Cơ sở 2: Nguyễn Trãi, TP. Cần Thơ </p>
+            <p style="margin-top: 5px;margin-bottom: 0px;">Hotline: 0901219718</p>
         </div>
 
         <!--Thông tin khách hàng-->
         <div style="margin-top:-5pt">
-            <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 0px; text-align: center;">HỒ SƠ KHÁCH HÀNG</h2>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt; margin-top: -5pt">
+            <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 5px; text-align: center;">HỒ SƠ KHÁCH HÀNG</h2>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch;margin-top: 5pt">
                 <div style="width: 33.33%">
-                    <p><span>Số phiếu: </span>{bm-VoucherNo}</p>
+                    <span>Số phiếu: {bm-VoucherNo}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <p><span>Tình trạng: </span>{bm-StatusName}</p>
+                    <span>Tình trạng: {bm-StatusName}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <p><span>Ngày lập phiếu: </span>{bm-DateCreate}</p>
+                    <span>Ngày lập phiếu: {bm-DateCreate}</span>
                 </div>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt; margin-top: -10pt">
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch;margin-top: 5px">
                 <div style="width: 33.33%">
-                    <p><span>Mã K/H: </span>{bm-CusNo}</p>
+                    <span>Mã K/H: {bm-CusNo}</span>
                 </div>
                 <div style="width: 66.66%">
-                    <p><span>Cơ sở: </span>{bm-BranchName}</p>
+                    <span>Cơ sở: {bm-BranchName}</span>
                 </div>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch;margin-top: 5px">
                 <div style="width: 33.33%">
-                    <p><span>Tên khách hàng: </span>{bm-FullName}</p>
+                    <span>Tên khách hàng: {bm-FullName}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <p><span>Ngày sinh: </span>{bm-DateOfBirth}</p>
+                    <span>Ngày sinh: {bm-DateOfBirth}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <p><span>CCCD: </span>{bm-CINo}</p>
-                </div>
-            </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
-                <div style="width: 33.33%">
-                    <p><span>Số điện thoại: </span>{bm-Phone1}</p>
-                </div>
-                <div style="width: 33.33%">
-                    <p><span>Zalo: </span>{bm-Zalo}</p>
-                </div>
-                <div style="width: 33.33%">
-                    <p><span>Facebook: </span>{bm-FaceBook}</p>
+                    <span>CCCD: {bm-CINo}</span>
                 </div>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch;margin-top: 5px">
+                <div style="width: 33.33%">
+                    <span>Số điện thoại: {bm-Phone1}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Zalo: {bm-Zalo}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Facebook: {bm-FaceBook}</span>
+                </div>
+            </div>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch;margin-top: 5px">
                 <div style="width: 66.66%">
-                    <p><span>Địa chỉ: </span>{bm-Address}</p>
+                    <span>Địa chỉ: {bm-Address}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <p><span>Đặc điểm: </span>{bm-Remark}</p>
+                    <span>Đặc điểm: {bm-Remark}</span>
                 </div>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
-                <div>
-                    <p><span>Tình trạng khách khi sử dụng dịch vụ: </span>{bm-StatusBefore}</p>
-                </div>
+            <div class="info-customer" style="margin-top: 5px">
+                <span>Tình trạng khách khi sử dụng dịch vụ: {bm-StatusBefore}</span>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
-                <div>
-                    <p><span>Loại da: </span>{bm-SkinType}</p>
-                </div>
+            <div class="info-customer" style="margin-top: 5px">
+                <span>Loại da: {bm-SkinType}</span>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
-                <div>
-                    <p><span>Tình trạng sức khỏe: </span>{bm-HealthStatus}</p>
-                </div>
+            <div class="info-customer" style="margin-top: 5px">
+                <span>Tình trạng sức khỏe: {bm-HealthStatus}</span>
             </div>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: -10pt">
-                <div>
-                    <p><span>Ghi chú đơn hàng: </span>{bm-NoteForAll}</p>
-                </div>
+            <div class="info-customer" style="margin-top: 5px">
+                <span>Ghi chú đơn hàng: {bm-NoteForAll}</span>
             </div>
         </div>
         <!--Thông tin phiếu đặt-->
-        <table style="border-collapse: collapse;font-size:13pt;width: 100%;">
+        <table style="border-collapse: collapse;font-size:12pt;width: 100%;max-width: 100%;margin-top: 5px">
             <thead>
                 <tr>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;max-width:35px">STT</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Dịch vụ</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Đơn giá</th>
-                    <th style="border: 1px solid #dddddd; text-align: left; padding: 8px; max-width: 55px">SL</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Tổng tiền</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">NV tư vấn</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">NV thực hiện</th>
-                    <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Công thức mực</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;max-width:35px">STT</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Dịch vụ</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Đơn giá</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left; padding: 8px; max-width: 55px">SL</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Tổng tiền</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">NV tư vấn</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">NV thực hiện</th>
+                    <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Công thức mực</th>
                 </tr>
             </thead>
             <tbody>
                 {bm-cus-services}
-
                 <tr>
-                    <td colspan="3" style="border: 1px solid #dddddd;text-align: right;padding: 8px;">Tổng tiền dịch vụ</td>
-                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;">{bm-cus-total}</td>
+                    <td colspan="3" style="border: 1px solid #dddddd;text-align: right;padding: 8px;"><span>Tổng tiền dịch vụ</span></td>
+                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;"><span>{bm-cus-total}</span></td>
                     <td colspan="3" style="border: 1px solid #dddddd;text-align: left;padding: 8px;"></td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid #dddddd; text-align: right; padding: 8px;">Khách trả</td>
-                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;">{bm-cus-payment}</td>
+                    <td colspan="3" style="border: 1px solid #dddddd; text-align: right; padding: 8px;"><span>Khách trả</span></td>
+                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;"><span>{bm-cus-payment}</span></td>
                     <td colspan="3" style="border: 1px solid #dddddd;text-align: left;padding: 8px;"></td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid #dddddd; text-align: right; padding: 8px;">Công nợ</td>
-                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;">{bm-cus-debts}</td>
+                    <td colspan="3" style="border: 1px solid #dddddd; text-align: right; padding: 8px;"><span>Công nợ</span></td>
+                    <td colspan="2" style="border: 1px solid #dddddd; text-align: right; padding: 8px;"><span>{bm-cus-debts}</span></td>
                     <td colspan="3" style="border: 1px solid #dddddd;text-align: left;padding: 8px;"></td>
                 </tr>
             </tbody>
         </table>
         <!--Thông tin phiếu đặt-->
         <!--Footer-->
-        <div style="display: flex; justify-content: flex-end; align-items: stretch">
+        <div style="display: flex; justify-content: flex-end; align-items: stretch; margin-top: 15px;">
             <div style="display: flex; justify-content: flex-end; align-items: center;">
                 <div style="margin-right: 70pt; font-size: 13pt; line-height: 12px">
-                    <p style="text-align: center">Nhân viên</p>
+                    <span>Nhân viên</span>
                 </div>
                 <div style="margin-right: 40pt; font-size: 13pt; line-height: 13px">
-                    <p style="text-align: center">Khách hàng</p>
+                    <span>Khách hàng</span>
                 </div>
             </div>
         </div>

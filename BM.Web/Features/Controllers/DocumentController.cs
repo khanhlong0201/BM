@@ -32,6 +32,7 @@ namespace BM.Web.Features.Controllers
         #region Properties
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         private const string TEMPLATE_PRINT_HO_SO_KHACH_HANG = "HtmlPrints\\HoSoKhachHang.html";
+        private const string TEMPLATE_PRINT_CAM_KET = "HtmlPrints\\CamKetVaDongThuan.html";
         public double TotalDue { get; set; } = 0.0;
         public DocumentModel DocumentUpdate { get; set; } = new DocumentModel();
         public List<SalesOrderModel>? ListSalesOrder { get; set; } // ds đơn hàng
@@ -371,7 +372,7 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng lưu thông tin đơn hàng trước khi In");
                     return;
                 }
-                //=============== xử lý đọc thông tin file html => export docs or pdf
+                //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_HO_SO_KHACH_HANG}";
                 StreamReader streamReader = new StreamReader(sFilePath);
                 string sHtmlExport = streamReader.ReadToEnd();
@@ -379,7 +380,6 @@ namespace BM.Web.Features.Controllers
                 streamReader.Dispose();
 
                 //replace html
-
                 if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
                 sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{DocumentUpdate.VoucherNo}");
                 sHtmlExport = sHtmlExport.Replace("{bm-StatusName}", $"{DocumentUpdate.StatusName}");
@@ -403,14 +403,14 @@ namespace BM.Web.Features.Controllers
                 for(int i=0; i < ListSalesOrder.Count;i++)
                 {
                     tblServices += @$" <tr>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;"">{(i + 1)}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;"">{ListSalesOrder[i].ServiceName}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;"">{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;"">{ListSalesOrder[i].Qty}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;"">{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;"">{ListSalesOrder[i].ServiceName}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;"">{ListSalesOrder[i].ServiceName}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px"">{ListSalesOrder[i].ChemicalFormula}</td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{(i + 1)}</td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Qty}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px""><span>{ListSalesOrder[i].ChemicalFormula}</span></td>
                     </tr> ";
                 }
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-services}", $"{tblServices}");
@@ -418,6 +418,8 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-total}", $"{pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-payment}", $"{DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-debts}", $"{DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
+
+                //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
             }
             catch (Exception ex)
@@ -427,7 +429,77 @@ namespace BM.Web.Features.Controllers
             }
             finally
             {
-                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        /// <summary>
+        /// in biên bản cam kết và đồng thuận
+        /// </summary>
+        protected async void PrintCommitedDocHander()
+        {
+            try
+            {
+                if(ListSalesOrder == null || !ListSalesOrder.Any())
+                {
+                    ShowWarning("Không có thông tin dịch vụ!");
+                    return;
+                }
+                var lstItem = ListSalesOrder.Where(m => m.IsCheck == true).ToList();
+                if(lstItem == null || !lstItem.Any())
+                {
+                    ShowWarning("Vui lòng chọn dòng để in [Cam kết & đồng thuận]!");
+                    return;
+                }
+                if(lstItem.Count > 1)
+                {
+                    ShowWarning("Chỉ được phép chọn 1 dịch vụ để in [Cam kết & đồng thuận]!");
+                    return;
+                }
+                //=============== xử lý đọc thông tin file html
+                string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_CAM_KET}";
+                StreamReader streamReader = new StreamReader(sFilePath);
+                string sHtmlExport = streamReader.ReadToEnd();
+                streamReader.Close();
+                streamReader.Dispose();
+                //replace html
+                if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
+                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{DocumentUpdate.VoucherNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StatusName}", $"{DocumentUpdate.StatusName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CusNo}", $"{DocumentUpdate.CusNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-FullName}", $"{DocumentUpdate.FullName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DateOfBirth}", DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
+                    : $"{DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CINo}", $"{DocumentUpdate.CINo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Phone1}", $"{DocumentUpdate.Phone1}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Zalo}", $"{DocumentUpdate.Zalo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-FaceBook}", $"{DocumentUpdate.FaceBook}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Address}", $"{DocumentUpdate.Address}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StatusBefore}", $"{DocumentUpdate.StatusBefore}");
+                sHtmlExport = sHtmlExport.Replace("{bm-SkinType}", $"{DocumentUpdate.SkinType}");
+                sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
+                sHtmlExport = sHtmlExport.Replace("{bm-WarrantyPeriod}", $"{lstItem[0].WarrantyPeriod}");
+                sHtmlExport = sHtmlExport.Replace("{bm-QtyWarranty}", $"{lstItem[0].QtyWarranty}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{lstItem[0].ServiceCode} - {lstItem[0].ServiceName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Amount}", $"{lstItem[0].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Weakness}", $"");
+                sHtmlExport = sHtmlExport.Replace("{bm-Accept}", $"");
+                sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"");
+
+                //in
+                await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
+
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "PrintCommitedDocHander");
+                ShowError(ex.Message);
+            }
+            finally
+            {
                 await InvokeAsync(StateHasChanged);
             }
         }
