@@ -16,7 +16,7 @@ public interface ICliMasterDataService
 {
     Task<List<BranchModel>?> GetDataBranchsAsync(bool pIsPageLogin = false);
     Task<bool> UpdateBranchAsync(string pJson, string pAction, int pUserId);
-    Task<List<UserModel>?> GetDataUsersAsync();
+    Task<List<UserModel>?> GetDataUsersAsync(int pUserId = -1);
     Task<bool> UpdateUserAsync(string pJson, string pAction, int pUserId);
     Task<List<EnumModel>?> GetDataEnumsAsync(string pEnumType);
     Task<bool> UpdateEnumAsync(string pJson, string pAction, int pUserId);
@@ -140,11 +140,15 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     /// Call API lấy danh sách user
     /// </summary>
     /// <returns></returns>
-    public async Task<List<UserModel>?> GetDataUsersAsync()
+    public async Task<List<UserModel>?> GetDataUsersAsync(int pUserId = -1)
     {
         try
         {
-            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_USER);
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pUserId", $"{pUserId}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_USER, pParams);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else
@@ -202,7 +206,9 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
                 if (httpResponse.IsSuccessStatusCode)
                 {
                     string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
-                    _toastService.ShowSuccess($"{sMessage} Nhân viên!");
+                    
+                    if(pAction == nameof(EnumType.ChangePassWord)) _toastService.ShowSuccess($"{sMessage} Mật khẩu!");
+                    else _toastService.ShowSuccess($"{sMessage} Nhân viên!");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");

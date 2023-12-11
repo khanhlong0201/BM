@@ -54,7 +54,8 @@ public enum EnumType
     @SkinType,
     @ServicePack,
     @Unit,
-    @StateOfHealth
+    @StateOfHealth,
+    @ChangePassWord
 }
 
 public enum EnumTable

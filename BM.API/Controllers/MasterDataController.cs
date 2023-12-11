@@ -72,11 +72,11 @@ namespace BM.API.Controllers
 
         [HttpGet]
         [Route("GetUsers")]
-        public async Task<IActionResult> GetDataUsers()
+        public async Task<IActionResult> GetDataUsers(int pUserId=-1)
         {
             try
             {
-                var data = await _masterService.GetUsersAsync();
+                var data = await _masterService.GetUsersAsync(pUserId);
                 return Ok(data);
             }
             catch (Exception ex)
@@ -354,16 +354,25 @@ namespace BM.API.Controllers
             try
             {
                 var data = await _masterService.Login(loginRequest);
-                if (data == null || data.Count() ==0) return BadRequest(new
-                {
+                if (data == null || data.Count() ==0) 
+                return BadRequest(new {
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
                 });
                 UserModel oUser = data.First();
+                var dataBranch = await _masterService.GetBranchsAsync(true);
+                BranchModel branch = dataBranch.Where(d =>d.BranchId+""== loginRequest?.BranchId+"").First();
+                if (oUser?.IsAdmin == false && oUser?.BranchId+"" != loginRequest?.BranchId + "")
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = $"Tài khoản không thuộc chi nhánh {branch?.BranchName+""}"
+                });
                 var claims = new[]
                 {
                     new Claim("UserId", oUser.Id + ""),
                     new Claim("EmpNo", oUser.EmpNo + ""),
+                    new Claim("UserName", oUser.UserName + ""),
                     new Claim("FullName", oUser.FullName + ""),
                     new Claim("IsAdmin", oUser.IsAdmin + ""),
                     new Claim("BranchId", oUser.BranchId + ""),

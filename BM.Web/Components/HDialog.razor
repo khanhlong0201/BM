@@ -10,7 +10,9 @@
                 <div class="d-flex justify-content-end">
                     <div>
                         <TelerikButton OnClick="@CloseDialogHandler">&nbsp;Đóng&nbsp;</TelerikButton>
-                        <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Hidden="@(!IsShowButtonSaveAdnCreate)" OnClick="@SaveAndCreate">@TitleBtnSaveAndCreate</TelerikButton>
+                        @if(IsShowButtonSaveAndCreates){
+                            <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" Hidden="@(!IsShowButtonSaveAdnCreate)" OnClick="@SaveAndCreate">@TitleBtnSaveAndCreate</TelerikButton>
+                        }
                         <TelerikButton ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@SaveAndClosed">@TitleBtnSaveAndClosed</TelerikButton>
                     </div>
                 </div>
@@ -33,6 +35,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback SaveAndClosed { get; set; }
     [Parameter] public EventCallback SaveAndCreate { get; set; }
+    [Parameter] public bool IsShowButtonSaveAndCreates { get; set; } = true;
 
     private async Task CloseDialogHandler()
     {

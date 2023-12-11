@@ -163,6 +163,7 @@ namespace BM.Web.Features.Controllers
                     ServiceUpdate.ServiceName = pItemDetails!.ServiceName;
                     ServiceUpdate.Price = pItemDetails!.Price;
                     ServiceUpdate.EnumId = pItemDetails!.EnumId;
+                    ServiceUpdate.PackageId = pItemDetails!.PackageId +"";
                     ServiceUpdate.EnumName = pItemDetails!.EnumName;
                     ServiceUpdate.WarrantyPeriod = pItemDetails!.WarrantyPeriod;
                     ServiceUpdate.QtyWarranty = pItemDetails!.QtyWarranty;
