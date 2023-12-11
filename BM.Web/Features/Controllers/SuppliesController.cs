@@ -267,6 +267,7 @@ namespace BM.Web.Features.Controllers
                 if (isSuccess)
                 {
                     await getDataInv();
+                    await getData();
                     if (pEnum == EnumType.SaveAndCreate)
                     {
                         ListInvetoryCreate = new List<InvetoryModel>();
