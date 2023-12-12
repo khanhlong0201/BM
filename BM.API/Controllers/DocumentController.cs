@@ -141,5 +141,26 @@ namespace BM.API.Controllers
 
             }
         }
+
+        [HttpPost]
+        [Route("GetReport")]
+        public async Task<IActionResult> GetDataReport(RequestReportModel pSearchData)
+        {
+            try
+            {
+                var data = await _documentervice.GetReportAsync(pSearchData);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetDataReport");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
+        }
     }
 }
