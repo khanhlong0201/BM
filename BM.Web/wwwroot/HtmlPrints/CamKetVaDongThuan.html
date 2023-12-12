@@ -31,17 +31,15 @@
         <!--Thông tin khách hàng-->
         <div>
             <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 0px; text-align: center;">CAM KẾT VÀ ĐỒNG THUẬN</h2>
-            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt; margin-top: 5px">
-                <div style="width: 33.33%">
-                    <span>Ngày lập phiếu: {bm-DateCreate}</span>
-                </div>
-            </div>
             <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt; margin-top: 2px">
                 <div style="width: 33.33%">
                     <span>Mã K/H: {bm-CusNo}</span>
                 </div>
-                <div style="width: 66.66%">
+                <div style="width: 33.33%">
                     <span>Cơ sở: {bm-BranchName}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Ngày tạo: {bm-DateCreate}</span>
                 </div>
             </div>
             <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; font-size: 13pt;margin-top: 2px">
@@ -78,23 +76,24 @@
             </div>
             <table style="border-collapse: collapse;width: 100%;max-width: 100%;margin-top: 3px">
                 <tbody>
-                    <tr>
-                        <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
-                            <span style="font-size: 12px !important">Có đang sử dụng thuốc làm loãng máu thuốc làm loãng máu ádsadsadsa dsadá asd asdsa sdsa  dsds ử dụng thuốc làm loãng máu thuốc làm loãng </span>
-                        </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
-                        <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
-                            <span style="font-size: 12px !important">Có đang sử dụng thuốc làm loãng máu </span>
-                        </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
-                        <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
-                            <span style="font-size: 12px !important">Có đang sử dụng thuốc làm làm loãng máu </span>
-                        </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
-                        <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
-                    </tr>
+                    {bm-lstStateOfHealth}
+                    <!--<tr>
+                    <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
+                        <span style="font-size: 12px !important">Có đang sử dụng thuốc làm loãng máu thuốc làm loãng máu ádsadsadsa dsadá asd asdsa sdsa  dsds ử dụng thuốc làm loãng máu thuốc làm loãng </span>
+                    </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
+                    <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
+                        <span style="font-size: 12px !important">Có đang sử dụng thuốc làm loãng máu </span>
+                    </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
+                    <td style="border: 1px solid #dddddd;text-align: center;padding: 4px;">
+                        <span style="font-size: 12px !important">Có đang sử dụng thuốc làm làm loãng máu </span>
+                    </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 44px; text-align: center; font-size: 13px !important">Có <input type="checkbox" style="height: 15px;width: 15px;" /> </td>
+                    <td style="border: 1px solid #dddddd; padding: 4px; width: 65px; text-align: center; font-size: 13px !important">Không <input type="checkbox" style="height: 15px;width: 15px;" /></td>
+                </tr>-->
                 </tbody>
             </table>
             <div class="info-customer" style="margin-top: 5px">
@@ -121,55 +120,52 @@
         </div>
         <!-- Thông tin lưu ý -->
         <div style="margin-top: 10px;">
-            <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;">* Độ bền:</p>
+            <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;font-size: 14px;">* Độ bền:</p>
             <ul style="margin-top: 5px;margin-bottom: 0px;">
                 <li>
-                    <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;">Đối với môi: <span>Tùy vào nhu cầu, sở thích mức độ màu sắc, cơ địa đào thải mực của khách hàng sẽ có độ bền khách nhàu từ 1 đến 6 năm.</span></p>
+                    <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;font-size: 14px;">Đối với môi: <span style="font-size:13px !important">Tùy vào nhu cầu, sở thích mức độ màu sắc, cơ địa đào thải mực của khách hàng sẽ có độ bền khách nhàu từ 1 đến 6 năm.</span></p>
                 </li>
-                <li style="margin-top: 2px;">
-                    <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;">Đối với môi:</p>
-                    <span>+ Đối với Phun Mài tầm 1 đến 4 năm.</span> <br />
-                    <span>+ Đối với Sợi Mài tầm 8 tháng đến 2 năm rưỡi.</span>
+                <li style="margin-top: 1px;">
+                    <p style="margin-top: 0;margin-bottom: 0px;font-weight: 600;font-size: 14px;">Đối với môi:</p>
+                    <span style="font-size:13px !important">+ Đối với Phun Mài tầm 1 đến 4 năm.</span> <br />
+                    <span style="font-size:13px !important">+ Đối với Sợi Mài tầm 8 tháng đến 2 năm rưỡi.</span>
                 </li>
             </ul>
-            <p style="margin-top: 5px;margin-bottom: 5px;font-weight: 600;">* Lưu ý:</p>
-            <span>Da dầu (lỗ chân lông to) khách chấp nhận đi sợi phải địu độ bền kém hơn, sợi không được nét bằng da khô.</span>
+            <p style="margin-top: 5px;margin-bottom: 5px;font-weight: 600;font-size: 14px;">* Lưu ý:</p>
+            <span style="font-size:13px !important">Da dầu (lỗ chân lông to) khách chấp nhận đi sợi phải địu độ bền kém hơn, sợi không được nét bằng da khô.</span>
             <ul style="margin-top: 2px;margin-bottom: 0px;">
                 <li>
-                    <span>Đối với phun môi dòng mực an toàn sẽ có quá trình phục hồi da môi lên màu dần dần tùy cơ địa phục hồi da nhanh chậm của mỗi khách hàng.</span>
+                    <span style="font-size:13px !important">Đối với phun môi dòng mực an toàn sẽ có quá trình phục hồi da môi lên màu dần dần tùy cơ địa phục hồi da nhanh chậm của mỗi khách hàng.</span>
                 </li>
-                <li style="margin-top: 2px;">
-                    <span>Đối với khách có môi từ cấp độ 1 đến 4 và môi chỉnh sữa chấp thuận đi theo liệu trình cải thiện dần như kỹ thuật viên tư vấn riêng, không lên màu gấp vội.</span>
+                <li style="margin-top: 1px;">
+                    <span style="font-size:13px !important">Đối với khách có môi từ cấp độ 1 đến 4 và môi chỉnh sữa chấp thuận đi theo liệu trình cải thiện dần như kỹ thuật viên tư vấn riêng, không lên màu gấp vội.</span>
                 </li>
-                <li style="margin-top: 2px;">
-                    <span>Đã chọn TrangKim làm đẹp, là khách hàng củ tại TrangKim sẽ luôn được nhận giá ưu đãi khi tái sử dụng dịch vụ về sau.</span>
+                <li style="margin-top: 1px;">
+                    <span style="font-size:13px !important">Đã chọn TrangKim làm đẹp, là khách hàng củ tại TrangKim sẽ luôn được nhận giá ưu đãi khi tái sử dụng dịch vụ về sau.</span>
                 </li>
-                <li style="margin-top: 2px;">
-                    <span>Bảo hành miễn phí trong {bm-WarrantyPeriod} tháng/{bm-QtyWarranty} lần.</span>
+                <li style="margin-top: 1px;">
+                    <span style="font-size:13px !important">Bảo hành miễn phí trong {bm-WarrantyPeriod} tháng/{bm-QtyWarranty} lần.</span>
                 </li>
-                <li style="margin-top: 2px;">
-                    <span>Quá thời hạn đến dặm sẽ thu phí thêm.</span>
+                <li style="margin-top: 1px;">
+                    <span style="font-size:13px !important">Quá thời hạn đến dặm sẽ thu phí thêm.</span>
                 </li>
-                <li style="margin-top: 2px;">
-                    <span>Đem theo phiếu khi đến dặm, nếu quý khách làm mất phiếu này sẽ mất quyền lợi bảo hiểm miễn phí!</span>
+                <li style="margin-top: 1px;">
+                    <span style="font-size:13px !important">Đem theo phiếu khi đến dặm, nếu quý khách làm mất phiếu này sẽ mất quyền lợi bảo hiểm miễn phí!</span>
                 </li>
             </ul>
         </div>
         <!-- Thông tin lưu ý -->
         <!--Footer-->
-        <div style="display: flex; justify-content: flex-end; align-items: stretch">
-            <div style="display: flex; justify-content: flex-end; align-items: center;">
-                <div style="margin-right: 40pt; font-size: 13pt; line-height: 12px">
-                    <p style="text-align: center">Nhân viên</p>
-                    <!--<p style="text-align: center">(Kí tên)</p>-->
-                    <p style="text-align: center; margin-top: 30pt">{h-employee}</p>
-                </div>
-                <div style="margin-right: 70pt; font-size: 13pt; line-height: 13px">
-                    <p style="text-align: center; margin-bottom: 0px;">Khách hàng</p>
-                    <!--<p style="text-align: center">(Kí tên)</p>-->
-                    <p style="text-align: center; margin-top: 30pt">{h-customer-name}</p>
-                </div>
+        <div style="display: flex; justify-content: space-between; align-items: stretch; margin-top:5px; padding: 0 50px">
+            <div style="font-size: 12pt; text-align: center">
+                <p style="text-align: center; margin-bottom: 0px; margin-top: 0px">Khách hàng</p>
+                <span style="margin-top: 5px; text-align: center">(Tôi đồng ý)</span>
             </div>
+            <div style="font-size: 12pt; text-align: center">
+                <p style="text-align: center; margin-bottom: 0px;margin-top: 0px">PHUN XĂM THẨM MỸ TRANG KIM</p>
+                <span style="margin-top: 5px; text-align: center">(Kí tên)</span>
+            </div>
+
         </div>
         <!--Footer-->
     </div>
