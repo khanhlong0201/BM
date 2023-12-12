@@ -262,7 +262,10 @@ namespace BM.Web.Features.Controllers
                     if (pEnum == EnumType.SaveAndCreate)
                     {
                         EnumUpdate = new EnumModel();
+                        EnumUpdate.EnumType = pEnumType;
+                        EnumUpdate.EnumTypeName = pEnumTypeName;
                         _EditContext = new EditContext(EnumUpdate);
+                        IsCreate = true;
                         return;
                     }
                     IsShowDialog = false;

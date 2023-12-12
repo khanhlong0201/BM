@@ -363,7 +363,7 @@ namespace BM.Web.Features.Controllers
         /// <summary>
         /// gọi template in chứng từ
         /// </summary>
-        protected async void PrintDocHandler()
+        protected async Task PrintDocHandler()
         {
             try
             {
@@ -436,11 +436,11 @@ namespace BM.Web.Features.Controllers
         /// <summary>
         /// in biên bản cam kết và đồng thuận
         /// </summary>
-        protected async void PrintCommitedDocHander()
+        protected async Task PrintCommitedDocHander()
         {
             try
             {
-                if(ListSalesOrder == null || !ListSalesOrder.Any())
+                if (ListSalesOrder == null || !ListSalesOrder.Any())
                 {
                     ShowWarning("Không có thông tin dịch vụ!");
                     return;
@@ -456,6 +456,13 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Chỉ được phép chọn 1 dịch vụ để in [Cam kết & đồng thuận]!");
                     return;
                 }
+                //<> Đọc danh sách tình trạng sức khỏe in Cam kết và đồng thuận </>
+                var lstStateOfHealth = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.StateOfHealth));
+                if(lstStateOfHealth == null || !lstStateOfHealth.Any())
+                {
+                    ShowWarning("Vui lòng khai báo Danh mục In tình trạng sức khỏe!");
+                    return;
+                }    
                 //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_CAM_KET}";
                 StreamReader streamReader = new StreamReader(sFilePath);
@@ -489,6 +496,25 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-Accept}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"");
 
+                string htmlStateOfHealth = "";
+                // Lặp qua danh sách với bước là 3 phần tử mỗi lần
+                for (int i = 0; i < lstStateOfHealth.Count; i += 3)
+                {
+                    // Lấy 3 phần tử từ danh sách, bắt đầu từ vị trí i
+                    var currentGroup = lstStateOfHealth.Skip(i).Take(3);
+                    string htmlTd = "";
+                    
+                    foreach (var oStateOfHealth in currentGroup)
+                    {
+                        htmlTd += @$"<td style=""border: 1px solid #dddddd;text-align: center;padding:1px;"">
+                                        <span style=""font-size: 10.5px !important"">{oStateOfHealth.EnumName}</span>
+                                    </td>
+                                    <td style=""border: 1px solid #dddddd; width: 40px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 15px;width: 15px;"" /> </td>
+                                    <td style=""border: 1px solid #dddddd; width: 61px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 15px;width: 15px;"" /></td> ";
+                    }
+                    htmlStateOfHealth += @$"<tr>{htmlTd}</tr> ";
+                }
+                sHtmlExport = sHtmlExport.Replace("{bm-lstStateOfHealth}", $"{htmlStateOfHealth}");
                 //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
 
