@@ -30,9 +30,18 @@ new MutationObserver((mutations, observer) => {
 //print
 function printHtml(html) {
     var printWindow = window.open("", "_blank");
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.close();
+    if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        // Chờ cho nội dung HTML được tải xong trước khi thực hiện in
+        printWindow.onload = function () {
+            printWindow.print();
+            printWindow.close();
+        };
+    }
+    else {
+        // Xử lý trường hợp cửa sổ in không mở được
+        alert("Không thể mở cửa sổ in. Vui lòng kiểm tra cài đặt trình duyệt của bạn.");
+    }
 }

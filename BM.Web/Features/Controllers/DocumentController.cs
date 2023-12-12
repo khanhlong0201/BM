@@ -363,7 +363,7 @@ namespace BM.Web.Features.Controllers
         /// <summary>
         /// gọi template in chứng từ
         /// </summary>
-        protected async void PrintDocHandler()
+        protected async Task PrintDocHandler()
         {
             try
             {
@@ -436,7 +436,7 @@ namespace BM.Web.Features.Controllers
         /// <summary>
         /// in biên bản cam kết và đồng thuận
         /// </summary>
-        protected async void PrintCommitedDocHander()
+        protected async Task PrintCommitedDocHander()
         {
             try
             {
