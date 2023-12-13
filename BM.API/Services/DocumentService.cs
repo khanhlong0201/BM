@@ -7,7 +7,7 @@ using System.Net;
 using BM.Models.Shared;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-
+using BM.API.Commons;
 namespace BM.API.Services;
 
 public interface IDocumentService
@@ -17,6 +17,7 @@ public interface IDocumentService
     Task<Dictionary<string, string>?> GetDocumentById(int pDocEntry);
     Task<IEnumerable<DocumentModel>> GetSalesOrderClosedByGuest(string pCusNo);
     Task<ResponseModel> CancleDocList(RequestModel pRequest);
+    Task<IEnumerable<ReportModel>> GetReportAsync(RequestReportModel pSearchData);
 }
 public class DocumentService : IDocumentService
 {
@@ -460,7 +461,226 @@ public class DocumentService : IDocumentService
         }
         return response;
     }
+
+    /// <summary>
+    /// lấy kết quả báo cáo
+    /// </summary>
+    /// <param name="isAdmin"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ReportModel>> GetReportAsync(RequestReportModel pSearchData)
+    {
+        List<ReportModel> data = new List<ReportModel>();
+        try
+        {
+            await _context.Connect();
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
+            SqlParameter[] sqlParameters = new SqlParameter[6];
+            sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
+            sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            sqlParameters[2] = new SqlParameter("@BranchId", pSearchData.BranchId);
+            sqlParameters[3] = new SqlParameter("@TypeTime", pSearchData.TypeTime);
+            sqlParameters[4] = new SqlParameter("@Type", pSearchData.Type);
+            sqlParameters[5] = new SqlParameter("@UserId", pSearchData.UserId);
+            var results = await _context.GetDataSetAsync(Constants.STORE_REPORT_ALL, sqlParameters, commandType: CommandType.StoredProcedure);
+            if (results.Tables != null && results.Tables.Count > 0)
+            {
+                foreach (DataRow row in results.Tables[0].Rows)
+                {
+                    switch (pSearchData.Type+"")
+                    {
+                        case "DoanhThuQuiThangTheoDichVu":
+                            data.Add(DataRecordDoanhThuQuiThangTheoDichVuToReportModel(row));
+                            break;
+                        case "DoanhThuQuiThangTheoLoaiDichVu":
+                            data.Add(DataRecordDoanhThuQuiThangTheoLoaiDichVuToReportModel(row));
+                            break;
+                        case "DoanhThuTheoDichVu":
+                            data.Add(DataRecordDoanhThuTheoDichVuToReportModel(row));
+                            break;
+                        case "DoanhThuTheoLoaiDichVu":
+                            data.Add(DataRecordDoanhThuTheoLoaiDichVuToReportModel(row));
+                            break;
+                        case "DoanhThuQuiThangTheoNhanVienTuVan":
+                            data.Add(DataRecordDoanhThuQuiThangTheoNhanVienTuVanToReportModel(row));
+                            break;
+                        case "DoanhThuQuiThangTheoNhanVienThucHien":
+                            data.Add(DataRecordDoanhThuQuiThangTheoNhanVienThucHienToReportModel(row));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
     #region Private Funtions
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuQuiThangTheoDichVuToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["TotalReveune"])) model.TotalReveune = Convert.ToDouble(row["TotalReveune"]);
+        if (!Convert.IsDBNull(row["Total_01"])) model.Total_01 = Convert.ToDouble(row["Total_01"]);
+        if (!Convert.IsDBNull(row["Total_02"])) model.Total_02 = Convert.ToDouble(row["Total_02"]);
+        if (!Convert.IsDBNull(row["Total_03"])) model.Total_03 = Convert.ToDouble(row["Total_03"]);
+        if (!Convert.IsDBNull(row["Total_04"])) model.Total_04 = Convert.ToDouble(row["Total_04"]);
+        if (!Convert.IsDBNull(row["Total_05"])) model.Total_05 = Convert.ToDouble(row["Total_05"]);
+        if (!Convert.IsDBNull(row["Total_06"])) model.Total_06 = Convert.ToDouble(row["Total_06"]);
+        if (!Convert.IsDBNull(row["Total_07"])) model.Total_07 = Convert.ToDouble(row["Total_07"]);
+        if (!Convert.IsDBNull(row["Total_08"])) model.Total_08 = Convert.ToDouble(row["Total_08"]);
+        if (!Convert.IsDBNull(row["Total_09"])) model.Total_09 = Convert.ToDouble(row["Total_09"]);
+        if (!Convert.IsDBNull(row["Total_10"])) model.Total_10 = Convert.ToDouble(row["Total_10"]);
+        if (!Convert.IsDBNull(row["Total_11"])) model.Total_11 = Convert.ToDouble(row["Total_11"]);
+        if (!Convert.IsDBNull(row["Total_12"])) model.Total_12 = Convert.ToDouble(row["Total_12"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo loại dịch vụ
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuQuiThangTheoLoaiDichVuToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["TotalReveune"])) model.TotalReveune = Convert.ToDouble(row["TotalReveune"]);
+        if (!Convert.IsDBNull(row["Total_01"])) model.Total_01 = Convert.ToDouble(row["Total_01"]);
+        if (!Convert.IsDBNull(row["Total_02"])) model.Total_02 = Convert.ToDouble(row["Total_02"]);
+        if (!Convert.IsDBNull(row["Total_03"])) model.Total_03 = Convert.ToDouble(row["Total_03"]);
+        if (!Convert.IsDBNull(row["Total_04"])) model.Total_04 = Convert.ToDouble(row["Total_04"]);
+        if (!Convert.IsDBNull(row["Total_05"])) model.Total_05 = Convert.ToDouble(row["Total_05"]);
+        if (!Convert.IsDBNull(row["Total_06"])) model.Total_06 = Convert.ToDouble(row["Total_06"]);
+        if (!Convert.IsDBNull(row["Total_07"])) model.Total_07 = Convert.ToDouble(row["Total_07"]);
+        if (!Convert.IsDBNull(row["Total_08"])) model.Total_08 = Convert.ToDouble(row["Total_08"]);
+        if (!Convert.IsDBNull(row["Total_09"])) model.Total_09 = Convert.ToDouble(row["Total_09"]);
+        if (!Convert.IsDBNull(row["Total_10"])) model.Total_10 = Convert.ToDouble(row["Total_10"]);
+        if (!Convert.IsDBNull(row["Total_11"])) model.Total_11 = Convert.ToDouble(row["Total_11"]);
+        if (!Convert.IsDBNull(row["Total_12"])) model.Total_12 = Convert.ToDouble(row["Total_12"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh theo dịch vụ từ ngày đến ngày
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuTheoDichVuToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["LineTotal"])) model.LineTotal = Convert.ToDouble(row["LineTotal"]);
+        if (!Convert.IsDBNull(row["Qty"])) model.Qty = Convert.ToInt16(row["Qty"]);
+        if (!Convert.IsDBNull(row["Price"])) model.Price = Convert.ToDouble(row["Price"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh theo loại dịch vụ từ ngày đến ngày
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuTheoLoaiDichVuToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["LineTotal"])) model.LineTotal = Convert.ToDouble(row["LineTotal"]);
+        if (!Convert.IsDBNull(row["Qty"])) model.Qty = Convert.ToInt16(row["Qty"]);
+        if (!Convert.IsDBNull(row["Price"])) model.Price = Convert.ToDouble(row["Price"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo nhân viên tư vấn
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuQuiThangTheoNhanVienTuVanToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ConsultUserId"])) model.ConsultUserId = Convert.ToString(row["ConsultUserId"]);
+        if (!Convert.IsDBNull(row["ConsultUserName"])) model.ConsultUserName = Convert.ToString(row["ConsultUserName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["TotalReveune"])) model.TotalReveune = Convert.ToDouble(row["TotalReveune"]);
+        if (!Convert.IsDBNull(row["Total_01"])) model.Total_01 = Convert.ToDouble(row["Total_01"]);
+        if (!Convert.IsDBNull(row["Total_02"])) model.Total_02 = Convert.ToDouble(row["Total_02"]);
+        if (!Convert.IsDBNull(row["Total_03"])) model.Total_03 = Convert.ToDouble(row["Total_03"]);
+        if (!Convert.IsDBNull(row["Total_04"])) model.Total_04 = Convert.ToDouble(row["Total_04"]);
+        if (!Convert.IsDBNull(row["Total_05"])) model.Total_05 = Convert.ToDouble(row["Total_05"]);
+        if (!Convert.IsDBNull(row["Total_06"])) model.Total_06 = Convert.ToDouble(row["Total_06"]);
+        if (!Convert.IsDBNull(row["Total_07"])) model.Total_07 = Convert.ToDouble(row["Total_07"]);
+        if (!Convert.IsDBNull(row["Total_08"])) model.Total_08 = Convert.ToDouble(row["Total_08"]);
+        if (!Convert.IsDBNull(row["Total_09"])) model.Total_09 = Convert.ToDouble(row["Total_09"]);
+        if (!Convert.IsDBNull(row["Total_10"])) model.Total_10 = Convert.ToDouble(row["Total_10"]);
+        if (!Convert.IsDBNull(row["Total_11"])) model.Total_11 = Convert.ToDouble(row["Total_11"]);
+        if (!Convert.IsDBNull(row["Total_12"])) model.Total_12 = Convert.ToDouble(row["Total_12"]);
+        return model;
+    }
+
+    /// <summary>
+    /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo nhân viên thực hiện
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ReportModel DataRecordDoanhThuQuiThangTheoNhanVienThucHienToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ImplementUserId"])) model.ImplementUserId = Convert.ToString(row["ImplementUserId"]);
+        if (!Convert.IsDBNull(row["ImplementUserName"])) model.ImplementUserName = Convert.ToString(row["ImplementUserName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["TotalReveune"])) model.TotalReveune = Convert.ToDouble(row["TotalReveune"]);
+        if (!Convert.IsDBNull(row["Total_01"])) model.Total_01 = Convert.ToDouble(row["Total_01"]);
+        if (!Convert.IsDBNull(row["Total_02"])) model.Total_02 = Convert.ToDouble(row["Total_02"]);
+        if (!Convert.IsDBNull(row["Total_03"])) model.Total_03 = Convert.ToDouble(row["Total_03"]);
+        if (!Convert.IsDBNull(row["Total_04"])) model.Total_04 = Convert.ToDouble(row["Total_04"]);
+        if (!Convert.IsDBNull(row["Total_05"])) model.Total_05 = Convert.ToDouble(row["Total_05"]);
+        if (!Convert.IsDBNull(row["Total_06"])) model.Total_06 = Convert.ToDouble(row["Total_06"]);
+        if (!Convert.IsDBNull(row["Total_07"])) model.Total_07 = Convert.ToDouble(row["Total_07"]);
+        if (!Convert.IsDBNull(row["Total_08"])) model.Total_08 = Convert.ToDouble(row["Total_08"]);
+        if (!Convert.IsDBNull(row["Total_09"])) model.Total_09 = Convert.ToDouble(row["Total_09"]);
+        if (!Convert.IsDBNull(row["Total_10"])) model.Total_10 = Convert.ToDouble(row["Total_10"]);
+        if (!Convert.IsDBNull(row["Total_11"])) model.Total_11 = Convert.ToDouble(row["Total_11"]);
+        if (!Convert.IsDBNull(row["Total_12"])) model.Total_12 = Convert.ToDouble(row["Total_12"]);
+        return model;
+    }
 
     /// <summary>
     /// đọc danh sách đơn hàng
