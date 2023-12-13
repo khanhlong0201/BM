@@ -713,3 +713,17 @@ th.k-header,
 .table > :not(caption) > * > *, .markdown > table > :not(caption) > * > *{
     padding: 5px;
 }
+
+/*Sheduler*/
+.k-scheduler {
+    font-size: 13px;
+    border-color: var(--tblr-border-color);
+}
+
+.k-event {
+    background-color: var(--bg-color-selected);
+}
+
+    .k-event.k-state-selected {
+        background-color: var(--btn-color-hover);
+    }

@@ -2,17 +2,32 @@
 @page "/trang-chu"
 @inherits IndexController;
 
-
-<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="calc(100vh - 125px)" @bind-View="@CurrView">
+<TelerikScheduler Data="@ListSchedulers" @bind-Date="@StartDate" Height="calc(100vh - 125px)" @bind-View="@CurrView"
+                  IdField="@(nameof(SheduleModel.Id))"
+                  StartField="@(nameof(SheduleModel.Start))"
+                  EndField="@(nameof(SheduleModel.End))"
+                  TitleField="@(nameof(SheduleModel.Title))"
+                  DescriptionField="@(nameof(SheduleModel.Description))"
+                  IsAllDayField="@(nameof(SheduleModel.IsAllDay))"
+                  >
     <SchedulerViews>
-        <SchedulerMonthView></SchedulerMonthView>
-        <SchedulerDayView StartTime="@( new DateTime(2023, 12, 1, 7, 0, 0) )"></SchedulerDayView>
+        <SchedulerMonthView>
+            
+        </SchedulerMonthView>
+        <SchedulerDayView StartTime="@StartTime" >
+            <DateHeaderTemplate>
+                <div>
+                    @context.ToString(DefaultConstants.FORMAT_DATE)
+                </div>
+            </DateHeaderTemplate>
+            <AllDayItemTemplate>
+                @{
+                    SheduleModel oItem = (context as SheduleModel)!;
+                    <div style="height: 70px">
+                        @oItem.Title - @oItem.Description
+                    </div>
+                }
+            </AllDayItemTemplate>
+        </SchedulerDayView>
     </SchedulerViews>
 </TelerikScheduler>
-
-
-@code{
-    public DateTime StartDate { get; set; } = new DateTime(2023, 12, 01);
-    public SchedulerView CurrView { get; set; } = SchedulerView.Month;
-    IEnumerable<object> Appointments = new List<object>();
-}
