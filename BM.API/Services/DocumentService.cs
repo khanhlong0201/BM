@@ -18,6 +18,7 @@ public interface IDocumentService
     Task<IEnumerable<DocumentModel>> GetSalesOrderClosedByGuest(string pCusNo);
     Task<ResponseModel> CancleDocList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetReportAsync(RequestReportModel pSearchData);
+    Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData);
 }
 public class DocumentService : IDocumentService
 {
@@ -521,6 +522,41 @@ public class DocumentService : IDocumentService
         return data;
     }
 
+    /// <summary>
+    /// nhắc nợ, nhắc liệu trình
+    /// </summary>
+    /// <param name="pSearchData"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData)
+    {
+        IEnumerable<SheduleModel> data;
+        try
+        {
+            await _context.Connect();
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
+            //SqlParameter[] sqlParameters = new SqlParameter[5];
+            //sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId);
+            //sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
+            //sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            //sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
+            //sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
+            data = await _context.GetDataAsync(@$"select T0.DocEntry, DATEADD(DAY, 27 ,cast(iif(T2.DateUpdate is null, T2.DateCreate, T2.DateUpdate) as Date)) as DateStart
+                                                , T2.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, TotalDebtAmount
+	                                            , 'DebtReminder' as [Type] -- Nhắc nhợ
+                                             from CustomerDebts as T0 with(nolock)
+                                       inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                inner join Drafts as T2 with(nolock) on T0.DocEntry = T2.DocEntry"
+                    , DataRecordToSheduleModel, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ
@@ -733,6 +769,28 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
         if (!Convert.IsDBNull(record["Service"])) model.Service = Convert.ToString(record["Service"]);
         return model;
-    }    
+    }
+
+    /// <summary>
+    /// Lấy ra danh sách các con nợ + Nhắc dặm
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private SheduleModel DataRecordToSheduleModel(IDataRecord record)
+    {
+        SheduleModel model = new();
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["DateStart"])) model.Start = Convert.ToDateTime(record["DateStart"]);
+        if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+        if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);
+        if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);
+        if (!Convert.IsDBNull(record["Type"])) model.Type = Convert.ToString(record["Type"]);
+        if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
+        model.End = model.Start;
+        model.Title = $"Nhắc nợ - {model.FullName}";
+        model.IsAllDay = true;
+        return model;
+    }
     #endregion
 }

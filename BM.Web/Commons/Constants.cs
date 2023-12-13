@@ -60,4 +60,5 @@ public static class EndpointConstants
     public const string URL_DOCUMENT_GET_DOC_BY_ID = "Document/GetDocById";
     public const string URL_DOCUMENT_GET_DOC_BY_CUSNO = "Document/GetDocClosedByGuest";
     public const string URL_DOCUMENT_CANCLE_DOC_LIST = "Document/CancleDocList";
+    public const string URL_DOCUMENT_REMINDER_BY_MONTH = "Document/ReminderByMonth";
 }

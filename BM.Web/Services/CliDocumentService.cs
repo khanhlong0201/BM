@@ -14,6 +14,7 @@ public interface ICliDocumentService
     Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
     Task<List<DocumentModel>?> GetDocByCusNoAsync(string pCusNo);
     Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId);
+    Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -234,5 +235,38 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    /// <summary>
+    /// laays danh sách nhắc nợ + liệu trình
+    /// </summary>
+    /// <param name="pSearch"></param>
+    /// <returns></returns>
+    public async Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch)
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_REMINDER_BY_MONTH, pSearch);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<SheduleModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
     }
 }
