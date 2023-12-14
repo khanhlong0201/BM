@@ -55,6 +55,7 @@ public class SheduleModel
     public string? CusNo { get; set; }
     public string? FullName { get; set; }
     public string? Phone1 { get; set; }
+    public DateTime DateCreate { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
     public string? Title { get; set; }

@@ -536,21 +536,23 @@ public class DocumentService : IDocumentService
         try
         {
             await _context.Connect();
-            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
-            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
-            //SqlParameter[] sqlParameters = new SqlParameter[5];
-            //sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId);
-            //sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
-            //sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
-            //sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
-            //sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
-            data = await _context.GetDataAsync(@$"select T0.DocEntry, DATEADD(DAY, 27 ,cast(iif(T2.DateUpdate is null, T2.DateCreate, T2.DateUpdate) as Date)) as DateStart
-                                                , T2.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, TotalDebtAmount
-	                                            , 'DebtReminder' as [Type] -- Nhắc nhợ
-                                             from CustomerDebts as T0 with(nolock)
-                                       inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
-                                inner join Drafts as T2 with(nolock) on T0.DocEntry = T2.DocEntry"
-                    , DataRecordToSheduleModel, commandType: CommandType.Text);
+            DateTime dateTime = _dateTimeService.GetCurrentVietnamTime();
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = pSearchData.FromDate.Value.AddMonths(1);
+            SqlParameter[] sqlParameters = new SqlParameter[2];
+            sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
+            sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            data = await _context.GetDataAsync(@$"Select T0.DocEntry
+                                                       , T2.DateCreate, DATEADD(DAY, 27 ,cast(T2.DateCreate as Date)) as DateStart
+                                                       , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
+                                                       , 'DebtReminder' as [Type] -- Nhắc nhợ
+                                                    from [dbo].[Drafts] as T0 with(nolock)
+                                              inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                             cross apply (select top 1 DateCreate from [dbo].[CustomerDebts] as T00 with(nolock) 
+                                                            where T0.DocEntry = T00.DocEntry order by Id desc) as T2
+                                                   where isnull(T0.Debt, 0) > 0
+                                                     and DATEADD(DAY, 27 ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)"
+                    , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -883,6 +885,7 @@ public class DocumentService : IDocumentService
     {
         SheduleModel model = new();
         if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["DateStart"])) model.Start = Convert.ToDateTime(record["DateStart"]);
         if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
         if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);

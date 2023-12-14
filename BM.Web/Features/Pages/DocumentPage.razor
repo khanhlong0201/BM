@@ -180,10 +180,13 @@
                                 @foreach(var oItem in ListSalesOrder)
                                 {
                                     @*int iIndex = i;*@
-                                    <tr>
+                                    <tr class="@(oItem.IsCheck ? "bg-azure-lt"  : "")">
                                         <td class="text-center">
-                                            <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
-                                               title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
+                                            @if(!pIsLockPage)
+                                            {
+                                                <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
+                                                   title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
+                                            }
                                             <TelerikCheckBox @bind-Value="@oItem.IsCheck" Title="" />
                                         </td>
                                         <td class="text-center">@oItem.LineNum</td>
@@ -226,8 +229,15 @@
 
                                             </TelerikMultiSelect>
                                         </td>
-                                        <td class="text-center">
-                                            <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Enabled="@(!pIsLockPage)" Id="txtChemicalFomula" />
+                                        <td class="text-start">
+                                            @if (!pIsLockPage)
+                                            {
+                                                <TelerikTextBox @bind-Value="@oItem.ChemicalFormula" Enabled="@(!pIsLockPage)" Id="txtChemicalFomula" />
+                                            }
+                                            else
+                                            {
+                                                <span class="text-secondary">@oItem.ChemicalFormula</span>
+                                            }
                                         </td>
                                     </tr>
                                 }
