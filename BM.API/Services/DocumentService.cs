@@ -204,15 +204,16 @@ public class DocumentService : IDocumentService
                     // lấy mã
                     int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
 
-                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo],[TotalDebtAmount],[DateCreate],[UserCreate])
-                                                values (@Id, @DocEntry, @CusNo, @TotalDebtAmount, @DateTimeNow, @UserId)";
-                    sqlParameters = new SqlParameter[6];
+                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId)";
+                    sqlParameters = new SqlParameter[7];
                     sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
                     sqlParameters[1] = new SqlParameter("@DocEntry", pDocEntry);
                     sqlParameters[2] = new SqlParameter("@CusNo", oDraft.CusNo);
                     sqlParameters[3] = new SqlParameter("@TotalDebtAmount", oDraft.Debt);
                     sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[6] = new SqlParameter("@GuestsPay", oDraft.GuestsPay);
                     await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 }
             }
