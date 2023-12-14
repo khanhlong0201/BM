@@ -63,6 +63,7 @@ public class CustomerDebtsModel
     public int DocEntry { get; set; }
     public string? CusNo { get; set; }
     public string? FullName { get; set; }
+    public double GuestsPay { get; set; }
     public double TotalDebtAmount { get; set; }
     public DateTime? DateCreate { get; set; }
     public int? UserCreate { get; set; }

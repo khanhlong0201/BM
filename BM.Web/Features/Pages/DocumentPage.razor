@@ -253,7 +253,7 @@
                                         @if(!pIsLockPage)
                                         {
                                             <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                                @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" />
+                                                @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
                                         }
                                         else
                                         {
