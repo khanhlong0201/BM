@@ -47,4 +47,21 @@ public class RequestReportModel
     public int UserId { get; set; }
 }
 
+public class SheduleModel
+{
+    public int DocEntry { get; set; }
+    public string? Type{ get; set; }
+    public string? VoucherNo { get; set; }
+    public string? CusNo { get; set; }
+    public string? FullName { get; set; }
+    public string? Phone1 { get; set; }
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public bool IsAllDay { get; set; }
+    public double TotalDebtAmount { get; set; }
+    public double GuestsPay { get; set; }
+}
+
 

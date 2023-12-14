@@ -2,17 +2,122 @@
 @page "/trang-chu"
 @inherits IndexController;
 
+<TelerikScheduler Data="@ListSchedulers" 
+                  @bind-View="@CurrView"
+                  @bind-Date="@StartDate"
+                  Height="calc(100vh - 125px)"
+                  IdField="@(nameof(SheduleModel.DocEntry))"
+                  StartField="@(nameof(SheduleModel.Start))"
+                  EndField="@(nameof(SheduleModel.End))"
+                  TitleField="@(nameof(SheduleModel.Title))"
+                  DescriptionField="@(nameof(SheduleModel.Description))"
+                  IsAllDayField="@(nameof(SheduleModel.IsAllDay))"
+                  OnItemDoubleClick="@OnItemDoubleClick"
+                  OnItemRender="@OnItemRender">
+    @*<AllDayItemTemplate>
+        @{
+            SheduleModel oItem = (context as SheduleModel)!;
+        }
+        <div style="height: 100px">
+            <span>@oItem.FullName</span>
+        </div>
+    </AllDayItemTemplate>*@
 
-<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="calc(100vh - 125px)" @bind-View="@CurrView">
+    <ItemTemplate>
+        @{
+            SheduleModel oItem = (context as SheduleModel)!;
+            <div class="k-event-template">
+                @if (oItem.Type == "DebtReminder")
+                {
+                    <span data-bs-toggle="tooltip" data-bs-html="true"
+                          title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
+                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
+                    </span>
+                }
+                else
+                {
+                    
+                }
+            </div>
+            
+        }
+    </ItemTemplate>
+    <AllDayItemTemplate>
+        @{
+            SheduleModel oItem = (context as SheduleModel)!;
+            <div class="k-event-template">
+                @if (oItem.Type == "DebtReminder")
+                {
+                    <span class="@($"DebtReminder-tooltip-{oItem.DocEntry}")"
+                          title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
+                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
+                    </span>
+                }
+                else
+                {
+
+                }
+            </div>
+
+        }
+    </AllDayItemTemplate>
     <SchedulerViews>
         <SchedulerMonthView></SchedulerMonthView>
-        <SchedulerDayView StartTime="@( new DateTime(2023, 12, 1, 7, 0, 0) )"></SchedulerDayView>
+        <SchedulerDayView StartTime="@StartTime" >
+            <DateHeaderTemplate>
+                <div>
+                    @context.ToString(DefaultConstants.FORMAT_DATE)
+                </div>
+            </DateHeaderTemplate>
+        </SchedulerDayView>
     </SchedulerViews>
 </TelerikScheduler>
 
-
-@code{
-    public DateTime StartDate { get; set; } = new DateTime(2023, 12, 01);
-    public SchedulerView CurrView { get; set; } = SchedulerView.Month;
-    IEnumerable<object> Appointments = new List<object>();
-}
+<HDialog @bind-IsVisible="@IsShowDetails"
+         IsShowButtonSaveAdnCreate="false"
+         TitleBtnSaveAndClosed="Thanh toán"
+         SaveAndClosed="@SavePaymentHandler"
+         Width="50%"
+         Title="Thông tin chi tiết">
+    <div>
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Mã khách hàng: " />
+                <a class="h-link" @onclick="@(()=> ReviewCustomerInfoHandler(ItemSelected.CusNo))">@ItemSelected.CusNo</a>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Tên khách hàng: " />
+                <span>@ItemSelected.FullName</span>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="SĐT: " />
+                <span>@ItemSelected.Phone1</span>
+            </div>
+        </div>
+    </div>
+    <div class="mt-2">
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel For="txtReason" Value="Mã đơn hàng: " />
+                <a class="h-link" @onclick="@(()=> ReviewDocInfoHandler(ItemSelected.DocEntry))">@ItemSelected.VoucherNo</a>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Ngày nhắc nợ: " />
+                <span>@ItemSelected.Start.ToString(DefaultConstants.FORMAT_DATE)</span>
+            </div>
+        </div>
+    </div>
+    <div class="mt-2">
+        <HLabel Value="Tổng nợ: " />
+        <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+    </div>
+    <div class="mt-2">
+        <HLabel Value="Số tiền cần thanh toán: " />
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0" Max="@ItemSelected.TotalDebtAmount"
+                    @bind-Value="@ItemSelected.GuestsPay" Arrows="false" />
+            </div>
+        </div>
+    </div>
+</HDialog>
