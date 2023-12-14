@@ -20,6 +20,7 @@ public interface IBMDbContext
     Task<object?> ExcecFuntionAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
     Task<int> ExecuteScalarAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
     Task<int> DeleteDataAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
+    Task<object?> ExecuteScalarObjectAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null);
 }
 public class BMDbContext : IBMDbContext
 {
@@ -288,5 +289,23 @@ public class BMDbContext : IBMDbContext
         if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
         int rowsAffected = await sqlCommand.ExecuteNonQueryAsync();
         return rowsAffected;
-    }    
+    }
+
+    /// <summary>
+    /// trả tra 1 object => muốn trả gì trả
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="sqlParameters"></param>
+    /// <returns></returns>
+    public async Task<object?> ExecuteScalarObjectAsync(string commandText, IEnumerable<SqlParameter>? sqlParameters = null)
+    {
+        sqlCommand = new SqlCommand();
+        sqlCommand.Connection = sqlConnection;
+        sqlCommand.CommandTimeout = 500;
+        sqlCommand.CommandText = commandText;
+        sqlCommand.CommandType = CommandType.Text;
+        sqlCommand.Transaction = sqlTransaction;
+        if (sqlParameters != null && sqlParameters.Any()) sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+        return await sqlCommand.ExecuteScalarAsync();
+    }
 }

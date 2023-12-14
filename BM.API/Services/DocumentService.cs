@@ -19,6 +19,8 @@ public interface IDocumentService
     Task<ResponseModel> CancleDocList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetReportAsync(RequestReportModel pSearchData);
     Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData);
+    Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry);
+    Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -278,7 +280,7 @@ public class DocumentService : IDocumentService
                             if(!isUpdated)
                             {
                                 await _context.RollbackAsync();
-                                break;
+                                return response;
                             }    
                         }
                         // lưu vào công nợ khách hàng
@@ -353,7 +355,7 @@ public class DocumentService : IDocumentService
                             if (!isUpdated)
                             {
                                 await _context.RollbackAsync();
-                                break;
+                                return response;
                             }
                         }
 
@@ -558,6 +560,106 @@ public class DocumentService : IDocumentService
         return data;
     }
 
+    /// <summary>
+    ///  lấy lịch sử công nợ theo User 
+    /// </summary>
+    /// <param name="pDocEntry"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry)
+    {
+        IEnumerable<CustomerDebtsModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
+            data = await _context.GetDataAsync(@$"Select T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate, T0.GuestsPay, T1.FullName
+                                             from [dbo].[CustomerDebts] as T0 with(nolock)
+                                       inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                            where T0.[DocEntry] = @DocEntry
+                                            order by T0.Id desc"
+                    , DataRecordToCustomerDebtsModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Thêm mới lịch sử thanh toán, không có sữa
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            CustomerDebtsModel oCusDebts = JsonConvert.DeserializeObject<CustomerDebtsModel>(pRequest.Json + "")!;
+            string queryString = string.Empty;
+            SqlParameter[] sqlParameters;
+            async Task<bool> ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
+                }
+                return false;
+            }
+            // lấy mã
+            int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
+            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId)";
+            sqlParameters = new SqlParameter[7];
+            sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
+            sqlParameters[1] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+            sqlParameters[2] = new SqlParameter("@CusNo", oCusDebts.CusNo);
+            sqlParameters[3] = new SqlParameter("@TotalDebtAmount", oCusDebts.TotalDebtAmount);
+            sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
+            sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
+            await _context.BeginTranAsync();
+            bool isUpdated = await ExecQuery();
+            if (isUpdated)
+            {
+                sqlParameters = new SqlParameter[1];
+                sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+                double dGuestsPayOld = double.Parse(await _context.ExecuteScalarObjectAsync(@"Select isnull(GuestsPay, 0) 
+                                        from [dbo].[Drafts] with(nolock) where [DocEntry] = @DocEntry", sqlParameters) + "");
+                // cập nhật lại tổng tiền khách trả + cà công nợ
+                queryString = @"Update [dbo].[Drafts]
+                                   set [GuestsPay] = @GuestsPay, [Debt] = @TotalDebtAmount
+                                 where [DocEntry] = @DocEntry";
+                sqlParameters = new SqlParameter[3];
+                sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+                sqlParameters[1] = new SqlParameter("@TotalDebtAmount", oCusDebts.TotalDebtAmount);
+                sqlParameters[2] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay + dGuestsPayOld);
+                isUpdated = await ExecQuery();
+            }
+            // commit 
+            if(isUpdated) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        
+        return response;
+    }
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ
@@ -791,6 +893,25 @@ public class DocumentService : IDocumentService
         model.End = model.Start;
         model.Title = $"Nhắc nợ - {model.FullName}";
         model.IsAllDay = true;
+        return model;
+    }
+
+    /// <summary>
+    /// Đọc thông tin lịch sử thanh toán
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private CustomerDebtsModel DataRecordToCustomerDebtsModel(IDataRecord record)
+    {
+        CustomerDebtsModel model = new();
+        if (!Convert.IsDBNull(record["Id"])) model.Id = Convert.ToInt32(record["Id"]);
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);
+        if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
+        if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         return model;
     }
     #endregion

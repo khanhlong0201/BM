@@ -183,5 +183,52 @@ namespace BM.API.Controllers
 
             }
         }
+
+        [HttpGet]
+        [Route("GetCustomerDebtsByDoc")]
+        public async Task<IActionResult> GetCustomerDebtsByDoc(int pDocEntry)
+        {
+            try
+            {
+                var response = await _documentervice.GetCustomerDebtsByDocAsync(pDocEntry);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetCustomerDebtsByDoc");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateCustomerDebts")]
+        public async Task<IActionResult> UpdateCustomerDebts([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _documentervice.UpdateCustomerDebtsAsync(request);
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "UpdateCustomerDebts");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
     }
 }

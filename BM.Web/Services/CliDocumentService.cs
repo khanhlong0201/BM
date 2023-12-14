@@ -16,6 +16,8 @@ public interface ICliDocumentService
     Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId);
     Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch);
     Task<List<ReportModel>?> GetDataReportAsync(RequestReportModel pSearch);
+    Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
+    Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -302,5 +304,86 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return default;
+    }
+
+    /// <summary>
+    /// Call API danh sách lịch sử đơn hàng
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pDocEntry", $"{pDocEntry}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_CUSTOMER_DEBTS_BY_DOC, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<CustomerDebtsModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDocByIdAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// call api thêm mới lịch sử thanh toán và công nợ
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_UPDATE_CUSTOMER_DEBTS, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _toastService.ShowSuccess($"Đã lưu thông tin thanh toán!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CancleDocList");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
     }
 }

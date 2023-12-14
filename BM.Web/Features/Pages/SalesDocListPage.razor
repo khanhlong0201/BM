@@ -106,7 +106,7 @@
                 <Template>
                     @{
                         var model = (context as DocumentModel)!;
-                        @if(model.StatusId == nameof(DocStatus.Closed) && model.Debt > 0)
+                        @if(model.StatusId == nameof(DocStatus.Closed))
                         {
                             <i class="fa-regular fa-pen-to-square h-link" title="Lịch sử thanh toán"
                                 style="font-size: 14px; margin-right: 2px" @onclick="@(()=> OpenDialogDebtsHandler(model))"></i>
@@ -154,22 +154,23 @@
 <HDialog @bind-IsVisible="@IsShowDialogDebts"
          IsShowButtons="false"
          Width="70%"
-         Title="Lịch sử thanh toán">
+         Title="@($"Lịch sử thanh toán đơn hàng {VoucherNo}")">
     <div class="h-content-filter">
         <div class="row row-gap-2">
             <div class="col-md-4 col-sm-12">
-                <HLabel For="txtPriceService" Value="Nhập số tiền khách trả:" IsRequired="true" />
-                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
-                                       Step="1000.0"
-                                       Min="0"
-                                       @bind-Value="@pPrice"
-                                       Id="numPrice" />
+                <HLabel For="txtPriceService" Value="Tổng nợ:" />
+                <span class="badge bg-purple-lt">@TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+                <div class="mt-2">
+                    <HLabel For="txtPriceService" Value="Nhập sô tiền khách trả:" IsRequired="true" />
+                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
+                                           Step="1000.0" Min="0" Max="TotalDebtAmount" @bind-Value="@DebtsGuestPay" Id="numPrice" />
+                </div>
             </div>
         </div>
     </div>
     <TelerikToolBar Class="border-bottom-0">
-        <ToolBarButton ImageUrl="../assets/refresh.png">Làm mới</ToolBarButton>
-        <ToolBarButton ImageUrl="../assets/add-new-icon.png">Thêm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReloadDataDebtsByDocHandler">Làm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@SavePaymentHandler">Lưu thanh toán</ToolBarButton>
     </TelerikToolBar>
     <div class="h-table-content" style="height: 300px;">
         <TelerikGrid Data="@ListCusDebts"
@@ -186,25 +187,12 @@
             <GridSettings>
                 <GridPagerSettings InputType="PagerInputType.Input" />
             </GridSettings>
-            <GridAggregates>
-                <GridAggregate Field=@nameof(CustomerDebtsModel.Id) Aggregate="@GridAggregateType.Count" />
-            </GridAggregates>
             <GridColumns>
-                <GridColumn Field=@nameof(CustomerDebtsModel.Id) Width="100px" MaxResizableWidth="110" Title="Mã">
-                    <Template>
-                        @{
-                            var model = (context as CustomerDebtsModel);
-                            <span class="h-link">@model!.Id</span>
-                        }
-                    </Template>
-                    <FooterTemplate>
-                        Số dòng: @context.Count
-                    </FooterTemplate>
-                </GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" MaxResizableWidth="150" Title="Mã khách hàng"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" MaxResizableWidth="170" Title="Tên khách hàng"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="170px" Title="Công nợ"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ tạo"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.GuestsPay) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="190px" Title="Số tiền thanh toán"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="170px" Title="Còn nợ"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             </GridColumns>
         </TelerikGrid>
     </div>
