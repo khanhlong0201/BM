@@ -1,0 +1,108 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+        .header {
+            color: #333 !important;
+            font-weight: bold !important;
+        }
+
+        span {
+            color: #333 !important;
+            font-size: 12pt !important;
+            font-weight: normal !important;
+            text-align: justify !important;
+        }
+
+        .info-customer {
+            font-size: 13pt;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <!--Header-->
+        <div class="header">
+            <p style="margin-bottom: 0px;">TRANG KIM PHUN XĂM THẨM MỸ</p>
+            <span style="margin-top: 2px; margin-bottom: 0px;">Cơ sở 1: Chợ Cái Tắt </span> <br />
+            <span style="margin-top: 2px; margin-bottom: 0px;">Cơ sở 2: Nguyễn Trãi, TP. Cần Thơ </span> <br />
+            <span style="margin-top: 2px; margin-bottom: 0px;">Hotline: 0901219718</span>
+        </div>
+
+        <!--Thông tin khách hàng-->
+        <div style="margin-top:-5pt">
+            <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 5px; text-align: center;">HỒ SƠ KHÁCH HÀNG</h2>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 5px">
+                <div style="width: 33.33%">
+                    <span>Số phiếu: {bm-VoucherNo}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Tình trạng: {bm-StatusName}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Ngày lập phiếu: {bm-DateCreate}</span>
+                </div>
+            </div>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 2px">
+                <div style="width: 33.33%">
+                    <span>Mã K/H: {bm-CusNo}</span>
+                </div>
+                <div style="width: 66.66%">
+                    <span>Cơ sở: {bm-BranchName}</span>
+                </div>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Tên khách hàng: {bm-FullName}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Liệu trình lần: {bm-FullName}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Màu thực hiện cho khách: {bm-FullName}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Dụng cụ: {bm-FullName}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Công thức mực (Đơn vị qui ước là giọt):</span>
+            </div>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 2px">
+                <div style="width: 54.5%">
+                    <span>Thời gian bắt đầu: {bm-CusNo}</span>
+                </div>
+                <div style="width: 54.5%">
+                    <span>Thời gian kết thúc: {bm-BranchName}</span>
+                </div>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Vấn đề gặp phải khi làm:</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Đặc điểm khách hàng: {bm-Remark}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Tình trạng sức khỏe: {bm-StatusBefore}</span>
+            </div>
+        </div>
+
+        <!--Footer-->
+        <div style="display: flex; justify-content: space-between; align-items: stretch; margin-top:25px; padding: 0 50px">
+            <div style="font-size: 12pt; text-align: center">
+                <p style="text-align: center; margin-bottom: 0px; margin-top: 0px">Nhân Viên Xuất Kho</p>
+                <span style="margin-top: 5px; text-align: center">(Kí tên)</span>
+            </div>
+            <div style="font-size: 12pt; text-align: center">
+                <p style="text-align: center; margin-bottom: 0px;margin-top: 0px">Nhân Viên Phụ Trách</p>
+                <span style="margin-top: 5px; text-align: center">(Kí tên)</span>
+            </div>
+
+        </div>
+        <!--Footer-->
+    </div>
+</body>
+</html>
