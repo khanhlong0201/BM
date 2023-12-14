@@ -79,3 +79,19 @@ public enum DocStatus
     @All,
     @Cancled
 }
+
+public enum TypeTime
+{
+    @Qui,
+    @Thang
+}
+
+public enum ReportType
+{
+    @DoanhThuQuiThangTheoDichVu,
+    @DoanhThuQuiThangTheoLoaiDichVu,
+    @DoanhThuTheoDichVu,
+    @DoanhThuTheoLoaiDichVu,
+    @DoanhThuQuiThangTheoNhanVienTuVan,
+    @DoanhThuQuiThangTheoNhanVienThucHien,
+}
