@@ -554,7 +554,7 @@ public class DocumentService : IDocumentService
                                               inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate from [dbo].[CustomerDebts] as T00 with(nolock) 
                                                             where T0.DocEntry = T00.DocEntry order by Id desc) as T2
-                                                   where isnull(T0.Debt, 0) > 0
+                                                   where isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
                                                      and DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)"
                     , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }
