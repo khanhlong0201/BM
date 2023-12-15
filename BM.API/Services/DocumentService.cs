@@ -27,10 +27,12 @@ public class DocumentService : IDocumentService
 {
     private readonly IBMDbContext _context;
     private readonly IDateTimeService _dateTimeService;
-    public DocumentService(IBMDbContext context, IDateTimeService dateTimeService)
+    private readonly IConfiguration _configuration;
+    public DocumentService(IBMDbContext context, IDateTimeService dateTimeService, IConfiguration configuration)
     {
         _context = context;
         _dateTimeService = dateTimeService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -649,21 +651,23 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             DateTime dateTime = _dateTimeService.GetCurrentVietnamTime();
-            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, 01, 01);
-            if (pSearchData.ToDate == null) pSearchData.ToDate = pSearchData.FromDate.Value.AddMonths(1);
-            SqlParameter[] sqlParameters = new SqlParameter[2];
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23); 
+            if (pSearchData.ToDate == null) pSearchData.ToDate = new DateTime(dateTime.Year, dateTime.Month, 1).AddMonths(1).AddDays(7);
+            int numDay = int.Parse(_configuration.GetSection("Configs:NumberOfReminderDays").Value);
+            SqlParameter[] sqlParameters = new SqlParameter[3];
             sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            sqlParameters[2] = new SqlParameter("@NumDay", numDay);
             data = await _context.GetDataAsync(@$"Select T0.DocEntry
-                                                       , T2.DateCreate, DATEADD(DAY, 27 ,cast(T2.DateCreate as Date)) as DateStart
+                                                       , T2.DateCreate, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) as DateStart
                                                        , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
                                                        , 'DebtReminder' as [Type] -- Nhắc nhợ
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate from [dbo].[CustomerDebts] as T00 with(nolock) 
                                                             where T0.DocEntry = T00.DocEntry order by Id desc) as T2
-                                                   where isnull(T0.Debt, 0) > 0
-                                                     and DATEADD(DAY, 27 ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)"
+                                                   where isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
+                                                     and DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)"
                     , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
