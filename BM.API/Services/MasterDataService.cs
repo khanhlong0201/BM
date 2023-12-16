@@ -898,7 +898,7 @@ public class MasterDataService : IMasterDataService
 	                  , (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price
                   FROM [dbo].[Supplies] t0 
                   inner join Enums t1 on t0.EnumId = t1.EnumId
-				  inner join Users t3 on t0.UserCreate = t3.Id
+				  left join Users t3 on t0.UserCreate = t3.Id
 					left join Users t4 on t0.UserUpdate = t4.Id
                   where t0.IsDelete = 0 and t1.EnumType ='Unit' order by t0.[DateCreate] desc"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
