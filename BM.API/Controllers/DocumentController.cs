@@ -79,7 +79,7 @@ namespace BM.API.Controllers
         {
             try
             {
-                var data = await _documentervice.GetDocumentById(pDocEntry);
+                var data = await _documentervice.GetDocumentById(pDocEntry);   
                 return Ok(data);
             }
             catch (Exception ex)

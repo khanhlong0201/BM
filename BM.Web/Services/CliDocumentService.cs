@@ -466,7 +466,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "GetDocByIdAsync");
+            _logger.LogError(ex, "GetCustomerDebtsByDocAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;
