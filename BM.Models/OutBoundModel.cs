@@ -20,4 +20,12 @@ public class OutBoundModel : Auditable
     public string? Problems { get; set; }
     public string? ChargeUser { get; set; }
     public string? BranchId { get; set; }
+    public string ServiceCode { get; set; } = "";
+    public string ServiceName { get; set; } = "";
+    public string ChemicalFormula { get; set; } = ""; // công thức mực
+    public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
+    public string? BranchName { get; set; }
+    public string? FullName { get; set; } // tên khách hàng
+    public string? CusNo { get; set; } // mã khách hàng
+
 }

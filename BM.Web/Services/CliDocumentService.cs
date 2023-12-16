@@ -18,6 +18,7 @@ public interface ICliDocumentService
     Task<List<ReportModel>?> GetDataReportAsync(RequestReportModel pSearch);
     Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
     Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId);
+    Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -70,6 +71,54 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
                 {
                     string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
                     _toastService.ShowSuccess($"{sMessage} thông tin đơn hàng!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdateSalesOrder");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// cập nhật phiếu xuất kho
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                Type = pAction,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_OUTBOUND, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
+                    _toastService.ShowSuccess($"{sMessage} thông tin Lệnh và xuất kho!");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");

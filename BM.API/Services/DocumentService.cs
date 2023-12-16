@@ -454,11 +454,12 @@ public class DocumentService : IDocumentService
                     // nếu status == Closed -> đánh mã chứng từ
                     sqlParameters = new SqlParameter[1];
                     sqlParameters[0] = new SqlParameter("@Type", "OutBound");
+                    oOutBound.DocEntry = iDocentry;
                     oOutBound.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"INSERT INTO [dbo].[OutBound]  ([DocEntry],[VoucherNo] ,[BaseEntry] ,[IdDraftDetail],[ColorImplement] ,[SuppliesQtyList] ,[AnesthesiaType]  ,[AnesthesiaQty]  ,
-                                [DarkTestColor],[CoadingColor] ,[LibColor] ,[StartTime] ,[EndTime]  ,[Problems] ,[ChargeUser]  ,[BranchId],[DteCreate] ,[UserCreate] ,[DateUpdate] ,[IsDelete]))
+                                [DarkTestColor],[CoadingColor] ,[LibColor] ,[StartTime] ,[EndTime]  ,[Problems] ,[ChargeUser]  ,[BranchId],[DateCreate] ,[UserCreate] ,[IsDelete])
                     	        values (@DocEntry, @VoucherNo, @BaseEntry, @IdDraftDetail, @ColorImplement, @SuppliesQtyList, @AnesthesiaType, @AnesthesiaQty,
-                                @DarkTestColor,@CoadingColor,@LibColor, @StartTime, @EndTime, @Problems, @ChargeUser,@BranchId, @DateTimeNow, @UserId, @DateTimeNow, 0)";
+                                @DarkTestColor,@CoadingColor,@LibColor, @StartTime, @EndTime, @Problems, @ChargeUser,@BranchId, @DateTimeNow, @UserId, 0)";
 
                     setParameter();
                     await ExecQuery();
