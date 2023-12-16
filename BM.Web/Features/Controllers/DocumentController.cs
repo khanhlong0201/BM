@@ -194,6 +194,7 @@ namespace BM.Web.Features.Controllers
                     oLine.ChemicalFormula = item.ChemicalFormula + "";
                     oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
+                    oLine.StatusOutBound = item.StatusOutBound;
                     ListSalesOrder.Add(oLine);
                 }       
             }    
@@ -223,7 +224,23 @@ namespace BM.Web.Features.Controllers
                         ShowWarning("Bạn cần chọn 1 dòng để lập phiếu xuất kho");
                         return;
                     }
+                    else if (DocumentUpdate != null && DocumentUpdate.DocEntry <= 0)
+                    {
+                        ShowWarning("Bạn cần lưu đơn hàng, sau đó mới được lập phiếu xuất kho");
+                        return;
+                    }
+                    else if (DocumentUpdate != null && DocumentUpdate.DocEntry <= 0)
+                    {
+                        ShowWarning("Bạn cần lưu đơn hàng, sau đó mới được lập phiếu xuất kho");
+                        return;
+                    }
                     SelectLineSalesOrder = ListSalesOrder.Where(d => d.IsCheck).FirstOrDefault();
+                     if (SelectLineSalesOrder !=null && SelectLineSalesOrder.StatusOutBound +"" == "Rồi")
+                    {
+                        ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
+                        return;
+                    }
+
                     OutBoundUpdate.ServiceCode = SelectLineSalesOrder.ServiceCode;
                     OutBoundUpdate.ServiceName = SelectLineSalesOrder.ServiceName;
                     OutBoundUpdate.ListUserImplements = SelectLineSalesOrder.ListUserImplements;
@@ -236,25 +253,12 @@ namespace BM.Web.Features.Controllers
                     OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
                     OutBoundUpdate.IdDraftDetail = SelectLineSalesOrder.Id;
                     OutBoundUpdate.BranchId = pBranchId;
+                    OutBoundUpdate.Remark = DocumentUpdate.Remark;// đặc điểm khách hàng
+                    OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                     IsCreateOutBound = true;
                 }
                 else
                 {
-                    //UserUpdate.Id = pItemDetails!.Id;
-                    //UserUpdate.EmpNo = pItemDetails.EmpNo;
-                    //UserUpdate.UserName = pItemDetails.UserName;
-                    //UserUpdate.FullName = pItemDetails.FullName;
-                    //UserUpdate.PhoneNumber = pItemDetails.PhoneNumber;
-                    //UserUpdate.Email = pItemDetails.Email;
-                    //UserUpdate.Address = pItemDetails.Address;
-                    //UserUpdate.Password = EncryptHelper.Decrypt(pItemDetails.Password + "");
-                    //UserUpdate.DateOfBirth = pItemDetails.DateOfBirth;
-                    //UserUpdate.DateOfWork = pItemDetails.DateOfWork;
-                    //UserUpdate.IsAdmin = pItemDetails.IsAdmin;
-                    //UserUpdate.BranchId = pItemDetails.BranchId;
-                    //UserUpdate.DateCreate = pItemDetails.DateCreate;
-                    //UserUpdate.UserCreate = pItemDetails.UserCreate;
-                    //UserUpdate.UserCreate = pItemDetails.UserCreate;
                     IsCreateOutBound = false;
                 }
                 
@@ -287,6 +291,7 @@ namespace BM.Web.Features.Controllers
                     var listSuppliesOutBound = ListSuppplies.Select(m => new SuppliesOutBoundModel()
                     {
                         SuppliesCode = m.SuppliesCode,
+                        SuppliesName = m.SuppliesName,
                         Qty = m.Qty
                     });
                     OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
@@ -295,6 +300,7 @@ namespace BM.Web.Features.Controllers
                 if (isSuccess)
                 {
                     IsShowOutBound = false;
+                    await showVoucher();
                     return;
                 }
             }

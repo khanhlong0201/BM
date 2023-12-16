@@ -66,7 +66,9 @@ public static class EndpointConstants
 
     public const string URL_DOCUMENT_REPORT = "Document/GetReport";
 
-    public const string URL_DOCUMENT_OUTBOUND = "Document/UpdateOutBound";
+    public const string URL_DOCUMENT_UPDATE_OUTBOUND = "Document/UpdateOutBound";
+    public const string URL_DOCUMENT_GET_OUTBOUND = "Document/GetOutBound";
+    public const string URL_DOCUMENT_CANCLE_OUTBOUND_LIST = "Document/CancleOutBoundList";
 
 
 }

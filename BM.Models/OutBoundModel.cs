@@ -19,13 +19,17 @@ public class OutBoundModel : Auditable
     public DateTime? EndTime { get; set; }
     public string? Problems { get; set; }
     public string? ChargeUser { get; set; }
+    public string? ChargeUserName { get; set; }
     public string? BranchId { get; set; }
     public string ServiceCode { get; set; } = "";
     public string ServiceName { get; set; } = "";
     public string ChemicalFormula { get; set; } = ""; // công thức mực
-    public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
+    public List<string>? ListUserImplements { get; set; } // danh sách nhân viên thực hiện
     public string? BranchName { get; set; }
     public string? FullName { get; set; } // tên khách hàng
     public string? CusNo { get; set; } // mã khách hàng
+    public string? Remark { get; set; } // đặc điểm khách hàng
+    public string? HealthStatus { get; set; } //tình trạng đặc điểm khách hàng
+    public string?  ImplementUserId { get; set; } // nhân viên thực hiện
 
 }

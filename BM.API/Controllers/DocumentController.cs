@@ -143,6 +143,33 @@ namespace BM.API.Controllers
         }
 
         [HttpPost]
+        [Route("CancleOutBoundList")]
+        public async Task<IActionResult> CancleOutBoundList([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _documentervice.CancleOutBoundList(request);
+
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "CancleOutBoundList");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
+        [HttpPost]
         [Route("GetReport")]
         public async Task<IActionResult> GetDataReport(RequestReportModel pSearchData)
         {
@@ -256,6 +283,27 @@ namespace BM.API.Controllers
                 });
 
             }
+        }
+
+        [HttpPost]
+        [Route("GetOutBound")]
+        public async Task<IActionResult> GetOutBound(SearchModel pSearchData)
+        {
+            try
+            {
+                var data = await _documentervice.GetOutBoundAsync(pSearchData);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetOutBound");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
         }
     }
 }
