@@ -68,5 +68,6 @@ public class CustomerDebtsModel
     public double TotalDebtAmount { get; set; }
     public DateTime? DateCreate { get; set; }
     public int? UserCreate { get; set; }
+    public string? Remark { get; set; }
 }
 

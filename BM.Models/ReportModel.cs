@@ -63,6 +63,7 @@ public class SheduleModel
     public bool IsAllDay { get; set; }
     public double TotalDebtAmount { get; set; }
     public double GuestsPay { get; set; }
+    public string? Remark { get; set; }
 }
 
 
