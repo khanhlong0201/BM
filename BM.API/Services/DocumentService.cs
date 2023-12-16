@@ -22,6 +22,7 @@ public interface IDocumentService
     Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry);
     Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
     Task<ResponseModel> UpdateOutBound(RequestModel pRequest);
+    Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
 }
 public class DocumentService : IDocumentService
 {
@@ -33,6 +34,46 @@ public class DocumentService : IDocumentService
         _context = context;
         _dateTimeService = dateTimeService;
         _configuration = configuration;
+    }
+
+    /// <summary>
+    /// lấy danh sách xuất kho
+    /// </summary>
+    /// <param name="isAdmin"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData)
+    {
+        IEnumerable<OutBoundModel> data;
+        try
+        {
+            await _context.Connect();
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
+            SqlParameter[] sqlParameters = new SqlParameter[4];
+            sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
+            sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            sqlParameters[2] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
+            sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
+            data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, t6.FullName as [ChargeUserName],
+                        t1.ServiceCode, t1.ImplementUserId
+                        from OutBound t0 with(nolock)
+                        inner join DraftDetails t1 with(nolock) on t0.BaseEntry = t1.DocEntry and t0.IdDraftDetail = t1.Id
+                        inner join Drafts t2 with(nolock) on t0.BaseEntry = t2.DocEntry
+                        inner join Branchs t3 with(nolock) on t0.BranchId = t3.BranchId
+                        inner join Customers t4 with(nolock) on t2.CusNo = t4.CusNo
+                        inner join [Services] t5 with(nolock) on t1.ServiceCode = t5.ServiceCode
+                        left join [Users] t6 with(nolock) on t0.ChargeUser = t6.EmpNo
+                        where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
+                            order by [DocEntry] desc"
+                    , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
     }
 
     /// <summary>
@@ -90,7 +131,7 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
-            string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
+            string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],t0.[BaseEntry],t0.[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
             ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
             ,case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
             ,T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
@@ -98,11 +139,13 @@ public class DocumentService : IDocumentService
 	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
             ,isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
             ,(select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
+            ,IIF(isnull(T5.DocEntry,0) <> 0,N'Rồi',N'Chưa') as [StatusOutBound]
         from [dbo].[Drafts] as T0 with(nolock) 
         inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
         inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
         inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
         inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
+        left join [dbo].[OutBound] as T5 with(nolock) on T1.Id = T5.IdDraftDetail        
         where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
@@ -157,6 +200,7 @@ public class DocumentService : IDocumentService
                     oLine.ConsultUserId = Convert.ToString(item["ConsultUserId"]);
                     oLine.ImplementUserId = Convert.ToString(item["ImplementUserId"]);
                     oLine.ChemicalFormula = Convert.ToString(item["ChemicalFormula"]);
+                    oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
                     lstDetails.Add(oLine);
                 }    
                 data = new Dictionary<string, string>()
@@ -972,7 +1016,44 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["ReasonDelete"])) model.ReasonDelete = Convert.ToString(record["ReasonDelete"]);
         return model;
     }
-    
+
+    /// <summary>
+    /// đọc danh sách phiếu lập kho
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private OutBoundModel DataRecordToOutBoundModel(IDataRecord record)
+    {
+        OutBoundModel model = new();
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+        if (!Convert.IsDBNull(record["BaseEntry"])) model.BaseEntry = Convert.ToInt32(record["BaseEntry"]);
+        if (!Convert.IsDBNull(record["IdDraftDetail"])) model.IdDraftDetail = Convert.ToInt32(record["IdDraftDetail"]);
+        if (!Convert.IsDBNull(record["ColorImplement"])) model.ColorImplement = Convert.ToString(record["ColorImplement"]);
+        if (!Convert.IsDBNull(record["SuppliesQtyList"])) model.SuppliesQtyList = Convert.ToString(record["SuppliesQtyList"]);
+        if (!Convert.IsDBNull(record["SuppliesQtyList"])) model.AnesthesiaType = Convert.ToString(record["AnesthesiaType"]);
+        if (!Convert.IsDBNull(record["AnesthesiaQty"])) model.AnesthesiaQty = Convert.ToInt32(record["AnesthesiaQty"]);
+        if (!Convert.IsDBNull(record["DarkTestColor"])) model.DarkTestColor = Convert.ToString(record["DarkTestColor"]);
+        if (!Convert.IsDBNull(record["CoadingColor"])) model.CoadingColor = Convert.ToString(record["CoadingColor"]);
+        if (!Convert.IsDBNull(record["LibColor"])) model.LibColor = Convert.ToString(record["LibColor"]);
+        if (!Convert.IsDBNull(record["StartTime"])) model.StartTime = Convert.ToDateTime(record["StartTime"]);
+        if (!Convert.IsDBNull(record["StartTime"])) model.EndTime = Convert.ToDateTime(record["EndTime"]);
+        if (!Convert.IsDBNull(record["Problems"])) model.Problems = Convert.ToString(record["Problems"]);
+        if (!Convert.IsDBNull(record["ChargeUser"])) model.ChargeUser = Convert.ToString(record["ChargeUser"]);
+        if (!Convert.IsDBNull(record["ChargeUserName"])) model.ChargeUserName = Convert.ToString(record["ChargeUserName"]);
+        if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
+        if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);
+        if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
+        if (!Convert.IsDBNull(record["HealthStatus"])) model.HealthStatus = Convert.ToString(record["HealthStatus"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["ImplementUserId"])) model.ImplementUserId = Convert.ToString(record["ImplementUserId"]);
+        return model;
+    }
+
     private DocumentModel DataRecordToDocumentByGuestModel(IDataRecord record)
     {
         DocumentModel model = new();

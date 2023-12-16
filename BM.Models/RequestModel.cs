@@ -35,6 +35,7 @@ public class ComboboxModel
 public class SuppliesOutBoundModel
 {
     public string? SuppliesCode { get; set; }
+    public string? SuppliesName { get; set; }
     public decimal? Qty { get; set; }
 
 }

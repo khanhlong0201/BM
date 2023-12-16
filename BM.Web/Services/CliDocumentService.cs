@@ -19,6 +19,7 @@ public interface ICliDocumentService
     Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
     Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId);
     Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
+    Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -103,7 +104,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             };
             //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
-            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_OUTBOUND, request);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_UPDATE_OUTBOUND, request);
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
@@ -130,6 +131,38 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách phiếu xuất kho
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch)
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_GET_OUTBOUND, pSearch);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<OutBoundModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataOutBoundsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
     }
 
     /// <summary>

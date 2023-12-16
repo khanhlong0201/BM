@@ -257,5 +257,26 @@ namespace BM.API.Controllers
 
             }
         }
+
+        [HttpPost]
+        [Route("GetOutBound")]
+        public async Task<IActionResult> GetOutBound(SearchModel pSearchData)
+        {
+            try
+            {
+                var data = await _documentervice.GetOutBoundAsync(pSearchData);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetOutBound");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
+        }
     }
 }
