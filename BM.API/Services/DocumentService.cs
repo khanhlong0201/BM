@@ -579,7 +579,8 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
-            data = await _context.GetDataAsync(@$"Select T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate, T0.GuestsPay, T1.FullName
+            data = await _context.GetDataAsync(@$"Select T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
+                                                , T0.GuestsPay, T1.FullName, T0.[Remark]
                                              from [dbo].[CustomerDebts] as T0 with(nolock)
                                        inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                             where T0.[DocEntry] = @DocEntry
@@ -621,9 +622,9 @@ public class DocumentService : IDocumentService
             }
             // lấy mã
             int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
-            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate])
-                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId)";
-            sqlParameters = new SqlParameter[7];
+            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate],[Remark])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark)";
+            sqlParameters = new SqlParameter[8];
             sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
             sqlParameters[1] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
             sqlParameters[2] = new SqlParameter("@CusNo", oCusDebts.CusNo);
@@ -631,6 +632,7 @@ public class DocumentService : IDocumentService
             sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
             sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
+            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark);
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
             if (isUpdated)
@@ -919,6 +921,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
         return model;
     }
     #endregion

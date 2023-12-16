@@ -41,6 +41,7 @@ namespace BM.Web.Features.Controllers
         public double TotalDebtAmount { get; set; } // Tổng số tiền nợ còn lại
         public string? VoucherNo { get; set; }
         public int pDocEntry { get; set; }
+        public string? DebtRemark { get; set; }
         #endregion
 
         #region Override Functions
@@ -239,6 +240,7 @@ namespace BM.Web.Features.Controllers
                 pDocEntry = 0;
                 if (pDocument == null) return;
                 await ShowLoader();
+                DebtRemark = string.Empty;
                 TotalDebtAmount = 0;
                 DebtsGuestPay = 0;
                 VoucherNo = pDocument.VoucherNo;
@@ -296,6 +298,7 @@ namespace BM.Web.Features.Controllers
                 oItem.DocEntry = pDocEntry;
                 oItem.TotalDebtAmount = TotalDebtAmount - DebtsGuestPay;
                 oItem.GuestsPay = DebtsGuestPay;
+                oItem.Remark = DebtRemark;
                 // call api 
                 bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
                 if (isSuccess)
@@ -323,6 +326,7 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
+                DebtRemark = string.Empty;
                 TotalDebtAmount = 0;
                 DebtsGuestPay = 0;
                 ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry);

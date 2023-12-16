@@ -125,6 +125,7 @@ namespace BM.Web.Features.Controllers
                 ItemSelected = new SheduleModel();
                 ItemSelected = (args.Item as SheduleModel)!;
                 ItemSelected.GuestsPay = ItemSelected.TotalDebtAmount;
+                ItemSelected.Remark = string.Empty;
                 IsShowDetails = true;
                 
                 StateHasChanged();
@@ -201,8 +202,20 @@ namespace BM.Web.Features.Controllers
                 }
                 bool isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn thanh toán đơn hàng này?", "Thông báo");
                 if (!isConfirm) return;
-                await ShowLoader(false);
+                await ShowLoader();
+                CustomerDebtsModel oItem = new CustomerDebtsModel();
+                oItem.CusNo = ItemSelected.CusNo;
+                oItem.DocEntry = ItemSelected.DocEntry;
+                oItem.TotalDebtAmount = ItemSelected.TotalDebtAmount - ItemSelected.GuestsPay;
+                oItem.GuestsPay = ItemSelected.GuestsPay;
+                oItem.Remark = ItemSelected.Remark;
                 // call api 
+                bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
+                if (isSuccess)
+                {
+                    await getDataRemiderByMonth();
+                    IsShowDetails = false;
+                }
             }
             catch (Exception ex)
             {

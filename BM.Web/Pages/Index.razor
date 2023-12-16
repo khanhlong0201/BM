@@ -112,15 +112,19 @@
         </div>
     </div>
     <div class="mt-2">
-        <HLabel Value="Tổng nợ: " />
+        <HLabel Value="Tổng tiền còn nợ: " />
         <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
     </div>
     <div class="mt-2">
-        <HLabel Value="Số tiền cần thanh toán: " />
         <div class="row row-gap-2">
             <div class="col-md-4 col-sm-12">
+                <HLabel Value="Số tiền cần thanh toán: " />
                 <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0" Max="@ItemSelected.TotalDebtAmount"
                     @bind-Value="@ItemSelected.GuestsPay" Arrows="false" />
+            </div>
+            <div class="col-md-8 col-sm-12">
+                <HLabel Value="Ghi chú: " />
+                <TelerikTextBox @bind-Value="@ItemSelected.Remark" Id="txtReason" />
             </div>
         </div>
     </div>

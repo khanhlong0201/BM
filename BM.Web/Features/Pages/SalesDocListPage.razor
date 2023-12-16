@@ -75,25 +75,24 @@
             <GridPagerSettings InputType="PagerInputType.Input" />
         </GridSettings>
         <GridAggregates>
-            <GridAggregate Field=@nameof(DocumentModel.DocEntry) Aggregate="@GridAggregateType.Count" />
+            <GridAggregate Field=@nameof(DocumentModel.VoucherNo) Aggregate="@GridAggregateType.Count" />
             <GridAggregate Field=@nameof(DocumentModel.Total) Aggregate="@GridAggregateType.Sum" />
             <GridAggregate Field=@nameof(DocumentModel.Debt) Aggregate="@GridAggregateType.Sum" />
         </GridAggregates>
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
-            <GridColumn Field=@nameof(DocumentModel.DocEntry) Width="90px" MaxResizableWidth="100" Title="Mã">
+            <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="135px" MaxResizableWidth="140" Title="Số lệnh">
                 <Template>
                     @{
                         var model = (context as DocumentModel);
-                        <span class="h-link">@model!.DocEntry</span>
+                        <span class="h-link">@model!.VoucherNo</span>
                     }
                 </Template>
-                <FooterTemplate>
+                <FooterTemplate>`
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(DocumentModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Ngày giờ tạo"></GridColumn>
-            <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="135px" Title="Số lệnh"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.CusNo) Width="125px" Title="Mã KH"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             <GridColumn Field=@nameof(DocumentModel.Total) Width="170px" Title="Tổng tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
@@ -156,14 +155,18 @@
          Width="70%"
          Title="@($"Lịch sử thanh toán đơn hàng {VoucherNo}")">
     <div class="h-content-filter">
-        <div class="row row-gap-2">
-            <div class="col-md-4 col-sm-12">
-                <HLabel For="txtPriceService" Value="Tổng nợ:" />
-                <span class="badge bg-purple-lt">@TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
-                <div class="mt-2">
-                    <HLabel For="txtPriceService" Value="Nhập sô tiền khách trả:" IsRequired="true" />
-                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY"
+        <HLabel For="txtPriceService" Value="Tổng tiền còn nợ:" />
+        <span class="badge bg-purple-lt">@TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-4 col-sm-12">
+                    <HLabel Value="Số tiền cần thanh toán: " />
+                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Arrows="false"
                                            Step="1000.0" Min="0" Max="TotalDebtAmount" @bind-Value="@DebtsGuestPay" Id="numPrice" />
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    <HLabel Value="Ghi chú: " />
+                    <TelerikTextBox @bind-Value="@DebtRemark" Id="txtReason" />
                 </div>
             </div>
         </div>
@@ -191,6 +194,7 @@
                 <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.GuestsPay) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="190px" Title="Số tiền thanh toán"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="170px" Title="Còn nợ"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="170px" Title="Ghi chú"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             </GridColumns>
