@@ -44,9 +44,16 @@ namespace BM.Web.Features.Controllers
         public bool pIsCreate { get; set; } = false;
         public bool pIsLockPage { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
-        
+
+        public bool IsCreateOutBound { get; set; } = false;
+        public bool IsShowOutBound { get; set; } = false;
+        public EditContext? _EditOutBoundContext { get; set; }
+        public SalesOrderModel SelectLineSalesOrder { get; set; } = new SalesOrderModel();
+        public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
+        public List<SuppliesModel> ListSuppplies { get; set; } = new List<SuppliesModel>();
         #endregion
         #region Override Functions
+
         protected override async Task OnInitializedAsync()
         {
             try
@@ -137,6 +144,7 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
+                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -193,6 +201,117 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
+        protected void ShowOutBound(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
+        {
+            try
+            {
+                if (pAction == EnumType.Add)
+                {
+                    if (ListSalesOrder == null || !ListSalesOrder.Any())
+                    {
+                        ShowWarning("Chưa có dịch vụ đê lập phiếu xuất kho");
+                        return;
+                    }
+                    var countIsCheck = ListSalesOrder.Where(d => d.IsCheck).ToList();
+                    if (countIsCheck != null && countIsCheck.Count > 1)
+                    {
+                        ShowWarning("Bạn chỉ được chọn 1 dòng để lập phiếu xuất kho");
+                        return;
+                    }
+                    else if (countIsCheck == null || countIsCheck.Count == 0)
+                    {
+                        ShowWarning("Bạn cần chọn 1 dòng để lập phiếu xuất kho");
+                        return;
+                    }
+                    SelectLineSalesOrder = ListSalesOrder.Where(d => d.IsCheck).FirstOrDefault();
+                    OutBoundUpdate.ServiceCode = SelectLineSalesOrder.ServiceCode;
+                    OutBoundUpdate.ServiceName = SelectLineSalesOrder.ServiceName;
+                    OutBoundUpdate.ListUserImplements = SelectLineSalesOrder.ListUserImplements;
+                    OutBoundUpdate.ChemicalFormula = SelectLineSalesOrder.ChemicalFormula;
+                    OutBoundUpdate.StartTime = DateTime.Now;
+                    OutBoundUpdate.EndTime = DateTime.Now;
+                    OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
+                    OutBoundUpdate.FullName = DocumentUpdate.FullName;
+                    OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
+                    OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                    OutBoundUpdate.IdDraftDetail = SelectLineSalesOrder.Id;
+                    OutBoundUpdate.BranchId = pBranchId;
+                    IsCreateOutBound = true;
+                }
+                else
+                {
+                    //UserUpdate.Id = pItemDetails!.Id;
+                    //UserUpdate.EmpNo = pItemDetails.EmpNo;
+                    //UserUpdate.UserName = pItemDetails.UserName;
+                    //UserUpdate.FullName = pItemDetails.FullName;
+                    //UserUpdate.PhoneNumber = pItemDetails.PhoneNumber;
+                    //UserUpdate.Email = pItemDetails.Email;
+                    //UserUpdate.Address = pItemDetails.Address;
+                    //UserUpdate.Password = EncryptHelper.Decrypt(pItemDetails.Password + "");
+                    //UserUpdate.DateOfBirth = pItemDetails.DateOfBirth;
+                    //UserUpdate.DateOfWork = pItemDetails.DateOfWork;
+                    //UserUpdate.IsAdmin = pItemDetails.IsAdmin;
+                    //UserUpdate.BranchId = pItemDetails.BranchId;
+                    //UserUpdate.DateCreate = pItemDetails.DateCreate;
+                    //UserUpdate.UserCreate = pItemDetails.UserCreate;
+                    //UserUpdate.UserCreate = pItemDetails.UserCreate;
+                    IsCreateOutBound = false;
+                }
+                
+                IsShowOutBound = true;
+                _EditOutBoundContext = new EditContext(OutBoundUpdate);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "ShowOutBound");
+                ShowError(ex.Message);
+            }
+        }
+
+        protected async void SaveOutBoundHandler(EnumType pProcess = EnumType.Update)
+        {
+            try
+            {
+                string sAction = IsCreateOutBound ? nameof(EnumType.Add) : nameof(EnumType.Update);
+                string sStatusId = "";
+                bool isConfirm = false;
+                if (pProcess == EnumType.Update)
+                {
+                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu Lệnh và xuất kho này ?", "Thông báo");
+                }
+                
+                if (!isConfirm) return;
+                await ShowLoader();
+                if(ListSuppplies != null && ListSuppplies.Any()){
+                    var listSuppliesOutBound = ListSuppplies.Select(m => new SuppliesOutBoundModel()
+                    {
+                        SuppliesCode = m.SuppliesCode,
+                        Qty = m.Qty
+                    });
+                    OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
+                } 
+                bool isSuccess = await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    IsShowOutBound = false;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveDocHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+
+
         protected void ValueChangedGuestsPayHandler(double value)
         {
             try

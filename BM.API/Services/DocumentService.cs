@@ -21,6 +21,7 @@ public interface IDocumentService
     Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData);
     Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry);
     Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
+    Task<ResponseModel> UpdateOutBound(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -394,6 +395,118 @@ public class DocumentService : IDocumentService
         }
         return response;
     }
+
+    /// <summary>
+    /// cập nhật phiếu xuất kho
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateOutBound(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            bool isUpdated = false;
+            OutBoundModel oOutBound = JsonConvert.DeserializeObject<OutBoundModel>(pRequest.Json + "")!;
+
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            async Task<bool> ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
+                }
+                return false;
+            }
+
+            void setParameter()
+            {
+                sqlParameters = new SqlParameter[18];
+                sqlParameters[0] = new SqlParameter("@DocEntry", oOutBound.DocEntry);
+                sqlParameters[1] = new SqlParameter("@VoucherNo", oOutBound.VoucherNo);
+                sqlParameters[2] = new SqlParameter("@BaseEntry", oOutBound.BaseEntry);
+                sqlParameters[3] = new SqlParameter("@IdDraftDetail", oOutBound.IdDraftDetail);// oDraft.DiscountCode ?? (object)DBNull.Value);
+                sqlParameters[4] = new SqlParameter("@ColorImplement", oOutBound.ColorImplement ?? (object)DBNull.Value);
+                sqlParameters[5] = new SqlParameter("@SuppliesQtyList", oOutBound.SuppliesQtyList ?? (object)DBNull.Value);
+                sqlParameters[6] = new SqlParameter("@AnesthesiaType", oOutBound.AnesthesiaType ?? (object)DBNull.Value);
+                sqlParameters[7] = new SqlParameter("@AnesthesiaQty", oOutBound.AnesthesiaQty ?? (object)DBNull.Value);
+                sqlParameters[8] = new SqlParameter("@DarkTestColor", oOutBound.DarkTestColor ?? (object)DBNull.Value);
+                sqlParameters[9] = new SqlParameter("@CoadingColor", oOutBound.CoadingColor ?? (object)DBNull.Value);
+                sqlParameters[10] = new SqlParameter("@LibColor", oOutBound.LibColor ?? (object)DBNull.Value);
+                sqlParameters[11] = new SqlParameter("@StartTime", oOutBound.StartTime ?? (object)DBNull.Value);
+                sqlParameters[12] = new SqlParameter("@EndTime", oOutBound.StartTime ?? (object)DBNull.Value);
+                sqlParameters[13] = new SqlParameter("@Problems", oOutBound.Problems ?? (object)DBNull.Value);
+                sqlParameters[14] = new SqlParameter("@ChargeUser", oOutBound.ChargeUser ?? (object)DBNull.Value);
+                sqlParameters[15] = new SqlParameter("@BranchId", oOutBound.BranchId);
+                sqlParameters[16] = new SqlParameter("@UserId", pRequest.UserId);
+                sqlParameters[17] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            }
+
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    int iDocentry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[OutBound] with(nolock)");
+                    // nếu status == Closed -> đánh mã chứng từ
+                    sqlParameters = new SqlParameter[1];
+                    sqlParameters[0] = new SqlParameter("@Type", "OutBound");
+                    oOutBound.DocEntry = iDocentry;
+                    oOutBound.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
+                    queryString = @"INSERT INTO [dbo].[OutBound]  ([DocEntry],[VoucherNo] ,[BaseEntry] ,[IdDraftDetail],[ColorImplement] ,[SuppliesQtyList] ,[AnesthesiaType]  ,[AnesthesiaQty]  ,
+                                [DarkTestColor],[CoadingColor] ,[LibColor] ,[StartTime] ,[EndTime]  ,[Problems] ,[ChargeUser]  ,[BranchId],[DateCreate] ,[UserCreate] ,[IsDelete])
+                    	        values (@DocEntry, @VoucherNo, @BaseEntry, @IdDraftDetail, @ColorImplement, @SuppliesQtyList, @AnesthesiaType, @AnesthesiaQty,
+                                @DarkTestColor,@CoadingColor,@LibColor, @StartTime, @EndTime, @Problems, @ChargeUser,@BranchId, @DateTimeNow, @UserId, 0)";
+
+                    setParameter();
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    // kiểm tra mã lệnh
+                    queryString = @"UPDATE [dbo].[OutBound]
+                                   SET [VoucherNo] = @VoucherNo
+                                      ,[BaseEntry] = @BaseEntry
+                                      ,[IdDraftDetail] = @IdDraftDetail
+                                      ,[ColorImplement] = @ColorImplement
+                                      ,[SuppliesQtyList] = @SuppliesQtyList
+                                      ,[AnesthesiaType] = @AnesthesiaType
+                                      ,[AnesthesiaQty] = @AnesthesiaQty
+                                      ,[DarkTestColor] = @DarkTestColor
+                                      ,[CoadingColor] = @CoadingColor
+                                      ,[LibColor] = @LibColor
+                                      ,[StartTime] = @StartTime
+                                      ,[EndTime] = @EndTime
+                                      ,[Problems] = @Problems
+                                      ,[ChargeUser] = @ChargeUser
+                                      ,[BranchId] = @BranchId
+                                      ,[DateUpdate] = @DateTimeNow
+                                      ,[UserUpdate] = @UserId
+                                     where [DocEntry] = @DocEntry";
+                    setParameter();
+                    await ExecQuery();
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
+
 
     /// <summary>
     /// lấy danh sách đơn hàng hoàn thành theo khách hàng

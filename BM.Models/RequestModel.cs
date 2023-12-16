@@ -32,6 +32,14 @@ public class ComboboxModel
     public bool IsCheck{ get; set; }
 }
 
+public class SuppliesOutBoundModel
+{
+    public string? SuppliesCode { get; set; }
+    public decimal? Qty { get; set; }
+
+}
+
+
 public class SearchModel
 {
     public int UserId { get; set; }
