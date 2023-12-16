@@ -63,7 +63,7 @@
     </AllDayItemTemplate>
     <SchedulerViews>
         <SchedulerMonthView></SchedulerMonthView>
-        <SchedulerDayView StartTime="@StartTime" >
+        <SchedulerDayView StartTime="@StartTime">
             <DateHeaderTemplate>
                 <div>
                     @context.ToString(DefaultConstants.FORMAT_DATE)
@@ -75,9 +75,9 @@
 
 <HDialog @bind-IsVisible="@IsShowDetails"
          IsShowButtonSaveAdnCreate="false"
-         TitleBtnSaveAndClosed="Thanh toán"
+         TitleBtnSaveAndClosed="Lưu Thanh toán"
          SaveAndClosed="@SavePaymentHandler"
-         Width="50%"
+         Width="60%"
          Title="Thông tin chi tiết">
     <div>
         <div class="row row-gap-2">
@@ -112,20 +112,43 @@
         </div>
     </div>
     <div class="mt-2">
-        <HLabel Value="Tổng tiền còn nợ: " />
-        <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Tổng tiền còn nợ: " />
+                <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+            </div>
+            <div class="col-md-8 col-sm-12">
+                <HLabel Value="Ghi chú lần trước: " />
+                <span>@ItemSelected.RemarkOld</span>
+            </div>
+        </div>
+        
     </div>
     <div class="mt-2">
         <div class="row row-gap-2">
             <div class="col-md-4 col-sm-12">
                 <HLabel Value="Số tiền cần thanh toán: " />
                 <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0" Max="@ItemSelected.TotalDebtAmount"
-                    @bind-Value="@ItemSelected.GuestsPay" Arrows="false" />
+                    @bind-Value="@ItemSelected.GuestsPay" Arrows="false" Enabled="@(!ItemSelected.IsDelay)" />
             </div>
-            <div class="col-md-8 col-sm-12">
-                <HLabel Value="Ghi chú: " />
-                <TelerikTextBox @bind-Value="@ItemSelected.Remark" Id="txtReason" />
+            <div class="col-md-4 col-sm-12">
+                <TelerikCheckBox @bind-Value="@ItemSelected.IsDelay" Id="IsDelay" />
+                <HLabel Value="Khách hẹn lại ?" For="IsDelay" />
+                @{
+                    ItemSelected.DateDelay = ItemSelected.IsDelay ? ItemSelected.DateDelay : null;
+                }
+                <TelerikDatePicker @bind-Value="@ItemSelected.DateDelay"
+                    Enabled="@ItemSelected.IsDelay"
+                    Placeholder="Chọn ngày hẹn"
+                    Format="dd/MM/yyyy"
+                    Min="StartTime.AddDays(1)"
+                    Class="btn-noborder-radius-left">
+                </TelerikDatePicker>
             </div>
         </div>
+    </div>
+    <div class="mt-2">
+        <HLabel Value="Ghi chú: " />
+        <TelerikTextBox @bind-Value="@ItemSelected.Remark" Id="txtReason" MaxLength="254" />
     </div>
 </HDialog>

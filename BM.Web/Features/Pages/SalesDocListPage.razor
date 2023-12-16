@@ -191,10 +191,19 @@
                 <GridPagerSettings InputType="PagerInputType.Input" />
             </GridSettings>
             <GridColumns>
-                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="170px" Title="Ngày giờ"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.GuestsPay) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="190px" Title="Số tiền thanh toán"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="170px" Title="Còn nợ"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="140px" Title="Ngày giờ tạo"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.GuestsPay) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="160px" Title="Số tiền thanh toán"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="150px" Title="Còn nợ"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="170px" Title="Ghi chú"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.IsDelay) Width="130px" Title="Khách hẹn trả?">
+                    <Template>
+                        @{
+                            var model = (context as CustomerDebtsModel);
+                            <TelerikCheckBox @bind-Value="@model!.IsDelay" Enabled="false" />
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.DateDelay) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="130px" Title="Ngày giờ hẹn"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             </GridColumns>
