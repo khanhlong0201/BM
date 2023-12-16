@@ -1,13 +1,11 @@
-﻿using BM.API.Infrastructure;
+﻿using BM.API.Commons;
+using BM.API.Infrastructure;
 using BM.Models;
-using Newtonsoft.Json;
-using System.Data.SqlClient;
-using System.Data;
-using System.Net;
 using BM.Models.Shared;
-using System.Reflection;
-using Microsoft.AspNetCore.Http;
-using BM.API.Commons;
+using Newtonsoft.Json;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
 namespace BM.API.Services;
 
 public interface IDocumentService
@@ -23,6 +21,7 @@ public interface IDocumentService
     Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
     Task<ResponseModel> UpdateOutBound(RequestModel pRequest);
     Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
+    Task<ResponseModel> CancleOutBoundList(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -65,6 +64,7 @@ public class DocumentService : IDocumentService
                         left join [Users] t6 with(nolock) on t0.ChargeUser = t6.EmpNo
                         where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                 and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
+                        and  t0.IsDelete = 0
                             order by [DocEntry] desc"
                     , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
@@ -146,10 +146,10 @@ public class DocumentService : IDocumentService
         inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
         inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
         left join [dbo].[OutBound] as T5 with(nolock) on T1.Id = T5.IdDraftDetail        
-        where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
+        where T0.DocEntry = @DocEntry and t5.IsDelete = 0 order by T0.[DocEntry] desc";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
-            if(ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+            if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
             {
                 string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
                 DataTable dt = ds.Tables[0];
@@ -162,7 +162,7 @@ public class DocumentService : IDocumentService
                 if (!Convert.IsDBNull(dr["DateOfBirth"])) oHeader.DateOfBirth = Convert.ToDateTime(dr["DateOfBirth"]);
                 oHeader.CINo = Convert.ToString(dr["CINo"]) ?? DATA_CUSTOMER_EMPTY;
                 oHeader.Phone1 = Convert.ToString(dr["Phone1"]) ?? DATA_CUSTOMER_EMPTY;
-                oHeader.Zalo =  Convert.ToString(dr["Zalo"]) ?? DATA_CUSTOMER_EMPTY;
+                oHeader.Zalo = Convert.ToString(dr["Zalo"]) ?? DATA_CUSTOMER_EMPTY;
                 oHeader.FaceBook = Convert.ToString(dr["FaceBook"]) ?? DATA_CUSTOMER_EMPTY;
                 oHeader.Address = Convert.ToString(dr["Address"]) ?? DATA_CUSTOMER_EMPTY;
                 oHeader.Remark = Convert.ToString(dr["Remark"]) ?? DATA_CUSTOMER_EMPTY;
@@ -184,7 +184,7 @@ public class DocumentService : IDocumentService
                 if (!Convert.IsDBNull(dr["UserUpdate"])) oHeader.UserUpdate = Convert.ToInt32(dr["UserUpdate"]);
                 oHeader.ReasonDelete = Convert.ToString(dr["ReasonDelete"]);
                 List<DocumentDetailModel> lstDetails = new List<DocumentDetailModel>();
-                foreach(DataRow item in dt.Rows)
+                foreach (DataRow item in dt.Rows)
                 {
                     DocumentDetailModel oLine = new DocumentDetailModel();
                     oLine.ServiceCode = Convert.ToString(item["ServiceCode"]);
@@ -202,7 +202,7 @@ public class DocumentService : IDocumentService
                     oLine.ChemicalFormula = Convert.ToString(item["ChemicalFormula"]);
                     oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
                     lstDetails.Add(oLine);
-                }    
+                }
                 data = new Dictionary<string, string>()
                 {
                     {"oHeader", JsonConvert.SerializeObject(oHeader)},
@@ -297,10 +297,10 @@ public class DocumentService : IDocumentService
                     sqlParameters[14] = new SqlParameter("@VoucherNo", oDraft.VoucherNo);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
-                    if(isUpdated)
+                    if (isUpdated)
                     {
-                        
-                        foreach(var oDraftDetails in lstDraftDetails)
+
+                        foreach (var oDraftDetails in lstDraftDetails)
                         {
                             int iDrftId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[DraftDetails] with(nolock)");
                             queryString = @"Insert into [dbo].[DraftDetails] ([Id],[ServiceCode],[Qty], [Price],[LineTotal],[DocEntry], [ActionType],[ConsultUserId]
@@ -324,11 +324,11 @@ public class DocumentService : IDocumentService
                             sqlParameters[12] = new SqlParameter("@WarrantyPeriod", oDraftDetails.WarrantyPeriod);
                             sqlParameters[13] = new SqlParameter("@QtyWarranty", oDraftDetails.QtyWarranty);
                             isUpdated = await ExecQuery();
-                            if(!isUpdated)
+                            if (!isUpdated)
                             {
                                 await _context.RollbackAsync();
                                 return response;
-                            }    
+                            }
                         }
                         // lưu vào công nợ khách hàng
                         await saveDebts(iDocentry);
@@ -359,7 +359,7 @@ public class DocumentService : IDocumentService
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
-                    if(isUpdated)
+                    if (isUpdated)
                     {
                         foreach (var oDraftDetails in lstDraftDetails)
                         {
@@ -386,8 +386,8 @@ public class DocumentService : IDocumentService
                                     values (@Id, @ServiceCode, @Qty, @Price, @LineTotal, @DocEntry, @ActionType, @ConsultUserId
                                    ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0)";
                                 sqlParameters[13] = new SqlParameter("@Id", oDraftDetails.Id);
-                                
-                            }  
+
+                            }
                             else
                             {
                                 // cập nhật
@@ -409,7 +409,7 @@ public class DocumentService : IDocumentService
                         // xóa các dòng không tồn tại trong danh sách Ids
                         queryString = "Delete from [dbo].[DraftDetails] where [Id] not in ( select value from STRING_SPLIT(@ListIds, ',') )  and [DocEntry] = @DocEntry";
                         sqlParameters = new SqlParameter[2];
-                        sqlParameters[0] = new SqlParameter("@ListIds", string.Join(",", lstDraftDetails.Select(m=>m.Id).Distinct()));
+                        sqlParameters[0] = new SqlParameter("@ListIds", string.Join(",", lstDraftDetails.Select(m => m.Id).Distinct()));
                         sqlParameters[1] = new SqlParameter("@DocEntry", oDraft.DocEntry);
                         await _context.DeleteDataAsync(queryString, sqlParameters);
 
@@ -417,14 +417,14 @@ public class DocumentService : IDocumentService
                         await saveDebts(oDraft.DocEntry);
                         if (isUpdated) await _context.CommitTranAsync();
                         break;
-                    }    
+                    }
                     await _context.RollbackAsync();
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     response.Message = "Không xác định được phương thức!";
                     break;
-            }    
+            }
 
         }
         catch (Exception ex)
@@ -586,7 +586,7 @@ public class DocumentService : IDocumentService
         }
         return data;
     }
-    
+
     public async Task<ResponseModel> CancleDocList(RequestModel pRequest)
     {
         ResponseModel response = new ResponseModel();
@@ -596,6 +596,49 @@ public class DocumentService : IDocumentService
             SqlParameter[] sqlParameters;
             string queryString = @$"UPDATE [dbo].[Drafts] 
                                       set [StatusId] = '{nameof(DocStatus.Cancled)}', [ReasonDelete] = @ReasonDelete, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                    where [DocEntry] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+            sqlParameters = new SqlParameter[4];
+            sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+            sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+            sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+            sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+            if (data != null && data.Rows.Count > 0)
+            {
+                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            }
+
+            if (response.StatusCode == 0) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// hủy phiếu xuất kho
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> CancleOutBoundList(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters;
+            string queryString = @$"UPDATE [dbo].[OutBound] 
+                                      set  [IsDelete] = 1, [ReasonDelete] = @ReasonDelete, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                     where [DocEntry] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
             sqlParameters = new SqlParameter[4];
             sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
@@ -650,7 +693,7 @@ public class DocumentService : IDocumentService
             {
                 foreach (DataRow row in results.Tables[0].Rows)
                 {
-                    switch (pSearchData.Type+"")
+                    switch (pSearchData.Type + "")
                     {
                         case "DoanhThuQuiThangTheoDichVu":
                             data.Add(DataRecordDoanhThuQuiThangTheoDichVuToReportModel(row));
@@ -696,7 +739,7 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             DateTime dateTime = _dateTimeService.GetCurrentVietnamTime();
-            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23); 
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23);
             if (pSearchData.ToDate == null) pSearchData.ToDate = new DateTime(dateTime.Year, dateTime.Month, 1).AddMonths(1).AddDays(7);
             int numDay = int.Parse(_configuration.GetSection("Configs:NumberOfReminderDays").Value);
             SqlParameter[] sqlParameters = new SqlParameter[3];
@@ -809,7 +852,7 @@ public class DocumentService : IDocumentService
                 isUpdated = await ExecQuery();
             }
             // commit 
-            if(isUpdated) await _context.CommitTranAsync();
+            if (isUpdated) await _context.CommitTranAsync();
             else await _context.RollbackAsync();
         }
         catch (Exception ex)
@@ -822,7 +865,7 @@ public class DocumentService : IDocumentService
         {
             await _context.DisConnect();
         }
-        
+
         return response;
     }
     #region Private Funtions

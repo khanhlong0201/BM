@@ -273,7 +273,7 @@ namespace BM.Web.Features.Controllers
                     return;
                 }
                 await ShowLoader();
-                bool isSuccess = await _documentService!.CancleDocList(string.Join(",", SelectedOutBounds!.Select(m => m.DocEntry)), ReasonDeny , pUserId);
+                bool isSuccess = await _documentService!.CancleOutBoundList(string.Join(",", SelectedOutBounds!.Select(m => m.DocEntry)), ReasonDeny , pUserId);
                 if (isSuccess)
                 {
                     IsShowDialogDelete = false;

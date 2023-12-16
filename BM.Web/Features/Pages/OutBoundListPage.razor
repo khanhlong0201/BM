@@ -30,7 +30,7 @@
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/remove_grid.png" 
-        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy đơn</ToolBarButton>
+        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy phiếu xuất kho</ToolBarButton>
 </TelerikToolBar>
 <div class="h-table-content" style=" height: calc(100vh - 230px);">
     <TelerikLoaderContainer OverlayThemeColor="light"
@@ -80,7 +80,6 @@
             <GridColumn Field=@nameof(OutBoundModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.StartTime) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Thời gian bắt đầu"></GridColumn>
              <GridColumn Field=@nameof(OutBoundModel.EndTime) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Thời gian kết thúc"></GridColumn>
-            <GridColumn Field=@nameof(OutBoundModel.ReasonDelete) Width="170px" Title="Lý do hủy"></GridColumn>
         </GridColumns>
     </TelerikGrid>
 </div>

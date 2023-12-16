@@ -20,6 +20,7 @@ public interface ICliDocumentService
     Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId);
     Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
     Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
+    Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -309,6 +310,53 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
                 if (httpResponse.IsSuccessStatusCode)
                 {
                     _toastService.ShowSuccess($"Đã hủy danh sách đơn hàng!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CancleDocList");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// Call API hủy phiếu xuất kho
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJsonIds,
+                JsonDetail = pReasonDelete,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_CANCLE_OUTBOUND_LIST, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _toastService.ShowSuccess($"Đã hủy danh sách phiếu xuất kho!");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");
