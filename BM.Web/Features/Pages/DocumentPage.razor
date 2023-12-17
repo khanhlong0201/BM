@@ -167,7 +167,6 @@
                             <tr>
                                 <th class="text-center" style="width: 25px; min-width: 25px"></th>
                                 <th class="text-center" style="width: 1%">STT</th>
-                                <th class="text-center" style="width: 5%">Xuất kho ?</th>
                                 <th style="min-width: 230px">Dịch vụ</th>
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
                                 <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
@@ -193,14 +192,16 @@
                                             <TelerikCheckBox @bind-Value="@oItem.IsCheck" Title="" />
                                         </td>
                                         <td class="text-center">@oItem.LineNum</td>
-                                        <td class="text-center"><span class="@(oItem.StatusOutBound+""=="Chưa"?"badge bg-purple-lt":"badge bg-green-lt")">@oItem.StatusOutBound</span></td>
                                         <td>
-                                            <p class="strong mb-1">@oItem.ServiceCode</p>
+                                            <p class="strong mb-0">@oItem.ServiceCode</p>
                                             <div class="text-secondary">@oItem.ServiceName</div>
-                                            <div class="text-secondary">Đơn giá gốc: @oItem.PriceOld.ToString(DefaultConstants.FORMAT_CURRENCY)</div>
+                                            <div class="text-secondary">Đơn giá gốc: @oItem.PriceOld.ToString(DefaultConstants.FORMAT_CURRENCY)đ</div>
                                             <div class="text-secondary">
                                                 Bảo hành:
                                                 @($"{Math.Round(oItem.WarrantyPeriod, 2)} tháng/{@oItem.QtyWarranty} lần")
+                                            </div>
+                                            <div class="text-secondary">
+                                                <span class="@(oItem.StatusOutBound+""=="Chưa"?"badge bg-purple-lt":"badge bg-green-lt")">@oItem.StatusOutBound</span>
                                             </div>
                                         </td>
                                         <td class="text-end">

@@ -194,13 +194,20 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng nhập số tiền khách trả!");
                     return;
                 }
-                string messageDept = "";
-                if (ItemSelected.GuestsPay < ItemSelected.TotalDebtAmount)
+                string messageDept = string.Empty;
+                if(ItemSelected.IsDelay)
+                {
+                    // nếu khách hẹn lại khi khác
+                    messageDept = ItemSelected.DateDelay == null ? "Nếu không chọn ngày hẹn. Lịch nhắc nợ sẽ được nhắc vào tháng sau." 
+                        : $" Khách hẹn lại ngày [{ItemSelected.DateDelay.Value.ToString(DefaultConstants.FORMAT_DATE)}]";
+                } 
+                else if (ItemSelected.GuestsPay < ItemSelected.TotalDebtAmount)
                 {
                     messageDept = $"Vẫn còn nợ {string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, (ItemSelected.TotalDebtAmount - ItemSelected.GuestsPay))}đ." +
                         $" Số tiền sẽ được lưu vào công nợ của khách hàng [{ItemSelected.FullName}].";
                 }
-                bool isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn thanh toán đơn hàng này?", "Thông báo");
+
+                bool isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn lưu thông tin thanh toán đơn hàng này?", "Thông báo");
                 if (!isConfirm) return;
                 await ShowLoader();
                 CustomerDebtsModel oItem = new CustomerDebtsModel();
@@ -209,6 +216,8 @@ namespace BM.Web.Features.Controllers
                 oItem.TotalDebtAmount = ItemSelected.TotalDebtAmount - ItemSelected.GuestsPay;
                 oItem.GuestsPay = ItemSelected.GuestsPay;
                 oItem.Remark = ItemSelected.Remark;
+                oItem.IsDelay = ItemSelected.IsDelay;
+                oItem.DateDelay = ItemSelected.DateDelay;
                 // call api 
                 bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
                 if (isSuccess)

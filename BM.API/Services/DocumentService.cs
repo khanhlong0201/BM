@@ -148,8 +148,24 @@ public class DocumentService : IDocumentService
         left join (select t5.DocEntry,T5.IdDraftDetail from [dbo].[OutBound] as T5 with(nolock) where t5.IsDelete = 0
 					group by t5.DocEntry,T5.IdDraftDetail) t5 on T1.Id = T5.IdDraftDetail        
         where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
+               , T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
+               , case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
+               , T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
+               , T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
+	           , T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
+               , isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
+               , (select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
+               , IIF(isnull(T5.DocEntry,0) <> 0,N'Rồi',N'Chưa') as [StatusOutBound]
+            from [dbo].[Drafts] as T0 with(nolock) 
+      inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
+      inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
+      inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
+      inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
+       left join [dbo].[OutBound] as T5 with(nolock) on T1.Id = T5.IdDraftDetail and T5.IsDelete = 0     
+           where T0.DocEntry = @DocEntry";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
+            data = new Dictionary<string, string>();
             if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
             {
                 string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
@@ -254,8 +270,8 @@ public class DocumentService : IDocumentService
                     // lấy mã
                     int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
 
-                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate])
-                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId)";
+                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo],[GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate],[IsDelay])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, 0)";
                     sqlParameters = new SqlParameter[7];
                     sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
                     sqlParameters[1] = new SqlParameter("@DocEntry", pDocEntry);
@@ -747,16 +763,17 @@ public class DocumentService : IDocumentService
             sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[2] = new SqlParameter("@NumDay", numDay);
-            data = await _context.GetDataAsync(@$"Select T0.DocEntry
-                                                       , T2.DateCreate, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) as DateStart
+            data = await _context.GetDataAsync(@$"Select T0.DocEntry, T2.Remark
+                                                       , T2.DateCreate, iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date))) as DateStart
                                                        , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
                                                        , 'DebtReminder' as [Type] -- Nhắc nhợ
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
-                                             cross apply (select top 1 DateCreate from [dbo].[CustomerDebts] as T00 with(nolock) 
+                                             cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
                                                             where T0.DocEntry = T00.DocEntry order by Id desc) as T2
                                                    where isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
-                                                     and DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)"
+                                                     and iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date))) 
+                                                         between cast(@FromDate as Date) and cast(@ToDate as Date)"
                     , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -781,7 +798,7 @@ public class DocumentService : IDocumentService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
             data = await _context.GetDataAsync(@$"Select T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
-                                                , T0.GuestsPay, T1.FullName, T0.[Remark]
+                                                , T0.GuestsPay, T1.FullName, T0.[Remark], T0.[IsDelay], T0.[DateDelay]
                                              from [dbo].[CustomerDebts] as T0 with(nolock)
                                        inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                             where T0.[DocEntry] = @DocEntry
@@ -821,11 +838,36 @@ public class DocumentService : IDocumentService
                 }
                 return false;
             }
+            if(oCusDebts.IsDelay)
+            {
+                // nếu mà là khách hẹn khi khác
+                // lấy lên thông tin đơn hàng kế bên
+                queryString = @"Select Top 1 T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
+                                     , T0.GuestsPay, T1.FullName, T0.[Remark], T0.[IsDelay], T0.[DateDelay]
+                                  from [dbo].[CustomerDebts] as T0 with(nolock)
+                            inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                 where T0.[DocEntry] = @DocEntry
+                                 order by T0.Id desc";
+                sqlParameters = new SqlParameter[1];
+                sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+                var oItemCusDebts = await _context.GetDataByIdAsync(queryString, DataRecordToCustomerDebtsModel, sqlParameters, CommandType.Text);
+                if(oItemCusDebts == null)
+                {
+                    response.StatusCode = -1;
+                    response.Message = "Không tìm thấy thông tin Công nợ trước đó. Vui lòng thử lại!";
+                    return response;
+                }
+                // gán lại thông tin
+                oCusDebts.TotalDebtAmount = oItemCusDebts.TotalDebtAmount;
+                oCusDebts.GuestsPay = 0.0; // không có số tiền khách trả
+                oCusDebts.DateDelay = oCusDebts.DateDelay ?? _dateTimeService.GetCurrentVietnamTime().AddMonths(1);
+            }
             // lấy mã
             int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
-            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate],[Remark])
-                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark)";
-            sqlParameters = new SqlParameter[8];
+            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate]
+                                                ,[UserCreate],[Remark],[IsDelay],[DateDelay])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark, @IsDelay, @DateDelay)";
+            sqlParameters = new SqlParameter[10];
             sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
             sqlParameters[1] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
             sqlParameters[2] = new SqlParameter("@CusNo", oCusDebts.CusNo);
@@ -834,9 +876,11 @@ public class DocumentService : IDocumentService
             sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
             sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark);
+            sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
+            sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay);
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
-            if (isUpdated)
+            if (isUpdated && oCusDebts.IsDelay)
             {
                 sqlParameters = new SqlParameter[1];
                 sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
@@ -852,8 +896,9 @@ public class DocumentService : IDocumentService
                 sqlParameters[2] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay + dGuestsPayOld);
                 isUpdated = await ExecQuery();
             }
-            // commit 
-            if (isUpdated) await _context.CommitTranAsync();
+
+            // commit tran
+            if(isUpdated) await _context.CommitTranAsync();
             else await _context.RollbackAsync();
         }
         catch (Exception ex)
@@ -1136,6 +1181,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
         if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);
         if (!Convert.IsDBNull(record["Type"])) model.Type = Convert.ToString(record["Type"]);
+        if (!Convert.IsDBNull(record["Remark"])) model.RemarkOld = Convert.ToString(record["Remark"]);
         if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
         model.End = model.Start;
         model.Title = $"Nhắc nợ - {model.FullName}";
@@ -1160,6 +1206,8 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
+        if (!Convert.IsDBNull(record["IsDelay"])) model.IsDelay = Convert.ToBoolean(record["IsDelay"]);
+        if (!Convert.IsDBNull(record["DateDelay"])) model.DateDelay = Convert.ToDateTime(record["DateDelay"]);
         return model;
     }
     #endregion

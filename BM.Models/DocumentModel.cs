@@ -69,5 +69,7 @@ public class CustomerDebtsModel
     public DateTime? DateCreate { get; set; }
     public int? UserCreate { get; set; }
     public string? Remark { get; set; }
+    public bool IsDelay { get; set; } // trĩ hoãn lại
+    public DateTime? DateDelay { get; set; } // ngày delay lại
 }
 

@@ -917,6 +917,8 @@ public class MasterDataService : IMasterDataService
 														EnumName NVARCHAR(255)
 													)  where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
 													and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId) t5 on t0.SuppliesCode = t5.SuppliesCode and t0.EnumId = t5.EnumId
+				  left join Users t3 on t0.UserCreate = t3.Id
+					left join Users t4 on t0.UserUpdate = t4.Id
                   where t0.IsDelete = 0 and t1.EnumType ='Unit' order by t0.[DateCreate] desc"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
         }

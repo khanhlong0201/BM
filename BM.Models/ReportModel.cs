@@ -64,6 +64,9 @@ public class SheduleModel
     public double TotalDebtAmount { get; set; }
     public double GuestsPay { get; set; }
     public string? Remark { get; set; }
+    public string? RemarkOld { get; set; }
+    public bool IsDelay { get; set; } // trĩ hoãn lại
+    public DateTime? DateDelay { get; set; } // ngày delay lại
 }
 
 
