@@ -132,23 +132,7 @@ public class DocumentService : IDocumentService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
             string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],t0.[BaseEntry],t0.[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
-            ,T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
-            ,case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
-            ,T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
-            ,T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
-	        ,T3.[CusNo],T3.[FullName],T3.[DateOfBirth],T3.CINo,T3.Phone1,T3.[Phone2],T3.Zalo,T3.FaceBook,T3.[Address],T3.[Remark]
-            ,isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
-            ,(select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
-            ,IIF(isnull(T5.DocEntry,0) <> 0,N'Rồi',N'Chưa') as [StatusOutBound]
-        from [dbo].[Drafts] as T0 with(nolock) 
-        inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
-        inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
-        inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
-        inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
-        left join (select t5.DocEntry,T5.IdDraftDetail from [dbo].[OutBound] as T5 with(nolock) where t5.IsDelete = 0
-					group by t5.DocEntry,T5.IdDraftDetail) t5 on T1.Id = T5.IdDraftDetail        
-        where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
-               , T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
+            , T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
                , case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
                , T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]
                , T2.[BranchId],T2.[BranchName],T4.[ServiceCode],T4.[ServiceName]
