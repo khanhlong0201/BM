@@ -145,8 +145,9 @@ public class DocumentService : IDocumentService
         inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
         inner join [dbo].[Customers] as T3 with(nolock) on T0.CusNo = T3.CusNo
         inner join [dbo].[Services] as T4 with(nolock) on T1.ServiceCode = T4.ServiceCode
-        left join [dbo].[OutBound] as T5 with(nolock) on T1.Id = T5.IdDraftDetail        
-        where T0.DocEntry = @DocEntry and t5.IsDelete = 0 order by T0.[DocEntry] desc";
+        left join (select t5.DocEntry,T5.IdDraftDetail from [dbo].[OutBound] as T5 with(nolock) where t5.IsDelete = 0
+					group by t5.DocEntry,T5.IdDraftDetail) t5 on T1.Id = T5.IdDraftDetail        
+        where T0.DocEntry = @DocEntry order by T0.[DocEntry] desc";
 
             var ds = await _context.GetDataSetAsync(queryString, sqlParameters, CommandType.Text);
             if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)

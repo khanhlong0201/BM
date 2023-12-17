@@ -191,6 +191,7 @@ namespace BM.Web.Features.Controllers
                         oLine.SuppliesCode = item.SuppliesCode;
                         oLine.SuppliesName = item.SuppliesName;
                         oLine.Qty = item.Qty;
+                        oLine.QtyInv = item.QtyInv;
                         ListSuppplies.Add(oLine);
                     }
                 }
@@ -205,34 +206,33 @@ namespace BM.Web.Features.Controllers
             }
         }
 
-        /// <summary>
+        ///<summary>
         /// đá sang page chi tiết đơn hàng
         /// </summary>
-        //protected async void OnRowDoubleClickHandler(GridRowClickEventArgs args)
-        //{
-        //    try
-        //    {
-        //        OutBoundModel? oItem = (args.Item as OutBoundModel);
-        //        if (oItem == null) return;
-        //        Dictionary<string, string> pParams = new Dictionary<string, string>
-        //        {
-        //            { "pDocEntry", $"{oItem.BaseEntry}"},
-        //            { "pIsCreate", $"{false}" },
-        //        };
-        //        string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
-        //        _navManager!.NavigateTo($"/create-ticket?key={key}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger!.LogError(ex, "OutBoundController", "OnRowDoubleClickHandler");
-        //        ShowError(ex.Message);
-        //    }
-        //    finally
-        //    {
-        //        IsInitialDataLoadComplete = true;
-        //        await InvokeAsync(StateHasChanged);
-        //    }
-        //}
+        protected async void OnClickHandlerNavTicKet(OutBoundModel oItem)
+        {
+            try
+            {
+                if (oItem == null) return;
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pDocEntry", $"{oItem.BaseEntry}"},
+                    { "pIsCreate", $"{false}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navManager!.NavigateTo($"/create-ticket?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "OutBoundController", "OnRowDoubleClickHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                IsInitialDataLoadComplete = true;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
 
         protected void OpenDialogDeleteHandler()
         {

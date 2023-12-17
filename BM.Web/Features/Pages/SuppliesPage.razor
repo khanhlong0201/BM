@@ -53,6 +53,8 @@
                     </GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="270px" Title="Tên vật tư"></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="120px" Title="Đơn vị tính" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyIntoInv) Width="200px" Title="Tổng số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyOutBound) Width="200px" Title="Tổng số lượng xuất kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="200px" Title="Tổng số lượng trong kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.Price) Width="110px" Title="Giá hiện tại" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
 @*                    <GridColumn Field=@nameof(SuppliesModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="100px" Title="Ngày tạo" Filterable="false"></GridColumn>

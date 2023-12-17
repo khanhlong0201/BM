@@ -34,9 +34,9 @@
                                             string color = "text-cyan";
                                             if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
                                             else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
-                                                <strong class="@(color)">
-                                                    @($"{DocumentUpdate.StatusName}")
-                                                </strong>
+                                                        <strong class="@(color)">
+                                                            @($"{DocumentUpdate.StatusName}")
+                                                        </strong>
                                         }
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
@@ -252,44 +252,44 @@
                                 double pSumTotal = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
                                 DocumentUpdate.GuestsPay = pSumTotal <= 0 ? 0 : DocumentUpdate.GuestsPay;
                                 DocumentUpdate.Debt = pSumTotal <= 0 ? 0 : DocumentUpdate.Debt;
-                                    <tr>
-                                        <td class="text-center"></td>
-                                        <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
-                                        <td colspan="2" class="text-end">
-                                            @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                        </td>
-                                        <td colspan="3"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-center"></td>
-                                        <td colspan="3" class="strong text-end">Khách trả:</td>
-                                        <td colspan="2" class="text-end">
-                                            @if(!pIsLockPage)
+                                            <tr>
+                                                <td class="text-center"></td>
+                                                <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
+                                                <td colspan="2" class="text-end">
+                                                    @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                                </td>
+                                                <td colspan="3"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center"></td>
+                                                <td colspan="3" class="strong text-end">Khách trả:</td>
+                                                <td colspan="2" class="text-end">
+                                                    @if(!pIsLockPage)
                                         {
-                                                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                                    @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
+                                                        <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                                            @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
                                         }
                                         else
                                         {
-                                                @(DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY))
-                                                <span>đ</span>
+                                                        @(DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY))
+                                                        <span>đ</span>
                                         }
 
-                                        </td>
-                                        <td colspan="3"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-center"></td>
-                                        <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
-                                        <td colspan="2" class="text-red font-weight-bold text-end">
-                                            @{
+                                                </td>
+                                                <td colspan="3"></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center"></td>
+                                                <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
+                                                <td colspan="2" class="text-red font-weight-bold text-end">
+                                                    @{
                                             DocumentUpdate.Debt = pSumTotal <= 0 || DocumentUpdate.GuestsPay >= pSumTotal ? 0 
                                             : pSumTotal - DocumentUpdate.GuestsPay;
-                                            }
-                                            @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                        </td>
-                                        <td colspan="3"></td>
-                                    </tr>
+                                                    }
+                                                    @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                                </td>
+                                                <td colspan="3"></td>
+                                            </tr>
                             }
                             
                         </tbody>
@@ -349,10 +349,19 @@
             @foreach(var oItem in ListSuppplies)
             {
                  <div class="mt-2 row">
-                     <div class="col-6">
+                     <div class="col-3">
                         <TelerikTextBox @bind-Value="@oItem.SuppliesName" Id="SuppliesName"  Enabled="false"/>
                      </div>
-                      <div class="col-6">
+                     <div class="col-2" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="@("Đơn vị tính: "+oItem.EnumName)" /> 
+                     </div>
+                     <div class="col-3" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho: "+oItem.QtyInv)" /> 
+                     </div>
+                     <div class="col-2" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="Nhập số lượng xuất:" /> 
+                     </div>
+                      <div class="col-2">
                         <TelerikNumericTextBox Min="1"  Step="1"  @bind-Value="@oItem.Qty" Id="txtQty" /> 
                      </div>
                 </div>

@@ -144,7 +144,6 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
-                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -202,7 +201,7 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
-        protected void ShowOutBound(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
+        protected async Task ShowOutBound(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
         {
             try
             {
@@ -255,6 +254,9 @@ namespace BM.Web.Features.Controllers
                     OutBoundUpdate.BranchId = pBranchId;
                     OutBoundUpdate.Remark = DocumentUpdate.Remark;// đặc điểm khách hàng
                     OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
+                    ListSuppplies = new List<SuppliesModel>();
+                    ListSuppplies = await _masterDataService!.GetDataSuppliesOutBoundAsync();
+
                     IsCreateOutBound = true;
                 }
                 else
@@ -282,17 +284,27 @@ namespace BM.Web.Features.Controllers
                 bool isConfirm = false;
                 if (pProcess == EnumType.Update)
                 {
-                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu Lệnh và xuất kho này ?", "Thông báo");
+                    isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc muốn lưu phiếu xuất này ?", "Thông báo");
                 }
                 
                 if (!isConfirm) return;
                 await ShowLoader();
                 if(ListSuppplies != null && ListSuppplies.Any()){
+                    var CheckListSupplies = ListSuppplies.Where(d => d.Qty > d.QtyInv).FirstOrDefault();
+                    if (CheckListSupplies != null)
+                    {
+                        ShowWarning("Số lượng xuất phải <= Tổng số lượng tồn kho");
+                        await ShowLoader(false);
+                        return;
+                    }
                     var listSuppliesOutBound = ListSuppplies.Select(m => new SuppliesOutBoundModel()
                     {
                         SuppliesCode = m.SuppliesCode,
                         SuppliesName = m.SuppliesName,
-                        Qty = m.Qty
+                        EnumId = m.EnumId,
+                        EnumName = m.EnumName,
+                        Qty = m.Qty,
+                        QtyInv = m.QtyInv
                     });
                     OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
                 } 
