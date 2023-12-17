@@ -44,13 +44,10 @@ namespace BM.Web.Features.Controllers
         public bool pIsCreate { get; set; } = false;
         public bool pIsLockPage { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
-
-        public bool IsCreateOutBound { get; set; } = false;
         public bool IsShowOutBound { get; set; } = false;
         public EditContext? _EditOutBoundContext { get; set; }
-        public SalesOrderModel SelectLineSalesOrder { get; set; } = new SalesOrderModel();
         public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
-        public List<SuppliesModel> ListSuppplies { get; set; } = new List<SuppliesModel>();
+        public List<SuppliesModel>? ListSuppplies { get; set; }
         #endregion
         #region Override Functions
 
@@ -144,7 +141,6 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
-                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -202,74 +198,73 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
-        protected void ShowOutBound(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
+        protected async void ShowOutBoundHandler(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
         {
             try
             {
                 if (pAction == EnumType.Add)
                 {
+                    if (DocumentUpdate.DocEntry <= 0)
+                    {
+                        ShowWarning("Vui lòng lưu thông tin đơn hàng trước khi lập [Phiếu xuất kho]");
+                        return;
+                    }
                     if (ListSalesOrder == null || !ListSalesOrder.Any())
                     {
-                        ShowWarning("Chưa có dịch vụ đê lập phiếu xuất kho");
+                        ShowWarning("Không có thông tin dịch vụ!");
                         return;
                     }
-                    var countIsCheck = ListSalesOrder.Where(d => d.IsCheck).ToList();
-                    if (countIsCheck != null && countIsCheck.Count > 1)
+                    var lstItem = ListSalesOrder.Where(d => d.IsCheck).ToList();
+                    if (lstItem == null || !lstItem.Any())
                     {
-                        ShowWarning("Bạn chỉ được chọn 1 dòng để lập phiếu xuất kho");
+                        ShowWarning("Vui lòng chọn dòng để lập [Phiếu xuất kho]!");
                         return;
                     }
-                    else if (countIsCheck == null || countIsCheck.Count == 0)
+                    if (lstItem.Count > 1)
                     {
-                        ShowWarning("Bạn cần chọn 1 dòng để lập phiếu xuất kho");
+                        ShowWarning("Chỉ được phép chọn 1 dịch vụ để lập [Phiếu xuất kho]!");
                         return;
                     }
-                    else if (DocumentUpdate != null && DocumentUpdate.DocEntry <= 0)
-                    {
-                        ShowWarning("Bạn cần lưu đơn hàng, sau đó mới được lập phiếu xuất kho");
-                        return;
-                    }
-                    else if (DocumentUpdate != null && DocumentUpdate.DocEntry <= 0)
-                    {
-                        ShowWarning("Bạn cần lưu đơn hàng, sau đó mới được lập phiếu xuất kho");
-                        return;
-                    }
-                    SelectLineSalesOrder = ListSalesOrder.Where(d => d.IsCheck).FirstOrDefault();
-                     if (SelectLineSalesOrder !=null && SelectLineSalesOrder.StatusOutBound +"" == "Rồi")
-                    {
-                        ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
-                        return;
-                    }
+                    await ShowLoader();
+                    var oItem = lstItem[0];
+                    //if (oItem.StatusOutBound + "" == "Rồi")
+                    //{
+                    //    ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
+                    //    return;
+                    //}
 
-                    OutBoundUpdate.ServiceCode = SelectLineSalesOrder.ServiceCode;
-                    OutBoundUpdate.ServiceName = SelectLineSalesOrder.ServiceName;
-                    OutBoundUpdate.ListUserImplements = SelectLineSalesOrder.ListUserImplements;
-                    OutBoundUpdate.ChemicalFormula = SelectLineSalesOrder.ChemicalFormula;
+                    OutBoundUpdate.ServiceCode = oItem.ServiceCode;
+                    OutBoundUpdate.ServiceName = oItem.ServiceName;
+                    OutBoundUpdate.ListUserImplements = oItem.ListUserImplements;
+                    OutBoundUpdate.ChemicalFormula = oItem.ChemicalFormula;
                     OutBoundUpdate.StartTime = DateTime.Now;
                     OutBoundUpdate.EndTime = DateTime.Now;
                     OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
                     OutBoundUpdate.FullName = DocumentUpdate.FullName;
                     OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
                     OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
-                    OutBoundUpdate.IdDraftDetail = SelectLineSalesOrder.Id;
+                    OutBoundUpdate.IdDraftDetail = oItem.Id;
                     OutBoundUpdate.BranchId = pBranchId;
                     OutBoundUpdate.Remark = DocumentUpdate.Remark;// đặc điểm khách hàng
                     OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
-                    IsCreateOutBound = true;
                 }
                 else
                 {
-                    IsCreateOutBound = false;
+
                 }
-                
+                ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
                 IsShowOutBound = true;
                 _EditOutBoundContext = new EditContext(OutBoundUpdate);
-                StateHasChanged();
             }
             catch (Exception ex)
             {
                 _logger!.LogError(ex, "DocumentController", "ShowOutBound");
                 ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
             }
         }
 
@@ -277,14 +272,12 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
-                string sAction = IsCreateOutBound ? nameof(EnumType.Add) : nameof(EnumType.Update);
-                string sStatusId = "";
+                string sAction = nameof(EnumType.Add);
                 bool isConfirm = false;
                 if (pProcess == EnumType.Update)
                 {
                     isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu Lệnh và xuất kho này ?", "Thông báo");
                 }
-                
                 if (!isConfirm) return;
                 await ShowLoader();
                 if(ListSuppplies != null && ListSuppplies.Any()){
@@ -313,23 +306,6 @@ namespace BM.Web.Features.Controllers
             {
                 await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
-            }
-        }
-
-
-
-        protected void ValueChangedGuestsPayHandler(double value)
-        {
-            try
-            {
-                DocumentUpdate.GuestsPay = value;
-                DocumentUpdate.Debt = (ListSalesOrder?.Sum(m => m.Amount) ?? 0) - value;
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                _logger!.LogError(ex, "DocumentController", "OnChangeGuestsPayHandler");
-                ShowError(ex.Message);
             }
         }
 
