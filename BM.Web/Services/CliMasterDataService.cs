@@ -37,6 +37,7 @@ public interface ICliMasterDataService
     Task<List<TreatmentRegimenModel>?> GetDataTreatmentsByServiceAsync(string pServiceCode);
     Task<bool> UpdateTreatmentRegimenAsync(string pJson, string pAction, int pUserId);
     Task<bool> UpdateInvetoryAsync(string pJson, string pJsonDetail, string pAction, int pUserId);
+    Task<List<SuppliesModel>?> GetDataSuppliesOutBoundAsync();
 }
 public class CliMasterDataService : CliServiceBase, ICliMasterDataService 
 {
@@ -761,6 +762,38 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
         try
         {
             HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SUPPLIES);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<SuppliesModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataSuppliesAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách vật tư để lập lệnh xuất kho
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<SuppliesModel>?> GetDataSuppliesOutBoundAsync()
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SUPPLIES_OUTBOUND);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else

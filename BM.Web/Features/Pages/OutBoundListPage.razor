@@ -61,21 +61,24 @@
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
              <GridColumn Field=@nameof(OutBoundModel.BranchName) Width="170px" Title="Chi nhánh "></GridColumn>
-            <GridColumn Field=@nameof(OutBoundModel.BaseEntry) Width="120px" MaxResizableWidth="100" Title="Mã đơn hàng">
+             <GridCommandColumn Width="40px" MaxResizableWidth="40">
+                <i class="fa-solid fa-circle-info h-link" title="Xem chi tiết đơn hàng" style="font-size: 14px;"
+                    @onclick="@(()=> OnClickHandlerNavTicKet((context as OutBoundModel)!))"></i>
+            </GridCommandColumn>
+             <GridColumn Field=@nameof(OutBoundModel.VoucherNo) Width="150px" MaxResizableWidth="100" Title="Số lệnh đơn hàng">
                 <Template>
                     @{
                         var model = (context as OutBoundModel);
-                        <span class="h-link">@model!.BaseEntry</span>
+                        <span>@model!.VoucherNo</span>
                     }
                 </Template>
                 <FooterTemplate>
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(OutBoundModel.VoucherNo) Width="135px" Title="Số lệnh"></GridColumn>
+            <GridColumn Field=@nameof(OutBoundModel.ServiceName) Width="170px" Title="Tên dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="160px" Title="Ngày giờ lập phiếu"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.FullName) Width="135px" Title="Tên khách hàng"></GridColumn>
-            <GridColumn Field=@nameof(OutBoundModel.ServiceName) Width="170px" Title="Tên dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.CusNo) Width="125px" Title="Mã KH"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.StartTime) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Thời gian bắt đầu"></GridColumn>
@@ -97,6 +100,7 @@
 
 <HDialog @bind-IsVisible="@IsShowOutBound"
          IsShowButtonSaveAdnCreate="false"
+         IsShowButtonSaveAndClosed="false"
          Width="85%"
          Title="Xem thông tin chi tiết của phiếu xuất kho">
     <EditForm EditContext="@_EditOutBoundContext">
@@ -132,7 +136,7 @@
         </div>
          <div class="mt-2">
             <HLabel For="txtColorImplement" Value="Màu thực hiện cho khách :" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ColorImplement" Id="txtColorImplement" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.ColorImplement" Id="txtColorImplement" Enabled="false"/>
         </div>
          <div class="mt-2">
             <HLabel For="txtColorImplement" Value="Dụng cụ :" />
@@ -142,11 +146,17 @@
             @foreach(var oItem in ListSuppplies)
             {
                  <div class="mt-2 row">
-                     <div class="col-6">
+                     <div class="col-3">
                         <TelerikTextBox @bind-Value="@oItem.SuppliesName" Id="SuppliesName"  Enabled="false"/>
                      </div>
-                      <div class="col-6">
-                        <TelerikNumericTextBox Min="1"  Step="1"  @bind-Value="@oItem.Qty" Id="txtQty" /> 
+                     <div class="col-2" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="@("Đơn vị tính: "+oItem.EnumName)" /> 
+                     </div>
+                     <div class="col-4" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho (thời điểm lập lệnh): "+oItem.QtyInv)" /> 
+                     </div>
+                     <div class="col-3" style="margin-top: 5px">
+                         <HLabel For="txtColorImplement" Value="@("Số lượng xuất: "+oItem.Qty)" /> 
                      </div>
                 </div>
             }
@@ -158,25 +168,26 @@
         </div>
          <div class="mt-2">
             <HLabel For="txtAnesthesiaType" Value="Loại tệ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="txtAnesthesiaType" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="txtAnesthesiaType" Enabled="false"/>
         </div>
         <div class="mt-2">
             <HLabel For="txtDarkTestColor" Value="Màu thử thâm:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.DarkTestColor" Id="txtDarkTestColor" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.DarkTestColor" Id="txtDarkTestColor" Enabled="false"/>
         </div>
         <div class="mt-2">
             <HLabel For="txtCoadingColor" Value="Màu phủ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.CoadingColor" Id="txtCoadingColor" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.CoadingColor" Id="txtCoadingColor" Enabled="false"/>
         </div>
         <div class="mt-2">
             <HLabel For="LibColor" Value="Màu lòng môi:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.LibColor" Id="LibColor" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.LibColor" Id="LibColor" Enabled="false"/>
         </div>
         <div class="mt-2 row">
             <div class="col-6">
                 <HLabel For="txtStartTime" Value="Thời gian bắt đầu:" />
                 <TelerikDatePicker @bind-Value="@OutBoundUpdate.StartTime"
                     Placeholder=""
+                    Enabled="false"
                     Format="dd/MM/yyyy HH:mm:ss"
                     Class="btn-noborder-radius-left">
                 </TelerikDatePicker>
@@ -185,6 +196,7 @@
                 <HLabel For="txtEndTime" Value="Thời gian kết thúc:" />
                 <TelerikDatePicker @bind-Value="@OutBoundUpdate.EndTime"
                     Placeholder=""
+                    Enabled="false"
                     Format="dd/MM/yyyy HH:mm:ss"
                     Class="btn-noborder-radius-left">
                 </TelerikDatePicker>
@@ -193,21 +205,21 @@
         <div class="mt-2 row">
              <div class="col-6">
                 <HLabel For="Problems" Value="Đặc điểm khách hàng:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.Remark" Id="Problems" />
+                <TelerikTextBox @bind-Value="@OutBoundUpdate.Remark" Id="Problems" Enabled="false"/>
             </div>
              <div class="col-6">
                 <HLabel For="Problems" Value="Tình trạng sức khỏe:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.HealthStatus" Id="Problems" />
+                <TelerikTextBox @bind-Value="@OutBoundUpdate.HealthStatus" Id="Problems" Enabled="false"/>
             </div>
          </div>
         <div class="mt-2">
             <HLabel For="Problems" Value="Vấn đề gặp phải trong quá trình làm:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.Problems" Id="Problems" />
+            <TelerikTextBox @bind-Value="@OutBoundUpdate.Problems" Id="Problems" Enabled="false"/>
         </div>
          <div class="mt-2 row">
             <div class="col-6">
                 <HLabel For="FullName" Value="Nhân viên xuất kho:" />
-                <TelerikTextBox @bind-Value="@FullName" Id="FullName"  Enabled="false" />
+                <TelerikTextBox @bind-Value="@FullName" Id="FullName"  Enabled="false"/>
              
              </div>
             <div class="col-6">
@@ -223,6 +235,7 @@
                     ClearButton="false"
                     Id="ChargeUser"
                     Class="btn-noborder-radius-left"
+                    Enabled="false"
                     Width="100%">
                 </TelerikComboBox>
                 <HValidationTooltip ValidationFor="@(()=> OutBoundUpdate.ChargeUser)" Id="cbbBranch" />

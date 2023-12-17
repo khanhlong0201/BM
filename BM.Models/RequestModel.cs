@@ -37,6 +37,9 @@ public class SuppliesOutBoundModel
     public string? SuppliesCode { get; set; }
     public string? SuppliesName { get; set; }
     public decimal? Qty { get; set; }
+    public decimal? QtyInv { get; set; }
+    public string? EnumId { get; set; }
+    public string? EnumName { get; set; }
 
 }
 

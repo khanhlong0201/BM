@@ -34,6 +34,7 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateInventory(RequestModel pRequest);
     Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
+    Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync();
 }
 
 public class MasterDataService : IMasterDataService
@@ -884,24 +885,86 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"SELECT t0.[SuppliesCode]
-                      ,t0.[SuppliesName]
-                      ,t0.[EnumId]
-	                  ,t1.EnumName 
-                      ,t0.[DateCreate]
-                      ,t0.[UserCreate]
-	                  ,t0.[DateUpdate]
-                      ,t0.[UserUpdate]
-					  ,t3.FullName as 'UserNameCreate'
-						,t4.FullName as 'UserNameUpdate'
-	                  , (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0) as QtyInv
-	                  , (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price
+            data = await _context.GetDataAsync(@"SELECT t0.[SuppliesCode] ,t0.[SuppliesName] ,t0.[EnumId] ,t1.EnumName  ,t0.[DateCreate] ,t0.[UserCreate] ,t0.[DateUpdate] ,t0.[UserUpdate] ,t3.FullName as 'UserNameCreate',t4.FullName as 'UserNameUpdate'
+	                  , (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0) as QtyIntoInv
+	                  --, (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price
+					   , ISNULL(t5.QtyOutBound,0) as QtyOutBound
+					  , ISNULL(t5.QtyInv,0) as QtyInv
+					  , ISNULL(t5.Price,0) as Price
                   FROM [dbo].[Supplies] t0 
                   inner join Enums t1 on t0.EnumId = t1.EnumId
+				  inner join Users t3 on t0.UserCreate = t3.Id
+				  left join Users t4 on t0.UserUpdate = t4.Id
+				  left join (select t2.[SuppliesCode] ,t2.[SuppliesName],t2.[EnumId],t2.EnumName  , isnull(t3.Qty,0) as QtyOutBound, (isnull(t2.QtyInv,0) - isnull(t3.Qty,0)) as QtyInv, t2.Price, t2.BranchId from (
+							SELECT t0.[SuppliesCode] ,t0.[SuppliesName],t0.[EnumId],t1.EnumName, t2.BranchId ,sum(isnull(t2.QtyInv,0)) as QtyInv ,max(t2.Price) as Price
+											  FROM [dbo].[Supplies] t0 
+											  inner join Enums t1 on t0.EnumId = t1.EnumId
+											  inner join Inventory  t2 on t0.SuppliesCode = t2.SuppliesCode
+											  where t0.IsDelete = 0 and t1.EnumType ='Unit' 
+											  and t2.IsDelete = 0 
+											  group by  t0.[SuppliesCode]  ,t0.[SuppliesName] ,t0.[EnumId]  ,t1.EnumName, t2.BranchId
+										  ) t2
+							left join (SELECT SuppliesCode as SuppliesCode,SuppliesName as SuppliesName,BranchId,sum(Qty) as Qty
+													,EnumId as EnumId, EnumName as EnumName
+													FROM OutBound 
+													CROSS APPLY OPENJSON(SuppliesQtyList)
+													WITH (
+														SuppliesCode VARCHAR(50),
+														SuppliesName NVARCHAR(255),
+														Qty  decimal(19,6),
+														QtyInv decimal(19,6),
+														EnumId VARCHAR(50),
+														EnumName NVARCHAR(255)
+													)  where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
+													and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId) t5 on t0.SuppliesCode = t5.SuppliesCode and t0.EnumId = t5.EnumId
 				  left join Users t3 on t0.UserCreate = t3.Id
 					left join Users t4 on t0.UserUpdate = t4.Id
                   where t0.IsDelete = 0 and t1.EnumType ='Unit' order by t0.[DateCreate] desc"
                     , DataRecordToSuppliesModel, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// lấy danh sách vật tư
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync()
+    {
+        IEnumerable<SuppliesModel> data;
+        try
+        {
+            await _context.Connect();
+            data = await _context.GetDataAsync(@"select t2.[SuppliesCode] ,t2.[SuppliesName],t2.[EnumId],t2.EnumName  ,(isnull(t2.QtyInv,0) - isnull(t3.Qty,0)) as QtyInv, t2.Price, t2.BranchId 
+                                                from (
+	                                            SELECT t0.[SuppliesCode] ,t0.[SuppliesName],t0.[EnumId],t1.EnumName, t2.BranchId ,sum(isnull(t2.QtyInv,0)) as QtyInv ,max(t2.Price) as Price
+					                                                FROM [dbo].[Supplies] t0 
+					                                                inner join Enums t1 on t0.EnumId = t1.EnumId
+					                                                inner join Inventory  t2 on t0.SuppliesCode = t2.SuppliesCode
+					                                                where t0.IsDelete = 0 and t1.EnumType ='Unit' 
+					                                                and t2.IsDelete = 0 
+					                                                group by  t0.[SuppliesCode]  ,t0.[SuppliesName] ,t0.[EnumId]  ,t1.EnumName, t2.BranchId
+				                                                ) t2
+	                                            left join (SELECT SuppliesCode as SuppliesCode,SuppliesName as SuppliesName,BranchId,sum(Qty) as Qty
+							                                            ,EnumId as EnumId, EnumName as EnumName
+							                                            FROM OutBound 
+							                                            CROSS APPLY OPENJSON(SuppliesQtyList)
+							                                            WITH (
+								                                            SuppliesCode VARCHAR(50),
+								                                            SuppliesName NVARCHAR(255),
+								                                            Qty  decimal(19,6),
+								                                            QtyInv decimal(19,6),
+								                                            EnumId VARCHAR(50),
+								                                            EnumName NVARCHAR(255)
+							                                            ) 
+                                                where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
+							                                            and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId"
+                    , DataRecordToSuppliesOutBoundModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -1398,9 +1461,28 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserNameUpdate"])) suppplies.UserNameUpdate = Convert.ToString(record["UserNameUpdate"]);
         if (!Convert.IsDBNull(record["QtyInv"])) suppplies.QtyInv = Convert.ToDecimal(record["QtyInv"]);
         if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
+        if (!Convert.IsDBNull(record["QtyIntoInv"])) suppplies.QtyIntoInv = Convert.ToDecimal(record["QtyIntoInv"]);
+        if (!Convert.IsDBNull(record["QtyOutBound"])) suppplies.QtyOutBound = Convert.ToDecimal(record["QtyOutBound"]);
         return suppplies;
     }
-   
+
+    /// <summary>
+    /// đọc danh sách vật tư tồn kho
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private SuppliesModel DataRecordToSuppliesOutBoundModel(IDataRecord record)
+    {
+        SuppliesModel suppplies = new();
+        if (!Convert.IsDBNull(record["SuppliesCode"])) suppplies.SuppliesCode = Convert.ToString(record["SuppliesCode"]);
+        if (!Convert.IsDBNull(record["SuppliesName"])) suppplies.SuppliesName = Convert.ToString(record["SuppliesName"]);
+        if (!Convert.IsDBNull(record["EnumId"])) suppplies.EnumId = Convert.ToString(record["EnumId"]);
+        if (!Convert.IsDBNull(record["EnumName"])) suppplies.EnumName = Convert.ToString(record["EnumName"]);
+        if (!Convert.IsDBNull(record["QtyInv"])) suppplies.QtyInv = Convert.ToDecimal(record["QtyInv"]);
+        if (!Convert.IsDBNull(record["Price"])) suppplies.Price = Convert.ToDecimal(record["Price"]);
+        return suppplies;
+    }
+
 
     /// <summary>
     /// đoc danh sách bảng giá

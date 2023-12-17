@@ -52,6 +52,7 @@ public static class EndpointConstants
 
     public const string URL_MASTERDATA_GET_SUPPLIES = "MasterData/GetSupplies";
     public const string URL_MASTERDATA_UPDATE_SUPPLIES = "MasterData/UpdateSupplies";
+    public const string URL_MASTERDATA_GET_SUPPLIES_OUTBOUND = "MasterData/GetSuppliesOutBound";
 
     public const string URL_MASTERDATA_GET_INVETORY = "MasterData/GetInventory";
     public const string URL_MASTERDATA_UPDATE_INVETORY = "MasterData/UpdateInventory";

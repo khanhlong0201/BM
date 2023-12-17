@@ -14,6 +14,8 @@ namespace BM.Models
         public string? EnumId { get; set; }
         public string? EnumName { get; set; }
         public decimal? QtyInv { get; set; }
+        public decimal? QtyIntoInv { get; set; }
+        public decimal? QtyOutBound { get; set; }
         public decimal? Price { get; set; }
         public decimal? Qty { get; set; }
     }

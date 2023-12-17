@@ -422,6 +422,7 @@ namespace BM.API.Controllers
 
         }
 
+
         [HttpPost]
         [Route("UpdateSupplies")]
         public async Task<IActionResult> UpdateSupplies([FromBody] RequestModel request)
@@ -447,6 +448,23 @@ namespace BM.API.Controllers
                 });
 
             }
+        }
+
+        [HttpGet]
+        [Route("GetSuppliesOutBound")]
+        public async Task<IActionResult> GetSuppliesOutBound()
+        {
+            try
+            {
+                var data = await _masterService.GetSuppliesOutBoundAsync();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MasterDataController", "GetSupplies");
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+            }
+
         }
 
         [HttpPost]

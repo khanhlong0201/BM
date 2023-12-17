@@ -276,16 +276,26 @@ namespace BM.Web.Features.Controllers
                 bool isConfirm = false;
                 if (pProcess == EnumType.Update)
                 {
-                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu Lệnh và xuất kho này ?", "Thông báo");
+                    isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc muốn lưu phiếu xuất này ?", "Thông báo");
                 }
                 if (!isConfirm) return;
                 await ShowLoader();
                 if(ListSuppplies != null && ListSuppplies.Any()){
+                    var CheckListSupplies = ListSuppplies.Where(d => d.Qty > d.QtyInv).FirstOrDefault();
+                    if (CheckListSupplies != null)
+                    {
+                        ShowWarning("Số lượng xuất phải <= Tổng số lượng tồn kho");
+                        await ShowLoader(false);
+                        return;
+                    }
                     var listSuppliesOutBound = ListSuppplies.Select(m => new SuppliesOutBoundModel()
                     {
                         SuppliesCode = m.SuppliesCode,
                         SuppliesName = m.SuppliesName,
-                        Qty = m.Qty
+                        EnumId = m.EnumId,
+                        EnumName = m.EnumName,
+                        Qty = m.Qty,
+                        QtyInv = m.QtyInv
                     });
                     OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
                 } 
