@@ -54,7 +54,7 @@ public class DocumentService : IDocumentService
             sqlParameters[2] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
             data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, t6.FullName as [ChargeUserName],
-                        t1.ServiceCode, t1.ImplementUserId
+                        t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft
                         from OutBound t0 with(nolock)
                         inner join DraftDetails t1 with(nolock) on t0.BaseEntry = t1.DocEntry and t0.IdDraftDetail = t1.Id
                         inner join Drafts t2 with(nolock) on t0.BaseEntry = t2.DocEntry
@@ -1126,6 +1126,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["HealthStatus"])) model.HealthStatus = Convert.ToString(record["HealthStatus"]);
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["ImplementUserId"])) model.ImplementUserId = Convert.ToString(record["ImplementUserId"]);
+        if (!Convert.IsDBNull(record["VoucherNoDraft"])) model.VoucherNoDraft = Convert.ToString(record["VoucherNoDraft"]);
         return model;
     }
 

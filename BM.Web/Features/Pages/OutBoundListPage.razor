@@ -61,21 +61,18 @@
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
              <GridColumn Field=@nameof(OutBoundModel.BranchName) Width="170px" Title="Chi nhánh "></GridColumn>
-             <GridCommandColumn Width="40px" MaxResizableWidth="40">
-                <i class="fa-solid fa-circle-info h-link" title="Xem chi tiết đơn hàng" style="font-size: 14px;"
-                    @onclick="@(()=> OnClickHandlerNavTicKet((context as OutBoundModel)!))"></i>
-            </GridCommandColumn>
-             <GridColumn Field=@nameof(OutBoundModel.VoucherNo) Width="150px" MaxResizableWidth="100" Title="Số lệnh đơn hàng">
+             <GridColumn Field=@nameof(OutBoundModel.VoucherNoDraft) Width="150px" MaxResizableWidth="100" Title="Số lệnh đơn hàng">
                 <Template>
                     @{
                         var model = (context as OutBoundModel);
-                        <span>@model!.VoucherNo</span>
+                         <span class="h-link" @onclick="@(()=> OnClickHandlerNavTicKet((context as OutBoundModel)!))" >@model!.VoucherNoDraft</span>
                     }
                 </Template>
                 <FooterTemplate>
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
+             <GridColumn Field=@nameof(OutBoundModel.VoucherNo) Width="200px" Title="Số lệnh phiếu xuất kho"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.ServiceName) Width="170px" Title="Tên dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="160px" Title="Ngày giờ lập phiếu"></GridColumn>
             <GridColumn Field=@nameof(OutBoundModel.FullName) Width="135px" Title="Tên khách hàng"></GridColumn>
@@ -105,140 +102,118 @@
          Title="Xem thông tin chi tiết của phiếu xuất kho">
     <EditForm EditContext="@_EditOutBoundContext">
         <DataAnnotationsValidator />
-        <div class="mt-2 row">
-            <div class="col-6">
-                <HLabel Value="Mã khách hàng:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate!.CusNo"  Enabled="false"  />
+     <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Mã khách hàng: " />
+                <strong>@OutBoundUpdate!.CusNo</strong>
             </div>
-            <div class="col-6">
-                <HLabel Value="Chi nhánh:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.BranchName"  Enabled="false"  />
+            <div class="col-md-4 col-sm-12">
+                <HLabel For="txtFullName" Value="Tên khách hàng: " />
+                <strong>@OutBoundUpdate.FullName</strong>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Cơ sở: " />
+                <strong>@OutBoundUpdate.BranchName</strong>
             </div>
         </div>
         <div class="mt-2">
-            <HLabel For="txtFullName" Value="Tên khách hàng:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.FullName" Id="txtFullName" Enabled="false"/>
-        </div>
-        <div class="mt-2">
-            <HLabel For="txtListUserImplements" Value="Nhân viên:"  />
-             <TelerikMultiSelect Data="@ListUsers"
-                        @bind-Value="@OutBoundUpdate.ListUserImplements"
-                        ValueField="@nameof(ComboboxModel.Code)"
-                        TextField="@nameof(ComboboxModel.Name)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
-                        AutoClose="false" Width="100%">
-            </TelerikMultiSelect>
-        </div>
-        <div class="mt-2">
-            <HLabel For="txtServiceName" Value="Liệu trình lần :" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ServiceName" Id="txtServiceName" Enabled="false"/>
-        </div>
-         <div class="mt-2">
-            <HLabel For="txtColorImplement" Value="Màu thực hiện cho khách :" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ColorImplement" Id="txtColorImplement" Enabled="false"/>
-        </div>
-         <div class="mt-2">
-            <HLabel For="txtColorImplement" Value="Dụng cụ :" />
-        </div>
-         <hr style="margin: 2px">
-         @if (ListSuppplies != null && ListSuppplies.Any()){
-            @foreach(var oItem in ListSuppplies)
+            <HLabel For="txtListUserImplements" Value="Nhân viên thực hiện: "  />
+            @if(OutBoundUpdate.ListUserImplements != null && OutBoundUpdate.ListUserImplements.Any())
             {
-                 <div class="mt-2 row">
-                     <div class="col-3">
-                        <TelerikTextBox @bind-Value="@oItem.SuppliesName" Id="SuppliesName"  Enabled="false"/>
-                     </div>
-                     <div class="col-2" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="@("Đơn vị tính: "+oItem.EnumName)" /> 
-                     </div>
-                     <div class="col-4" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho (thời điểm lập lệnh): "+oItem.QtyInv)" /> 
-                     </div>
-                     <div class="col-3" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="@("Số lượng xuất: "+oItem.Qty)" /> 
-                     </div>
-                </div>
+                <strong>
+                    @($" {string.Join(", ", OutBoundUpdate.ListUserImplements)}")
+                </strong>
             }
-        }
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtServiceName" Value="Liệu trình lần: " />
+            <strong>@($"{OutBoundUpdate.ServiceCode} - {OutBoundUpdate.ServiceName}")</strong>
+        </div>
+         <div class="mt-2">
+            <HLabel For="txtColorImplement" Value="Màu thực hiện cho khách: " />
+            <strong>@OutBoundUpdate.ColorImplement</strong>
+        </div>
+         @if (ListSuppplies != null && ListSuppplies.Any()){
+                @foreach(var oItem in ListSuppplies)
+                {
+                     <div class="mt-2 row">
+                         <div class="col-3">
+                            <strong> @($"{oItem.SuppliesName} ")</strong>
+                         </div>
+                         <div class="col-3" style="margin-top: 5px">
+                            <HLabel For="txtColorImplement" Value="@("Đơn vị tính: ")" /> 
+                            <strong> @($"{oItem.EnumName} ")</strong>
+                         </div>
+                         <div class="col-3" style="margin-top: 5px">
+                             <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho: ")" /> 
+                              <strong> @($"{oItem.QtyInv} ")</strong>
+                         </div>
+                         <div class="col-3" style="margin-top: 5px">
+                             <HLabel For="txtColorImplement" Value="Nhập số lượng xuất:" /> 
+                              <strong> @($"{oItem.Qty} ")</strong> 
+                         </div>
+                    </div>
+                      <div class="dropdown-divider"></div>
+                }
+            }
         <hr style="margin-left: 2px;margin-right: 2px;margin-top: 10px;margin-bottom:10px">
         <div class="mt-2">
             <HLabel For="txtChemicalFormula" Value="Công thức mức:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ChemicalFormula" Id="txtChemicalFormula"  Enabled="false"/>
+            <strong>@OutBoundUpdate.ChemicalFormula</strong>  
         </div>
-         <div class="mt-2">
+        @* <div class="mt-2">
             <HLabel For="txtAnesthesiaType" Value="Loại tệ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="txtAnesthesiaType" Enabled="false"/>
-        </div>
+            <span>@OutBoundUpdate.AnesthesiaType</span> 
+        </div>*@
         <div class="mt-2">
             <HLabel For="txtDarkTestColor" Value="Màu thử thâm:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.DarkTestColor" Id="txtDarkTestColor" Enabled="false"/>
+            <strong>@OutBoundUpdate.DarkTestColor</strong> 
         </div>
         <div class="mt-2">
             <HLabel For="txtCoadingColor" Value="Màu phủ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.CoadingColor" Id="txtCoadingColor" Enabled="false"/>
+            <strong>@OutBoundUpdate.CoadingColor</strong> 
         </div>
         <div class="mt-2">
             <HLabel For="LibColor" Value="Màu lòng môi:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.LibColor" Id="LibColor" Enabled="false"/>
+            <strong>@OutBoundUpdate.LibColor</strong> 
         </div>
         <div class="mt-2 row">
             <div class="col-6">
                 <HLabel For="txtStartTime" Value="Thời gian bắt đầu:" />
-                <TelerikDatePicker @bind-Value="@OutBoundUpdate.StartTime"
-                    Placeholder=""
-                    Enabled="false"
-                    Format="dd/MM/yyyy HH:mm:ss"
-                    Class="btn-noborder-radius-left">
-                </TelerikDatePicker>
+                 <strong>@OutBoundUpdate.StartTime</strong> 
             </div>
             <div class="col-6">
                 <HLabel For="txtEndTime" Value="Thời gian kết thúc:" />
-                <TelerikDatePicker @bind-Value="@OutBoundUpdate.EndTime"
-                    Placeholder=""
-                    Enabled="false"
-                    Format="dd/MM/yyyy HH:mm:ss"
-                    Class="btn-noborder-radius-left">
-                </TelerikDatePicker>
+                <strong>@OutBoundUpdate.EndTime</strong> 
             </div>
         </div>
         <div class="mt-2 row">
              <div class="col-6">
                 <HLabel For="Problems" Value="Đặc điểm khách hàng:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.Remark" Id="Problems" Enabled="false"/>
+                <strong>@OutBoundUpdate.Remark</strong>  
             </div>
              <div class="col-6">
                 <HLabel For="Problems" Value="Tình trạng sức khỏe:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.HealthStatus" Id="Problems" Enabled="false"/>
+                <strong>@OutBoundUpdate.HealthStatus</strong>  
             </div>
          </div>
         <div class="mt-2">
             <HLabel For="Problems" Value="Vấn đề gặp phải trong quá trình làm:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.Problems" Id="Problems" Enabled="false"/>
+             <strong>@OutBoundUpdate.Problems</strong>  
         </div>
          <div class="mt-2 row">
             <div class="col-6">
                 <HLabel For="FullName" Value="Nhân viên xuất kho:" />
-                <TelerikTextBox @bind-Value="@FullName" Id="FullName"  Enabled="false"/>
-             
+                  <strong>@FullName</strong>   
              </div>
             <div class="col-6">
-                <HLabel For="ChargeUser" Value="Nhân viên phụ trách:" IsRequired="true" />
-                <TelerikComboBox Data="@ListUsers"
-                    Value="@OutBoundUpdate.ChargeUser"
-                    ValueExpression="@(() => OutBoundUpdate.ChargeUser)"
-                    ValueChanged="@((string value) => OutBoundUpdate.ChargeUser = value)"
-                    Placeholder="Chọn nhân viên phụ trách"
-                    TextField="@nameof(ComboboxModel.Name)"
-                    ValueField="@nameof(ComboboxModel.Code)"
-                    Filterable="true"
-                    ClearButton="false"
-                    Id="ChargeUser"
-                    Class="btn-noborder-radius-left"
-                    Enabled="false"
-                    Width="100%">
-                </TelerikComboBox>
-                <HValidationTooltip ValidationFor="@(()=> OutBoundUpdate.ChargeUser)" Id="cbbBranch" />
+                <HLabel For="ChargeUser" Value="Nhân viên phụ trách:"/> 
+                @if(OutBoundUpdate.ListChargeUser != null && OutBoundUpdate.ListChargeUser.Any())
+                {
+                    <strong>
+                        @($" {string.Join(", ", OutBoundUpdate.ListChargeUser)}")
+                    </strong>
+                }
             </div>
         </div>
     </EditForm>

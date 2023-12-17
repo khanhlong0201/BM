@@ -180,8 +180,8 @@ namespace BM.Web.Features.Controllers
                 OutBoundUpdate.HealthStatus = pItemDetails.HealthStatus;
                 OutBoundUpdate.DateCreate = pItemDetails.DateCreate;;
                 OutBoundUpdate.ListUserImplements = pItemDetails.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
-                
-                if(OutBoundUpdate.SuppliesQtyList != null)
+                OutBoundUpdate.ListChargeUser = pItemDetails.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
+                if (OutBoundUpdate.SuppliesQtyList != null)
                 {
                     List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
                     for (int i = 0; i < lstSuppplies.Count; i++)
@@ -190,6 +190,8 @@ namespace BM.Web.Features.Controllers
                         SuppliesModel oLine = new SuppliesModel();
                         oLine.SuppliesCode = item.SuppliesCode;
                         oLine.SuppliesName = item.SuppliesName;
+                        oLine.EnumId = item.EnumId;
+                        oLine.EnumName = item.EnumName;
                         oLine.Qty = item.Qty;
                         oLine.QtyInv = item.QtyInv;
                         ListSuppplies.Add(oLine);
