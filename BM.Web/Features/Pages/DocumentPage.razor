@@ -3,7 +3,7 @@
 
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
-        OnClick="@(()=> ShowOutBound())">Lập phiếu xuất kho</ToolBarButton>
+        OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
         OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/bill.png" Enabled="@(!pIsLockPage)"
@@ -304,105 +304,108 @@
 
 <HDialog @bind-IsVisible="@IsShowOutBound"
          IsShowButtonSaveAdnCreate="false"
-         Width="85%"
+         Width="65%"
          SaveAndClosed="@(()=> SaveOutBoundHandler())"
-         Title="@(IsCreateOutBound ? $"Lập lệnh và xuất kho cho dịch vụ: {OutBoundUpdate!.ServiceName}" : $"Sửa lệnh và xuất kho cho dịch vụ: {OutBoundUpdate!.ServiceName}")">
+         Title="@($"Lập lệnh và xuất kho cho dịch vụ: {OutBoundUpdate!.ServiceName}")">
     <EditForm EditContext="@_EditOutBoundContext">
         <DataAnnotationsValidator />
-        <div class="mt-2 row">
-            <div class="col-6">
-                <HLabel Value="Mã khách hàng:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate!.CusNo"  Enabled="false"  />
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Mã khách hàng: " />
+                <span>@OutBoundUpdate!.CusNo</span>
             </div>
-            <div class="col-6">
-                <HLabel Value="Chi nhánh:" />
-                <TelerikTextBox @bind-Value="@OutBoundUpdate.BranchName"  Enabled="false"  />
+            <div class="col-md-4 col-sm-12">
+                <HLabel For="txtFullName" Value="Tên khách hàng: " />
+                <span>@OutBoundUpdate.FullName</span>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Cơ sở: " />
+                <span>@OutBoundUpdate.BranchName</span>
             </div>
         </div>
         <div class="mt-2">
-            <HLabel For="txtFullName" Value="Tên khách hàng:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.FullName" Id="txtFullName" Enabled="false"/>
+            <HLabel For="txtListUserImplements" Value="Nhân viên thực hiện: "  />
+            @if(OutBoundUpdate.ListUserImplements != null && OutBoundUpdate.ListUserImplements.Any())
+            {
+                <span>
+                    @($" {string.Join(", ", OutBoundUpdate.ListUserImplements)}")
+                </span>
+            }
         </div>
         <div class="mt-2">
-            <HLabel For="txtListUserImplements" Value="Nhân viên:"  />
-             <TelerikMultiSelect Data="@ListUsers"
-                        @bind-Value="@OutBoundUpdate.ListUserImplements"
-                        ValueField="@nameof(ComboboxModel.Code)"
-                        TextField="@nameof(ComboboxModel.Name)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
-                        AutoClose="false" Width="100%">
-            </TelerikMultiSelect>
-        </div>
-        <div class="mt-2">
-            <HLabel For="txtServiceName" Value="Liệu trình lần :" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ServiceName" Id="txtServiceName" Enabled="false"/>
+            <HLabel For="txtServiceName" Value="Liệu trình lần: " />
+            <span>@($"{OutBoundUpdate.ServiceCode} - {OutBoundUpdate.ServiceName}")</span>
         </div>
          <div class="mt-2">
-            <HLabel For="txtColorImplement" Value="Màu thực hiện cho khách :" />
+            <HLabel For="txtColorImplement" Value="Màu thực hiện cho khách: " />
             <TelerikTextBox @bind-Value="@OutBoundUpdate.ColorImplement" Id="txtColorImplement" />
         </div>
          <div class="mt-2">
-            <HLabel For="txtColorImplement" Value="Dụng cụ :" />
-        </div>
-         <hr style="margin: 2px">
-         @if (ListSuppplies != null && ListSuppplies.Any()){
-            @foreach(var oItem in ListSuppplies)
+            <HLabel For="txtColorImplement" Value="Dụng cụ: " />
+            @if (ListSuppplies != null && ListSuppplies.Any())
             {
-                 <div class="mt-2 row">
-                     <div class="col-3">
-                        <TelerikTextBox @bind-Value="@oItem.SuppliesName" Id="SuppliesName"  Enabled="false"/>
-                     </div>
-                     <div class="col-2" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="@("Đơn vị tính: "+oItem.EnumName)" /> 
-                     </div>
-                     <div class="col-3" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho: "+oItem.QtyInv)" /> 
-                     </div>
-                     <div class="col-2" style="margin-top: 5px">
-                         <HLabel For="txtColorImplement" Value="Nhập số lượng xuất:" /> 
-                     </div>
-                      <div class="col-2">
-                        <TelerikNumericTextBox Min="1"  Step="1"  @bind-Value="@oItem.Qty" Id="txtQty" /> 
-                     </div>
+                <div class="mt-2 row row-gap-2">
+                    @foreach (var oItem in ListSuppplies)
+                    {
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                            <div class="d-flex">
+                                <HLabel For="SuppliesName" Value="@($"{oItem.SuppliesName}: ")" Style="min-width: 90px ;width: fit-content" />
+                                <div>
+                                    <TelerikNumericTextBox Min="0" Step="1" @bind-Value="@oItem.Qty" Id="txtQty" />
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
+                <div class="dropdown-divider"></div>
             }
-        }
-        <hr style="margin-left: 2px;margin-right: 2px;margin-top: 10px;margin-bottom:10px">
-        <div class="mt-2">
-            <HLabel For="txtChemicalFormula" Value="Công thức mức:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.ChemicalFormula" Id="txtChemicalFormula"  Enabled="false"/>
-        </div>
-         <div class="mt-2">
-            <HLabel For="txtAnesthesiaType" Value="Loại tệ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="txtAnesthesiaType" />
         </div>
         <div class="mt-2">
-            <HLabel For="txtDarkTestColor" Value="Màu thử thâm:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.DarkTestColor" Id="txtDarkTestColor" />
+            <HLabel For="txtChemicalFormula" Value="Công thức mức (Đơn vị quy ước là giọt): " />
+            <span>@OutBoundUpdate.ChemicalFormula</span>
+            <div class="mt-2 row row-gap-2">
+                <div class="col-md-8 col-sm-6">
+                    <HLabel For="AnesthesiaType" Value="Loại tê:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="AnesthesiaType" />
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <HLabel Value="Số lượng:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" />
+                </div>
+                <div class="col-md-2 col-sm-3">
+                    <HLabel Value="Số lần trợ tê:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" />
+                </div>
+
+                <div class="col-md-4 col-sm-12">
+                    <HLabel For="txtDarkTestColor" Value="Màu thử thâm:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.DarkTestColor" Id="txtDarkTestColor" />
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <HLabel For="txtCoadingColor" Value="Màu phủ:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.CoadingColor" Id="txtCoadingColor" />
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <HLabel For="LibColor" Value="Màu lòng môi:" />
+                    <TelerikTextBox @bind-Value="@OutBoundUpdate.LibColor" Id="LibColor" />
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
         </div>
-        <div class="mt-2">
-            <HLabel For="txtCoadingColor" Value="Màu phủ:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.CoadingColor" Id="txtCoadingColor" />
-        </div>
-        <div class="mt-2">
-            <HLabel For="LibColor" Value="Màu lòng môi:" />
-            <TelerikTextBox @bind-Value="@OutBoundUpdate.LibColor" Id="LibColor" />
-        </div>
-        <div class="mt-2 row">
-            <div class="col-6">
+        <div class="mt-2 row row-gap-2">
+            <div class="col-md-4 col-sm-6">
                 <HLabel For="txtStartTime" Value="Thời gian bắt đầu:" />
                 <TelerikDatePicker @bind-Value="@OutBoundUpdate.StartTime"
                     Placeholder=""
-                    Format="dd/MM/yyyy HH:mm:ss"
+                    Format="@DefaultConstants.FORMAT_DATE_TIME"
                     Class="btn-noborder-radius-left">
                 </TelerikDatePicker>
             </div>
-            <div class="col-6">
+            <div class="col-md-4 col-sm-6">
                 <HLabel For="txtEndTime" Value="Thời gian kết thúc:" />
                 <TelerikDatePicker @bind-Value="@OutBoundUpdate.EndTime"
                     Placeholder=""
-                    Format="dd/MM/yyyy HH:mm:ss"
+                    Format="@DefaultConstants.FORMAT_DATE_TIME"
                     Class="btn-noborder-radius-left">
                 </TelerikDatePicker>
             </div>

@@ -727,3 +727,9 @@ th.k-header,
     .k-event.k-state-selected {
         background-color: var(--btn-color-hover);
     }
+
+/**/
+.dropdown-divider {
+    margin: 10px 0;
+    --tblr-dropdown-divider-bg: var(--tblr-border-color-translucent);
+}
