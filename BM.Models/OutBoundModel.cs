@@ -12,10 +12,11 @@ public class OutBoundModel : Auditable
     public string? SuppliesQtyList { get; set; }
     public string? AnesthesiaType { get; set; }
     public int? AnesthesiaQty { get; set; }
+    public int? AnesthesiaCount { get; set; }
     public string? DarkTestColor { get; set; }
     public string? CoadingColor { get; set; }
     public string? LibColor { get; set; }
-    public DateTime? StartTime { get; set; } = DateTime.Now;
+    public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public string? Problems { get; set; }
     public string? ChargeUser { get; set; }

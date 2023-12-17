@@ -51,6 +51,7 @@ public class SearchModel
     public DateTime? ToDate { get; set; }
     public string? StatusId { get; set; }
     public bool IsAdmin { get; set; }
+    public int IdDraftDetail { get; set; }
 }
 
 public enum EnumType

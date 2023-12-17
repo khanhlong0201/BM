@@ -76,6 +76,7 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.SkinType = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.StatusName = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.DateCreate = _dateTimeService!.GetCurrentVietnamTime();
+                ListSuppplies = new List<SuppliesModel>();
             }
             catch (Exception ex)
             {
@@ -142,6 +143,7 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
+                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -228,11 +230,11 @@ namespace BM.Web.Features.Controllers
                     }
                     await ShowLoader();
                     var oItem = lstItem[0];
-                    //if (oItem.StatusOutBound + "" == "Rồi")
-                    //{
-                    //    ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
-                    //    return;
-                    //}
+                    if (oItem.StatusOutBound + "" == "Rồi")
+                    {
+                        ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
+                        return;
+                    }
 
                     OutBoundUpdate.ServiceCode = oItem.ServiceCode;
                     OutBoundUpdate.ServiceName = oItem.ServiceName;
@@ -609,26 +611,21 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-Weakness}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-Accept}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"");
-
-                string htmlStateOfHealth = "";
-                // Lặp qua danh sách với bước là 3 phần tử mỗi lần
-                for (int i = 0; i < lstStateOfHealth.Count; i += 3)
+                string tblServices = "";
+                for (int i = 0; i < ListSalesOrder.Count; i++)
                 {
-                    // Lấy 3 phần tử từ danh sách, bắt đầu từ vị trí i
-                    var currentGroup = lstStateOfHealth.Skip(i).Take(3);
-                    string htmlTd = "";
-                    
-                    foreach (var oStateOfHealth in currentGroup)
-                    {
-                        htmlTd += @$"<td style=""border: 1px solid #dddddd;text-align: center;padding:1px;"">
-                                        <span style=""font-size: 10.5px !important"">{oStateOfHealth.EnumName}</span>
-                                    </td>
-                                    <td style=""border: 1px solid #dddddd; width: 40px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 15px;width: 15px;"" /> </td>
-                                    <td style=""border: 1px solid #dddddd; width: 61px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 15px;width: 15px;"" /></td> ";
-                    }
-                    htmlStateOfHealth += @$"<tr>{htmlTd}</tr> ";
+                    tblServices += @$" <tr>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{(i + 1)}</td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Qty}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px""><span>{ListSalesOrder[i].ChemicalFormula}</span></td>
+                    </tr> ";
                 }
-                sHtmlExport = sHtmlExport.Replace("{bm-lstStateOfHealth}", $"{htmlStateOfHealth}");
+                sHtmlExport = sHtmlExport.Replace("{bm-cus-services}", $"{tblServices}");
                 //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
 
@@ -656,6 +653,49 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng lưu thông tin đơn hàng trước khi In");
                     return;
                 }
+                if (ListSalesOrder == null || !ListSalesOrder.Any())
+                {
+                    ShowWarning("Không có thông tin dịch vụ, nên không thể in phiếu xuất kho!");
+                    return;
+                }
+                var lstItem = ListSalesOrder.Where(m => m.IsCheck == true).ToList();
+                if (lstItem == null || !lstItem.Any())
+                {
+                    ShowWarning("Vui lòng chọn dòng để in [Phiếu xuất kho]!");
+                    return;
+                }
+                if (lstItem.Count > 1)
+                {
+                    ShowWarning("Chỉ được phép chọn 1 dịch vụ để in [Phiếu xuất kho]!");
+                    return;
+                }
+                var SelectLineSaleOrder = ListSalesOrder.Where(m => m.IsCheck == true).FirstOrDefault();
+
+                 SearchModel itemFilter = new SearchModel();
+                    itemFilter.UserId = pUserId;
+                    itemFilter.IsAdmin = pIsAdmin;
+                    itemFilter.IdDraftDetail = SelectLineSaleOrder.Id;
+                    itemFilter.FromDate =new DateTime(2023,11,11);
+                    itemFilter.ToDate = DateTime.Now;
+                ListSuppplies = new List<SuppliesModel>();
+                List<OutBoundModel>  ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
+                OutBoundUpdate = ListOutBound.FirstOrDefault();
+                if (OutBoundUpdate.SuppliesQtyList != null)
+                {
+                    List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
+                    for (int i = 0; i < lstSuppplies.Count; i++)
+                    {
+                        var item = lstSuppplies[i];
+                        SuppliesModel oLine = new SuppliesModel();
+                        oLine.SuppliesCode = item.SuppliesCode;
+                        oLine.SuppliesName = item.SuppliesName;
+                        oLine.EnumId = item.EnumId;
+                        oLine.EnumName = item.EnumName;
+                        oLine.Qty = item.Qty;
+                        oLine.QtyInv = item.QtyInv;
+                        ListSuppplies.Add(oLine);
+                    }
+                }
                 //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";
                 StreamReader streamReader = new StreamReader(sFilePath);
@@ -665,44 +705,34 @@ namespace BM.Web.Features.Controllers
 
                 //replace html
                 if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
-                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{DocumentUpdate.VoucherNo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-StatusName}", $"{DocumentUpdate.StatusName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{OutBoundUpdate.VoucherNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{OutBoundUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
                 sHtmlExport = sHtmlExport.Replace("{bm-CusNo}", $"{DocumentUpdate.CusNo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
                 sHtmlExport = sHtmlExport.Replace("{bm-FullName}", $"{DocumentUpdate.FullName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-DateOfBirth}", DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
-                    : $"{DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
-                sHtmlExport = sHtmlExport.Replace("{bm-CINo}", $"{DocumentUpdate.CINo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Phone1}", $"{DocumentUpdate.Phone1}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Zalo}", $"{DocumentUpdate.Zalo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-FaceBook}", $"{DocumentUpdate.FaceBook}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Address}", $"{DocumentUpdate.Address}");
+                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{SelectLineSaleOrder.ServiceName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ColorImplement}", $"{OutBoundUpdate.ColorImplement}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"{OutBoundUpdate.ChemicalFormula}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaType}", $"{OutBoundUpdate.AnesthesiaType}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaQty}", $"{OutBoundUpdate.AnesthesiaQty}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaCount}", $"{OutBoundUpdate.AnesthesiaCount}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DarkTestColor}", $"{OutBoundUpdate.DarkTestColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CoadingColor}", $"{OutBoundUpdate.CoadingColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-LibColor}", $"{OutBoundUpdate.LibColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime}");
+                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
                 sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
-                sHtmlExport = sHtmlExport.Replace("{bm-StatusBefore}", $"{DocumentUpdate.StatusBefore}");
-                sHtmlExport = sHtmlExport.Replace("{bm-SkinType}", $"{DocumentUpdate.SkinType}");
                 sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
-                sHtmlExport = sHtmlExport.Replace("{bm-NoteForAll}", $"{DocumentUpdate.NoteForAll}");
-                string tblServices = "";
-                for (int i = 0; i < ListSalesOrder.Count; i++)
+                string tblOutbounds = "";
+                for (int i = 0; i < ListSuppplies.Count; i++)
                 {
-                    tblServices += @$" <tr>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{(i + 1)}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Qty}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px""><span>{ListSalesOrder[i].ChemicalFormula}</span></td>
+                    tblOutbounds += @$" <tr>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSuppplies[i].SuppliesName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSuppplies[i].Qty}</span></td>
                     </tr> ";
                 }
-                sHtmlExport = sHtmlExport.Replace("{bm-cus-services}", $"{tblServices}");
-                double pSumTotal = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
-                sHtmlExport = sHtmlExport.Replace("{bm-cus-total}", $"{pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
-                sHtmlExport = sHtmlExport.Replace("{bm-cus-payment}", $"{DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
-                sHtmlExport = sHtmlExport.Replace("{bm-cus-debts}", $"{DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
-
+                sHtmlExport = sHtmlExport.Replace("{bm-Outbounds}", $"{tblOutbounds}");
                 //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
 

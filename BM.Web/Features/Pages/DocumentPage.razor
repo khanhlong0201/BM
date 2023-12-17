@@ -379,11 +379,11 @@
                 </div>
                 <div class="col-md-2 col-sm-3">
                     <HLabel Value="Số lượng:" />
-                    <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" />
+                    <TelerikNumericTextBox Min="0"  Step="1"  @bind-Value="@OutBoundUpdate.AnesthesiaQty" Id="txtQty" />
                 </div>
                 <div class="col-md-2 col-sm-3">
                     <HLabel Value="Số lần trợ tê:" />
-                    <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" />
+                    <TelerikNumericTextBox Min="0"  Step="1"  @bind-Value="@OutBoundUpdate.AnesthesiaCount" Id="txtQty" /> 
                 </div>
 
                 <div class="col-md-4 col-sm-12">

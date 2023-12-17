@@ -36,13 +36,13 @@
 
         <!--Thông tin khách hàng-->
         <div style="margin-top:-5pt">
-            <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 5px; text-align: center;">HỒ SƠ KHÁCH HÀNG</h2>
+            <h2 style="font-size: 15pt;font-weight: bold;margin-bottom: 0px;margin-top: 5px; text-align: center;">LỆNH VÀ XUẤT KHO</h2>
             <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 5px">
                 <div style="width: 33.33%">
                     <span>Số phiếu: {bm-VoucherNo}</span>
                 </div>
                 <div style="width: 33.33%">
-                    <span>Tình trạng: {bm-StatusName}</span>
+                    <span>Cơ sở: {bm-BranchName}</span>
                 </div>
                 <div style="width: 33.33%">
                     <span>Ngày lập phiếu: {bm-DateCreate}</span>
@@ -53,40 +53,70 @@
                     <span>Mã K/H: {bm-CusNo}</span>
                 </div>
                 <div style="width: 66.66%">
-                    <span>Cơ sở: {bm-BranchName}</span>
+                    <span>Tên khách hàng: {bm-FullName}</span>
                 </div>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Tên khách hàng: {bm-FullName}</span>
+                <span>Liệu trình lần: {bm-ServiceName}</span>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Liệu trình lần: {bm-FullName}</span>
+                <span>Màu thực hiện cho khách: {bm-ColorImplement}</span>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Màu thực hiện cho khách: {bm-FullName}</span>
+                <span>Dụng cụ:</span>
+            </div>
+            <!--Thông tin phiếu đặt-->
+            <table style="border-collapse: collapse; font-size: 12pt; width: 100%; max-width: 100%; margin-top: 3px">
+                <thead>
+                    <tr>
+                        <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Tên vật tư</th>
+                        <th style="font-size: 12pt;font-weight: normal;border: 1px solid #dddddd;text-align: left;padding: 8px;">Số lượng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {bm-Outbounds}
+                </tbody>
+            </table>
+            <!--Thông tin phiếu đặt-->
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Công thức mực (Đơn vị qui ước là giọt): {bm-ChemicalFormula}</span>
+            </div>
+            <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 2px">
+                <div style="width: 33.33%">
+                    <span>Loại tê: {bm-AnesthesiaType}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>SL: {bm-AnesthesiaQty}</span>
+                </div>
+                <div style="width: 33.33%">
+                    <span>Số lần trợ tê:  {bm-AnesthesiaCount}</span>
+                </div>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Dụng cụ: {bm-FullName}</span>
+                <span>Màu thử thâm: {bm-DarkTestColor}</span>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Công thức mực (Đơn vị qui ước là giọt):</span>
+                <span>Màu phủ: {bm-CoadingColor}</span>
+            </div>
+            <div class="info-customer" style="margin-top: 2px">
+                <span>Màu lòng môi: {bm-LibColor}</span>
             </div>
             <div class="info-customer" style="display: flex; justify-content: flex-start; align-items: stretch; margin-top: 2px">
                 <div style="width: 54.5%">
-                    <span>Thời gian bắt đầu: {bm-CusNo}</span>
+                    <span>Thời gian bắt đầu: {bm-StartTime}</span>
                 </div>
                 <div style="width: 54.5%">
-                    <span>Thời gian kết thúc: {bm-BranchName}</span>
+                    <span>Thời gian kết thúc: {bm-EndTime}</span>
                 </div>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Vấn đề gặp phải khi làm:</span>
+                <span>Vấn đề gặp phải khi làm: {bm-Problems}</span>
             </div>
             <div class="info-customer" style="margin-top: 2px">
                 <span>Đặc điểm khách hàng: {bm-Remark}</span>
             </div>
             <div class="info-customer" style="margin-top: 2px">
-                <span>Tình trạng sức khỏe: {bm-StatusBefore}</span>
+                <span>Tình trạng sức khỏe: {bm-HealthStatus}</span>
             </div>
         </div>
 
