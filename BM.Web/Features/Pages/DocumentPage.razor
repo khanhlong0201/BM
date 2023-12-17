@@ -362,7 +362,7 @@
                              <HLabel For="txtColorImplement" Value="Nhập số lượng xuất:" /> 
                          </div>
                           <div class="col-2">
-                            <TelerikNumericTextBox Min="0"  Step="1"  @bind-Value="@oItem.Qty" Id="txtQty" /> 
+                            <TelerikNumericTextBox Min="0"  Step="1"  @bind-Value="@oItem.Qty" Enabled="@(oItem.QtyInv <= 0? false :true)" Id="txtQty" /> 
                          </div>
                     </div>
                      <div class="dropdown-divider"></div>

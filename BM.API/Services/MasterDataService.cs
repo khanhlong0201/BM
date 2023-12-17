@@ -938,15 +938,15 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"select t2.[SuppliesCode] ,t2.[SuppliesName],t2.[EnumId],t2.EnumName  ,(isnull(t2.QtyInv,0) - isnull(t3.Qty,0)) as QtyInv, t2.Price, t2.BranchId 
+            data = await _context.GetDataAsync(@"select t2.[SuppliesCode] ,t2.[SuppliesName],t2.[EnumId],t2.EnumName  ,(isnull(t2.QtyInv,0) - isnull(t3.Qty,0)) as QtyInv, isnull(t2.Price,0) as Price, t2.BranchId 
                                                 from (
-	                                            SELECT t0.[SuppliesCode] ,t0.[SuppliesName],t0.[EnumId],t1.EnumName, t2.BranchId ,sum(isnull(t2.QtyInv,0)) as QtyInv ,max(t2.Price) as Price
+	                                            SELECT t0.[SuppliesCode] ,t0.[SuppliesName],t0.[EnumId],t1.EnumName
+																	, (select top 1 t1.BranchId from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0) as BranchId
+																	, (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0) as QtyInv
+																	, (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price					
 					                                                FROM [dbo].[Supplies] t0 
 					                                                inner join Enums t1 on t0.EnumId = t1.EnumId
-					                                                inner join Inventory  t2 on t0.SuppliesCode = t2.SuppliesCode
 					                                                where t0.IsDelete = 0 and t1.EnumType ='Unit' 
-					                                                and t2.IsDelete = 0 
-					                                                group by  t0.[SuppliesCode]  ,t0.[SuppliesName] ,t0.[EnumId]  ,t1.EnumName, t2.BranchId
 				                                                ) t2
 	                                            left join (SELECT SuppliesCode as SuppliesCode,SuppliesName as SuppliesName,BranchId,sum(Qty) as Qty
 							                                            ,EnumId as EnumId, EnumName as EnumName
