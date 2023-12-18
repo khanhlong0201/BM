@@ -102,9 +102,29 @@
                  FilterMode="@GridFilterMode.FilterMenu"
                  SelectionMode="@GridSelectionMode.Multiple"
                  ScrollMode="@GridScrollMode.Scrollable"
+                 ShowColumnMenu="true"
                  @bind-SelectedItems="@SelectedReports">
         <GridSettings>
-            <GridPagerSettings InputType="PagerInputType.Input" />
+            <GridPagerSettings InputType="PagerInputType.Input"  />
+            <GridColumnMenuChooser ></GridColumnMenuChooser>
+             
+            @*Muốn không hiển thị chọn cột*@
+            @*<GridColumnMenuSettings>
+            <GridColumnMenuChooser>
+                <Template>
+                    @{
+                        var columns = context.Columns;
+                        foreach (var column in columns)
+                        {
+                            <div style="border: solid 1px red">
+                                <GridColumnMenuChooserItem Title="@column.DisplayTitle" ColumnId="@column.Id" />
+                            </div>
+                        }
+                    }
+
+                </Template>
+            </GridColumnMenuChooser>
+        </GridColumnMenuSettings>*@
         </GridSettings>
         <GridAggregates>
             <GridAggregate Field=@nameof(ReportModel.BranchName) Aggregate="@GridAggregateType.Count" />
@@ -131,8 +151,8 @@
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.EnumId) Width="140px" Title="Mã loại dịch vụ"></GridColumn>
-            <GridColumn Field=@nameof(ReportModel.EnumName) Width="150px" Title="Tên loại dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ReportModel.EnumId) Width="140px" Title="Mã loại dịch vụ" Visible="false"></GridColumn>
+            <GridColumn Field=@nameof(ReportModel.EnumName) Width="150px" Title="Tên loại dịch vụ" Visible="false"></GridColumn>
             <GridColumn Field=@nameof(ReportModel.ServiceCode) Width="170px" Title="Mã dịch vụ "></GridColumn>
             <GridColumn Field=@nameof(ReportModel.ServiceName) Width="170px" Title="Tên dịch vụ "></GridColumn>
             <GridColumn Field=@nameof(ReportModel.TotalReveune) Width="170px" Title="Tổng tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
@@ -141,84 +161,84 @@
             </FooterTemplate>
             </GridColumn>
             @if (ItemFilter.TypeTime == nameof(TypeTime.Thang)){
-            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="T1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Tháng 1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="T2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Tháng 2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Th3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Tháng 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="T4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Tháng 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="T5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="Tháng 5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="T6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="Tháng 6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="T7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="Tháng 7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="T8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="Tháng 8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="T9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="Tháng 9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="T10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="Tháng 10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="T11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="Tháng 11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="T12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="Tháng 12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
             }else if (ItemFilter.TypeTime == nameof(TypeTime.Qui))
             {
-                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Q1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Quí 1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Q2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Quí 2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Q3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Quí 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Q4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Quí 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
@@ -238,84 +258,84 @@
         </FooterTemplate>
         </GridColumn>
         if (ItemFilter.TypeTime == nameof(TypeTime.Thang)){
-        <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="T1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+        <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Tháng 1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
             <FooterTemplate>
                     @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
             </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="T2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Tháng 2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Th3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Tháng 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="T4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Tháng 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="T5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="Tháng 5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="T6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="Tháng 6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="T7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="Tháng 7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="T8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="Tháng 8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="T9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="Tháng 9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="T10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="Tháng 10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="T11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="Tháng 11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="T12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="Tháng 12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
         }else if (ItemFilter.TypeTime == nameof(TypeTime.Qui))
         {
-            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Q1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Quí 1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
             <FooterTemplate>
                     @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
             </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Q2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Quí 2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Q3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Quí 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Q4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Quí 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                         @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
@@ -340,84 +360,84 @@
             </FooterTemplate>
             </GridColumn>
             @if (ItemFilter.TypeTime == nameof(TypeTime.Thang)){
-            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="T1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Tháng 1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="T2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Tháng 2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Th3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Tháng 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="T4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Tháng 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="T5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="Tháng 5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="T6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="Tháng 6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="T7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="Tháng 7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="T8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="Tháng 8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="T9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="Tháng 9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="T10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="Tháng 10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="T11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="Tháng 11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="T12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="Tháng 12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
             }else if (ItemFilter.TypeTime == nameof(TypeTime.Qui))
             {
-                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Q1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Quí 1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Q2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Quí 2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Q3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Quí 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Q4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Quí 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
@@ -442,84 +462,84 @@
             </FooterTemplate>
             </GridColumn>
             @if (ItemFilter.TypeTime == nameof(TypeTime.Thang)){
-            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="T1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+            <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Tháng 1" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="T2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Tháng 2"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Th3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Tháng 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="T4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Tháng 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="T5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_05) Width="90px" Title="Tháng 5" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="T6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_06) Width="90px" Title="Tháng 6" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="T7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_07) Width="90px" Title="Tháng 7" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="T8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_08) Width="90px" Title="Tháng 8" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="T9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_09) Width="90px" Title="Tháng 9" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="T10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_10) Width="90px" Title="Tháng 10" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="T11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_11) Width="90px" Title="Tháng 11" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="T12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_12) Width="90px" Title="Tháng 12" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
             }else if (ItemFilter.TypeTime == nameof(TypeTime.Qui))
             {
-                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Q1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_01) Width="90px" Title="Quí 1"  DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                 <FooterTemplate>
                      @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Q2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_02) Width="90px" Title="Quí 2" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Q3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_03) Width="90px" Title="Quí 3" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>
                 </GridColumn>
-                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Q4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <GridColumn Field=@nameof(ReportModel.Total_04) Width="90px" Title="Quí 4" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                     <FooterTemplate>
                          @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                     </FooterTemplate>

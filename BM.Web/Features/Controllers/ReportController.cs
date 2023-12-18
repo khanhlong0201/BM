@@ -103,7 +103,7 @@ namespace BM.Web.Features.Controllers
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
                     new BreadcrumbModel() { Text = "Hệ thống" },
-                    new BreadcrumbModel() { Text = "Danh mục" },
+                    new BreadcrumbModel() { Text = "Báo cáo" },
                     new BreadcrumbModel() { Text =  pReportTypeName}
                 };
                 ItemFilter.Type = pReportType; // gán loại báo cáo

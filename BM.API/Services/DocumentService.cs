@@ -865,7 +865,16 @@ public class DocumentService : IDocumentService
             sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
             sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark);
             sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
-            sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay);
+            if (oCusDebts.DateDelay != null)
+            {
+                sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay);
+            }
+            else
+            {
+                // Sử dụng DBNull.Value cho tham số SQL nếu DateDelay là null
+                sqlParameters[9] = new SqlParameter("@DateDelay", DBNull.Value);
+            }
+
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
             if (isUpdated && oCusDebts.IsDelay)
