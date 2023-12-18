@@ -22,6 +22,7 @@ public interface IDocumentService
     Task<ResponseModel> UpdateOutBound(RequestModel pRequest);
     Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
     Task<ResponseModel> CancleOutBoundList(RequestModel pRequest);
+    Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear);
 }
 public class DocumentService : IDocumentService
 {
@@ -901,6 +902,40 @@ public class DocumentService : IDocumentService
 
         return response;
     }
+    
+    /// <summary>
+    /// báo cáo doanh thu theo chi nhánh
+    /// </summary>
+    /// <param name="pYear"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear)
+    {
+        IEnumerable<ReportModel> data;
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@Type", 'M');
+            sqlParameters[0] = new SqlParameter("@Year", pYear);
+            Func<IDataRecord, ReportModel> readData = record =>
+            {
+                ReportModel model = new ReportModel();
+                if (!Convert.IsDBNull(record["Total_01"])) model.Total_01 = Convert.ToDouble(record["Total_01"]);
+                if (!Convert.IsDBNull(record["Total_02"])) model.Total_02 = Convert.ToDouble(record["Total_02"]);
+                if (!Convert.IsDBNull(record["Color_01"])) model.Color_01 = Convert.ToString(record["Color_01"]);
+                if (!Convert.IsDBNull(record["Color_02"])) model.Color_02 = Convert.ToString(record["Color_02"]);
+                if (!Convert.IsDBNull(record["Title"])) model.Title = Convert.ToString(record["Title"]) + "";
+                return model;
+            };
+            data = await _context.GetDataAsync(Constants.STORE_REVENUE_REPORT, readData, sqlParameters);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }    
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ

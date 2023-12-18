@@ -305,5 +305,26 @@ namespace BM.API.Controllers
             }
 
         }
+
+        [HttpGet]
+        [Route("GetRevenueReport")]
+        public async Task<IActionResult> GetRevenueReport(int pYear)
+        {
+            try
+            {
+                var data = await _documentervice.GetRevenueReportAsync(pYear);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetRevenueReport");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
+        }
     }
 }
