@@ -725,8 +725,8 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-DarkTestColor}", $"{OutBoundUpdate.DarkTestColor}");
                 sHtmlExport = sHtmlExport.Replace("{bm-CoadingColor}", $"{OutBoundUpdate.CoadingColor}");
                 sHtmlExport = sHtmlExport.Replace("{bm-LibColor}", $"{OutBoundUpdate.LibColor}");
-                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime}");
-                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
                 sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
                 sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
                 sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");

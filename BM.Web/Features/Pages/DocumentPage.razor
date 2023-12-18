@@ -2,7 +2,7 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
+    <ToolBarButton ImageUrl="../assets/save-folder.png" 
         OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
         OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
@@ -446,7 +446,6 @@
                         ValueField="@nameof(ComboboxModel.Code)"
                         TextField="@nameof(ComboboxModel.Name)"
                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
                         AutoClose="false" Width="100%">
                 </TelerikMultiSelect>
                  
