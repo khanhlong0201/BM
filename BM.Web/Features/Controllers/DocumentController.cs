@@ -677,24 +677,30 @@ namespace BM.Web.Features.Controllers
                     itemFilter.IdDraftDetail = SelectLineSaleOrder.Id;
                     itemFilter.FromDate =new DateTime(2023,11,11);
                     itemFilter.ToDate = DateTime.Now;
-                ListSuppplies = new List<SuppliesModel>();
                 List<OutBoundModel>  ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
-                OutBoundUpdate = ListOutBound.FirstOrDefault();
-                if (OutBoundUpdate.SuppliesQtyList != null)
+                if(ListOutBound!=null && ListOutBound.Count > 0)
                 {
-                    List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
-                    for (int i = 0; i < lstSuppplies.Count; i++)
+                    OutBoundUpdate = new OutBoundModel();
+                    OutBoundUpdate = ListOutBound.FirstOrDefault();
+                    ListSuppplies = new List<SuppliesModel>();
+                    if (OutBoundUpdate.SuppliesQtyList != null)
                     {
-                        var item = lstSuppplies[i];
-                        SuppliesModel oLine = new SuppliesModel();
-                        oLine.SuppliesCode = item.SuppliesCode;
-                        oLine.SuppliesName = item.SuppliesName;
-                        oLine.EnumId = item.EnumId;
-                        oLine.EnumName = item.EnumName;
-                        oLine.Qty = item.Qty;
-                        oLine.QtyInv = item.QtyInv;
-                        ListSuppplies.Add(oLine);
+                        List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
+                        for (int i = 0; i < lstSuppplies.Count; i++)
+                        {
+                            var item = lstSuppplies[i];
+                            SuppliesModel oLine = new SuppliesModel();
+                            oLine.SuppliesCode = item.SuppliesCode;
+                            oLine.SuppliesName = item.SuppliesName;
+                            oLine.EnumId = item.EnumId;
+                            oLine.EnumName = item.EnumName;
+                            oLine.Qty = item.Qty;
+                            oLine.QtyInv = item.QtyInv;
+                            ListSuppplies.Add(oLine);
+                        }
                     }
+                    OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
+                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
                 }
                 //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";
@@ -724,6 +730,14 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
                 sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
                 sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
+                sHtmlExport = sHtmlExport.Replace("{bm-UserNameCreate}", $"{OutBoundUpdate.UserNameCreate}");
+                if (OutBoundUpdate.ListChargeUser != null)
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", $"{string.Join(", ", OutBoundUpdate.ListChargeUser)}");
+                }else
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}",null);
+                }
                 string tblOutbounds = "";
                 for (int i = 0; i < ListSuppplies.Count; i++)
                 {

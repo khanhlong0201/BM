@@ -34,5 +34,6 @@ public class OutBoundModel : Auditable
     public string?  ImplementUserId { get; set; } // nhân viên thực hiện
     public string? VoucherNoDraft { get; set; }// số chứng từ 
     public List<string>? ListChargeUser { get; set; } // danh sách nhân viên phụ trách
+    public string? UserNameCreate { get; set; }
 
 }

@@ -55,7 +55,8 @@ public class DocumentService : IDocumentService
             sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
             sqlParameters[4] = new SqlParameter("@IdDraftDetail", pSearchData.IdDraftDetail);
             data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, t6.FullName as [ChargeUserName],
-                        t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft
+                        t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft,
+						t7.FullName as [UserNameCreate]
                         from OutBound t0 with(nolock)
                         inner join DraftDetails t1 with(nolock) on t0.BaseEntry = t1.DocEntry and t0.IdDraftDetail = t1.Id
                         inner join Drafts t2 with(nolock) on t0.BaseEntry = t2.DocEntry
@@ -63,6 +64,7 @@ public class DocumentService : IDocumentService
                         inner join Customers t4 with(nolock) on t2.CusNo = t4.CusNo
                         inner join [Services] t5 with(nolock) on t1.ServiceCode = t5.ServiceCode
                         left join [Users] t6 with(nolock) on t0.ChargeUser = t6.EmpNo
+						inner join [Users] t7 with(nolock) on t0.UserCreate = t7.Id
                         where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                 and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
                         and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,-1) = -1 or t1.Id = @IdDraftDetail)
@@ -1128,6 +1130,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["ImplementUserId"])) model.ImplementUserId = Convert.ToString(record["ImplementUserId"]);
         if (!Convert.IsDBNull(record["VoucherNoDraft"])) model.VoucherNoDraft = Convert.ToString(record["VoucherNoDraft"]);
+        if (!Convert.IsDBNull(record["UserNameCreate"])) model.UserNameCreate = Convert.ToString(record["UserNameCreate"]);
         return model;
     }
 

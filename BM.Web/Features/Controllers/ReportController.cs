@@ -17,6 +17,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<SalesDocListController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navManager { get; init; }
+        [Inject] private ICliMasterDataService? _masterDataService { get; init; }
         #endregion
 
         #region Properties
@@ -26,7 +27,7 @@ namespace BM.Web.Features.Controllers
         public List<ComboboxModel>? ListTypeTime{ get; set; }
         public RequestReportModel ItemFilter = new RequestReportModel();
         public TelerikGrid<ReportModel> Grid;
-
+        public List<BranchModel>? ListBranchs { get; set; }
         public List<ComboboxModel>? ListTypeReports { get; set; }
         public string pReportType = "";
         public string pReportTypeName = "";
@@ -163,6 +164,7 @@ namespace BM.Web.Features.Controllers
                     //
                     await _progressService!.SetPercent(0.4);
                     await getDataReports();
+                    ListBranchs = await _masterDataService!.GetDataBranchsAsync();
                     Grid?.Rebind();
                 }
                 catch (Exception ex)
