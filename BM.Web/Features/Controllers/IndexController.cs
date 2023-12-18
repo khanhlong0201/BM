@@ -32,6 +32,9 @@ namespace BM.Web.Features.Controllers
         public SheduleModel ItemSelected = new SheduleModel();
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+
+        [CascadingParameter]
+        public EventCallback<List<SheduleModel>> NotifySheduler { get; set; }
         #endregion
 
 
@@ -90,6 +93,11 @@ namespace BM.Web.Features.Controllers
             pSearch.ToDate = new DateTime(StartDate.Year, StartDate.Month, 1).AddMonths(1).AddDays(7); // lấy tháng này + 1 tháng và 7 ngày tiếp
             pSearch.BranchId = pBranchId;
             ListSchedulers = await _documentService!.GetDataReminderByMonthAsync(pSearch);
+
+            // lấy tất cả các thông báo nhắc nở/ liệu trình ngày hiện tại
+            DateTime toDay = _dateTimeService!.GetCurrentVietnamTime();
+            var listShedulersToday = ListSchedulers?.Where(m => m.Start.Date == toDay.Date);
+            if(listShedulersToday != null && listShedulersToday.Any()) await NotifySheduler.InvokeAsync(listShedulersToday.ToList());
         }
 
         #endregion

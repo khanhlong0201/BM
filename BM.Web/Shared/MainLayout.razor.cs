@@ -20,6 +20,7 @@ public partial class MainLayout
     [Inject] private LoaderService? _loaderService { get; init; }
     [Inject] private ICliMasterDataService? _masterDataService { get; init; }
     public List<BreadcrumbModel>? ListBreadcrumbs { get; set; }
+    public List<SheduleModel>? ListShedulers { get; set; }
     public string PageActive { get; set; } = "trang-chu";
     private bool IsShowDialogProfile { get; set; }
     public HConfirm? _rDialogProfiles { get; set; }
@@ -32,14 +33,23 @@ public partial class MainLayout
     public UserProfileModel UserUpdate { get; set; } = new UserProfileModel();
     EventCallback<List<BreadcrumbModel>> BreadcrumbsHandler =>
         EventCallback.Factory.Create(this, (Action<List<BreadcrumbModel>>)NotifyBreadcrumb);
-    
-    private async void NotifyBreadcrumb(List<BreadcrumbModel> _breadcrumbs )
+
+    EventCallback<List<SheduleModel>> ShedulersHandler =>
+        EventCallback.Factory.Create(this, (Action<List<SheduleModel>>)NotifySheduler);
+
+    private void NotifyBreadcrumb(List<BreadcrumbModel> _breadcrumbs )
     {
-        ListBreadcrumbs = _breadcrumbs;
-        var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
-        PageActive = uri.AbsolutePath;
-        await InvokeAsync(StateHasChanged);
+        try
+        {
+            ListBreadcrumbs = _breadcrumbs;
+            var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
+            PageActive = uri.AbsolutePath;
+            StateHasChanged();
+        }
+        catch (Exception) { }
     }
+
+    private void NotifySheduler(List<SheduleModel>? _schedule) => ListShedulers = _schedule;
 
     /// <summary>
     /// loading
@@ -71,7 +81,7 @@ public partial class MainLayout
         catch (Exception ex)
         {
             _logger!.LogError(ex, "UserController", "OnOpenDialogHandler");
-            _toastService.ShowError(ex.Message);
+            _toastService!.ShowError(ex.Message);
         }
     }
 
@@ -84,16 +94,17 @@ public partial class MainLayout
             if (!checkData) return;
             if (UserUpdate.PasswordNew + "" != UserUpdate.ReEnterPasswordNew + "")
             {
-                _toastService.ShowWarning("Nhập lại mật khẩu mới không đúng so với mật khẩu mới! Vui lòng nhập lại.");
+                _toastService!.ShowWarning("Nhập lại mật khẩu mới không đúng so với mật khẩu mới! Vui lòng nhập lại.");
                 return;
             }
             await ShowLoader();
             List<UserModel>? listUsers =  await _masterDataService!.GetDataUsersAsync(UserId);
-            if (listUsers!=null && listUsers.Any()) {
-                var passWordCurrent = listUsers.FirstOrDefault().Password;
-                if(UserUpdate.Password != EncryptHelper.Decrypt(passWordCurrent + ""))
+            if (listUsers != null && listUsers.Any())
+            {
+                var passWordCurrent = listUsers.First().Password;
+                if (UserUpdate.Password != EncryptHelper.Decrypt(passWordCurrent + ""))
                 {
-                    _toastService.ShowWarning("Mật khẩu hiện tại không đúng! Vui lòng nhập lại");
+                    _toastService!.ShowWarning("Mật khẩu hiện tại không đúng! Vui lòng nhập lại");
                     await ShowLoader(false);
                     return;
                 }
@@ -108,7 +119,7 @@ public partial class MainLayout
         catch (Exception ex)
         {
             _logger!.LogError(ex, "UserController", "SaveDataHandler");
-            _toastService.ShowError(ex.Message);
+            _toastService!.ShowError(ex.Message);
         }
         finally
         {
