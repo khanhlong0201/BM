@@ -863,22 +863,14 @@ public class DocumentService : IDocumentService
             sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
             sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
-            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark);
+            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark ?? (object)DBNull.Value);
             sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
-            if (oCusDebts.DateDelay != null)
-            {
-                sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay);
-            }
-            else
-            {
-                // Sử dụng DBNull.Value cho tham số SQL nếu DateDelay là null
-                sqlParameters[9] = new SqlParameter("@DateDelay", DBNull.Value);
-            }
-
+            sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay ?? (object)DBNull.Value);
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
-            if (isUpdated && oCusDebts.IsDelay)
+            if (isUpdated && !oCusDebts.IsDelay)
             {
+                // Nếu k phải delay và Tran ok
                 sqlParameters = new SqlParameter[1];
                 sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
                 double dGuestsPayOld = double.Parse(await _context.ExecuteScalarObjectAsync(@"Select isnull(GuestsPay, 0) 
