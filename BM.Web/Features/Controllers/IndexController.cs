@@ -56,6 +56,7 @@ namespace BM.Web.Features.Controllers
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
                 try
@@ -87,6 +88,7 @@ namespace BM.Web.Features.Controllers
             SearchModel pSearch = new SearchModel();
             pSearch.FromDate = new DateTime(StartDate.Year, StartDate.Month - 1, 23); // lấy tháng trươc liền kề ngày 23
             pSearch.ToDate = new DateTime(StartDate.Year, StartDate.Month, 1).AddMonths(1).AddDays(7); // lấy tháng này + 1 tháng và 7 ngày tiếp
+            pSearch.BranchId = pBranchId;
             ListSchedulers = await _documentService!.GetDataReminderByMonthAsync(pSearch);
         }
 
@@ -101,10 +103,10 @@ namespace BM.Web.Features.Controllers
                 if (oItem == null) return;
                 switch (oItem.Type)
                 {
-                    case "DebtReminder": // nhắc nợ
+                    case nameof(EnumType.DebtReminder): // nhắc nợ
                         args.Class = "bg-red text-red-fg";
                         break;
-                    case "TreatmentReminder": // nhắc liệu trình
+                    case nameof(EnumType.WarrantyReminder): // nhắc bảo hành
                         args.Class = "bg-teal text-teal-fg";
                         break;
                     default:

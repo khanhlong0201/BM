@@ -52,6 +52,7 @@ public class SearchModel
     public string? StatusId { get; set; }
     public bool IsAdmin { get; set; }
     public int IdDraftDetail { get; set; }
+    public string? BranchId { get; set; }
 }
 
 public enum EnumType
@@ -67,7 +68,9 @@ public enum EnumType
     @ServicePack,
     @Unit,
     @StateOfHealth,
-    @ChangePassWord
+    @ChangePassWord,
+    @DebtReminder,
+    @WarrantyReminder
 }
 
 public enum EnumTable

@@ -14,29 +14,23 @@
                   IsAllDayField="@(nameof(SheduleModel.IsAllDay))"
                   OnItemDoubleClick="@OnItemDoubleClick"
                   OnItemRender="@OnItemRender">
-    @*<AllDayItemTemplate>
-        @{
-            SheduleModel oItem = (context as SheduleModel)!;
-        }
-        <div style="height: 100px">
-            <span>@oItem.FullName</span>
-        </div>
-    </AllDayItemTemplate>*@
-
     <ItemTemplate>
         @{
             SheduleModel oItem = (context as SheduleModel)!;
             <div class="k-event-template">
-                @if (oItem.Type == "DebtReminder")
+                @if (oItem.Type == nameof(EnumType.DebtReminder))
                 {
                     <span data-bs-toggle="tooltip" data-bs-html="true"
                           title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
                         @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
                     </span>
                 }
-                else
+                else if (oItem.Type == nameof(EnumType.WarrantyReminder))
                 {
-                    
+                    <span data-bs-toggle="tooltip" data-bs-html="true"
+                          title="">
+                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}")
+                    </span>
                 }
             </div>
             
@@ -46,16 +40,19 @@
         @{
             SheduleModel oItem = (context as SheduleModel)!;
             <div class="k-event-template">
-                @if (oItem.Type == "DebtReminder")
+                @if (oItem.Type == nameof(EnumType.DebtReminder))
                 {
                     <span class="@($"DebtReminder-tooltip-{oItem.DocEntry}")"
                           title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
                         @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
                     </span>
                 }
-                else
+                else if (oItem.Type == nameof(EnumType.WarrantyReminder))
                 {
-
+                    <span data-bs-toggle="tooltip" data-bs-html="true"
+                          title="">
+                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}")
+                    </span>
                 }
             </div>
 
