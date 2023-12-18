@@ -1,0 +1,56 @@
+﻿@page "/revenue-report"
+@inherits RevenueReportController;
+
+<div class="h-content-filter">
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="d-flex ">
+                <HLabel Value="Năm:" IsRequired="true" Style="width: 90px" />
+                <div style="width: calc(100% - 90px)">
+                    <TelerikComboBox @bind-Value="@pYearDefault"
+                        Data="@ListYears"
+                        Placeholder="Chọn năm"
+                        ClearButton="false"
+                        Filterable="true"
+                        Class="btn-noborder-radius-left"
+                        Id="txtYear" Width="100%">
+                    </TelerikComboBox>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@(()=> ReLoadDataHandler())">Làm mới</ToolBarButton>
+</TelerikToolBar>
+
+<div class="h-chart-content" style="height: calc(100vh - 200px);">
+    <TelerikChart Height="100%">
+        <ChartTooltip Visible="true"></ChartTooltip>
+        <ChartTitle Text="@($"Doanh thu từng chi nhánh của năm {pYearDefault}")"></ChartTitle>
+        <ChartLegend Visible="false"></ChartLegend>
+        <ChartSeriesItems>
+            <ChartSeries Data="@DataReport"
+                         Type="ChartSeriesType.Bar"
+                         Name="Chi nhánh Cái Tắt"
+                         Field="@nameof(ReportModel.Total_01)"
+                         ColorField="@nameof(ReportModel.Color_01)">
+            </ChartSeries>
+            <ChartSeries Data="@DataReport"
+                         Type="ChartSeriesType.Bar"
+                         Name="Chi nhánh Hậu giang"
+                         Field="@nameof(ReportModel.Total_02)"
+                         ColorField="@nameof(ReportModel.Color_02)">
+            </ChartSeries>
+        </ChartSeriesItems>
+        <ChartValueAxes>
+            <ChartValueAxis>
+                <ChartValueAxisLabels Format="@DefaultConstants.FORMAT_CURRENCY" />
+                <ChartValueAxisMajorGridLines Visible="false" />
+            </ChartValueAxis>
+        </ChartValueAxes>
+        <ChartCategoryAxes>
+            <ChartCategoryAxis Categories="@ResportTitle"></ChartCategoryAxis>
+        </ChartCategoryAxes>
+    </TelerikChart>
+</div>

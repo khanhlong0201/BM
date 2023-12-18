@@ -35,6 +35,9 @@ public class ReportModel : Auditable
     public double Total_11 { get; set; }
     public double Total_12{ get; set; }
     public double LineTotal { get; set; }
+    public string? Color_01 { get; set; }
+    public string? Color_02 { get; set; }
+    public string Title { get; set; } = string.Empty;
 }
 
 public class RequestReportModel

@@ -361,8 +361,8 @@ namespace BM.API.Controllers
                 });
                 UserModel oUser = data.First();
                 var dataBranch = await _masterService.GetBranchsAsync(true);
-                BranchModel branch = dataBranch.Where(d =>d.BranchId+""== loginRequest?.BranchId+"").First();
-                if (oUser?.IsAdmin == false && oUser?.BranchId+"" != loginRequest?.BranchId + "")
+                BranchModel branch = dataBranch.Where(d =>d.BranchId+""== loginRequest.BranchId+"").First();
+                if (oUser.IsAdmin == false && oUser.BranchId+"" != loginRequest.BranchId + "")
                 return BadRequest(new
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
@@ -375,7 +375,7 @@ namespace BM.API.Controllers
                     new Claim("UserName", oUser.UserName + ""),
                     new Claim("FullName", oUser.FullName + ""),
                     new Claim("IsAdmin", oUser.IsAdmin + ""),
-                    new Claim("BranchId", oUser.BranchId + ""),
+                    new Claim("BranchId", loginRequest.BranchId + ""),
                 }; // thông tin mã hóa (payload)
                 // JWT: json web token: Header - Payload - SIGNATURE (base64UrlEncode(header) + "." + base64UrlEncode(payload), your - 256 - bit - secret)
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:JwtSecurityKey").Value + "")); // key mã hóa

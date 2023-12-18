@@ -21,6 +21,7 @@ public interface ICliDocumentService
     Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
     Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
     Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId);
+    Task<List<ReportModel>?> GetRevenueReportAsync(int pYear);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -515,5 +516,42 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    /// <summary>
+    /// LẤY BÁO CÁO THEO CHI NHÁNH
+    /// </summary>
+    /// <param name="pYear"></param>
+    /// <returns></returns>
+    public async Task<List<ReportModel>?> GetRevenueReportAsync(int pYear)
+    {
+        try
+        {
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pYear", $"{pYear}"}
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_REVENUE_REPORT, pParams);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<ReportModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetRevenueReportAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
     }
 }
