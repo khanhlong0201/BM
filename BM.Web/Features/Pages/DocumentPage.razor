@@ -2,14 +2,12 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/save-folder.png" 
-        OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/save-folder.png" Enabled="@(!pIsLockPage)"
-        OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/bill.png" Enabled="@(!pIsLockPage)"
-        OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/copywriter.png" Visible="@pIsLockPage" OnClick="@(async()=> await CreateServiceCallHandler())">Lập phiếu bảo hành</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/copywriter.png" OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" Visible="@(!pIsLockPage)" OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/bill.png" Visible="@(!pIsLockPage)" OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png" Enabled="@(DocumentUpdate.DocEntry > 0)" OnClick="@(async()=>await PrintDocHandler())">In hồ sơ</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/printer.png" OnClick="@(async()=>await PrintCommitedDocHander())">In cam kết</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" OnClick="@(async()=>await PrintCommitedDocHandler())">In cam kết</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png" OnClick="@(async()=>await PrintOutBound())">In phiếu xuất kho</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
@@ -18,13 +16,14 @@
             <div class="accordion" id="accordion-info">
                 <div class="accordion-item" style="border: none">
                     <span class="accordion-header" id="heading-1">
-                        <button class="accordion-button " style="padding-top: 5px; padding-bottom: 5px" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
+                        <button class="accordion-button " style="padding-top: 5px; padding-bottom: 5px;padding-left: 0px;" 
+                            type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
                             <h4 class="mb-1">Thông tin khách hàng</h4>
                         </button>
                     </span>
                     <div id="collapse-info" class="accordion-collapse collapse show" data-bs-parent="#accordion-info">
-                        <div class="accordion-body pt-0">
-                            <div class="mb-2">
+                        <div class="accordion-body pt-0 px-2 pb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Số phiếu: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
@@ -45,7 +44,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
@@ -55,12 +54,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
-                                    <div class="col-lg-4 col-md-5 col-sm-12">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
                                         Tên khách hàng: <strong>@DocumentUpdate.FullName</strong>
                                     </div>
-                                    <div class="col-lg-4 col-md-3 col-sm-12">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
                                         Ngày sinh: <strong>@(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY 
                                             : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))</strong>
                                     </div>
@@ -69,7 +68,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         SĐT: <strong>@DocumentUpdate.Phone1</strong>
@@ -83,7 +82,7 @@
                                 </div>
                             </div>
                             
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
@@ -96,7 +95,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-2">
+                            <div class="mb-1">
                                 <div class="row row-gap-2">
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng khách khi sử dụng dịch vụ:

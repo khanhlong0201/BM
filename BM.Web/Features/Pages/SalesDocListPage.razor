@@ -84,8 +84,8 @@
             <GridColumn Field=@nameof(DocumentModel.VoucherNo) Width="135px" MaxResizableWidth="140" Title="Số lệnh">
                 <Template>
                     @{
-                        var model = (context as DocumentModel);
-                        <span class="h-link">@model!.VoucherNo</span>
+                        var model = (context as DocumentModel)!;
+                        <span class="h-link" @onclick="@(()=> OpenDialogDebtsHandler(model, pIsShowVoucher: true))">@model.VoucherNo</span>
                     }
                 </Template>
                 <FooterTemplate>`

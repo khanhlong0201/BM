@@ -50,6 +50,7 @@ namespace BM.Web.Features.Controllers
         public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
         public List<SuppliesModel>? ListSuppplies { get; set; }
         #endregion
+
         #region Override Functions
 
         protected override async Task OnInitializedAsync()
@@ -552,7 +553,7 @@ namespace BM.Web.Features.Controllers
         /// <summary>
         /// in biên bản cam kết và đồng thuận
         /// </summary>
-        protected async Task PrintCommitedDocHander()
+        protected async Task PrintCommitedDocHandler()
         {
             try
             {
@@ -636,7 +637,7 @@ namespace BM.Web.Features.Controllers
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "DocumentController", "PrintCommitedDocHander");
+                _logger!.LogError(ex, "DocumentController", "PrintCommitedDocHandler");
                 ShowError(ex.Message);
             }
             finally
@@ -762,6 +763,52 @@ namespace BM.Web.Features.Controllers
             }
             finally
             {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        
+        /// <summary>
+        /// tạo phiếu bảo hành
+        /// </summary>
+        protected async Task CreateServiceCallHandler()
+        {
+            try
+            {
+
+                if (ListSalesOrder == null || !ListSalesOrder.Any())
+                {
+                    ShowWarning("Không có thông tin dịch vụ!");
+                    return;
+                }
+                var lstItem = ListSalesOrder.Where(m => m.IsCheck == true).ToList();
+                if (lstItem == null || !lstItem.Any())
+                {
+                    ShowWarning("Vui lòng chọn dòng dịch vụ để lập [Phiếu bảo hành]!");
+                    return;
+                }
+                if (lstItem.Count > 1)
+                {
+                    ShowWarning("Chỉ được phép chọn 1 dịch vụ để lập [Phiếu bảo hành]!");
+                    return;
+                }
+                if(lstItem[0].WarrantyPeriod <= 0)
+                {
+                    ShowInfo($"Dịch vụ [{lstItem[0].ServiceCode} - {lstItem[0].ServiceName}] không có bảo hành!");
+                    return;
+                }
+
+                // lấy các thông tin khách hàng bê qua
+                string key = ""; // mã hóa key
+                _navigationManager!.NavigateTo($"/service-call?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "CreateServiceCallHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
             }
         }

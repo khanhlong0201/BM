@@ -1,0 +1,58 @@
+﻿@page "/service-call"
+@inherits ServiceCallController
+
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/copywriter.png">Lập phiếu xuất kho</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" >Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png">In cam kết</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" >In phiếu xuất kho</ToolBarButton>
+</TelerikToolBar>
+<div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
+    <div class="card card-lg mt-1" style="padding: 10px">
+        <div style="border-bottom: 1px solid var(--tblr-border-color)">
+            <h4 class="mb-1">Thông tin chung</h4>
+            <div class="row row-gap-2">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Số phiếu: @*<strong>@($"{DocumentUpdate.VoucherNo}")</strong>*@
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-12">
+                    Ngày tạo: @*<strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>*@
+                </div>
+            </div>
+            <div class="row row-gap-2">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Mã K/H: @*<strong>@DocumentUpdate.CusNo</strong>*@
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-12">
+                    Cơ sở: @*<strong>@DocumentUpdate.BranchName</strong>*@
+                </div>
+            </div>
+            <div class="row row-gap-2">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Tên khách hàng: @*<strong>@DocumentUpdate.FullName</strong>*@
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Ngày sinh: @*<strong>
+                        @(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
+                            : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))
+                    </strong>*@
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    CCCD: @*<strong>@DocumentUpdate.CINo</strong>*@
+                </div>
+            </div>
+            <div class="row row-gap-2">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    SĐT: @*<strong>@DocumentUpdate.Phone1</strong>*@
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Zalo: @*<strong>@DocumentUpdate.Zalo</strong>*@
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Facebook: @*<strong>@DocumentUpdate.FaceBook</strong>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

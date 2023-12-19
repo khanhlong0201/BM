@@ -232,10 +232,21 @@ namespace BM.Web.Features.Controllers
         /// Xem lịch sử thanh toán
         /// </summary>
         /// <param name="pDocument"></param>
-        protected async void OpenDialogDebtsHandler(DocumentModel pDocument)
+        protected async void OpenDialogDebtsHandler(DocumentModel pDocument, bool pIsShowVoucher = false)
         {
             try
             {
+                if(pIsShowVoucher)
+                {
+                    Dictionary<string, string> pParams = new Dictionary<string, string>
+                    {
+                        { "pDocEntry", $"{pDocument.DocEntry}"},
+                        { "pIsCreate", $"{false}" },
+                    };
+                    string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                    _navManager!.NavigateTo($"/create-ticket?key={key}");
+                    return;
+                }    
                 VoucherNo = string.Empty;
                 pDocEntry = 0;
                 if (pDocument == null) return;
