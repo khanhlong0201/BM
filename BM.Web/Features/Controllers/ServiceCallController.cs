@@ -1,4 +1,5 @@
-﻿using BM.Web.Models;
+﻿using BM.Models;
+using BM.Web.Models;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Telerik.Blazor;
@@ -14,7 +15,8 @@ namespace BM.Web.Features.Controllers
         #endregion Dependency Injection
 
         #region Properties
-
+        public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
+        public DocumentModel DocumentUpdate { get; set; } = new DocumentModel();
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
 
@@ -30,7 +32,7 @@ namespace BM.Web.Features.Controllers
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
-                    new BreadcrumbModel() { Text = "Chi tiết đơn hàng" },
+                    new BreadcrumbModel() { Text = "Đơn hàng" },
                     new BreadcrumbModel() { Text = "Lập phiếu bảo hành" }
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);

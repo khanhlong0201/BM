@@ -9,47 +9,90 @@
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
     <div class="card card-lg mt-1" style="padding: 10px">
-        <div style="border-bottom: 1px solid var(--tblr-border-color)">
+        <div>
             <h4 class="mb-1">Thông tin chung</h4>
-            <div class="row row-gap-2">
+            <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu: @*<strong>@($"{DocumentUpdate.VoucherNo}")</strong>*@
+                    Số phiếu gốc: <span>@($"{DocumentUpdate.VoucherNo}")</span>
                 </div>
                 <div class="col-lg-8 col-md-8 col-sm-12">
-                    Ngày tạo: @*<strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</strong>*@
+                    Ngày chứng từ gốc: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</span>
                 </div>
             </div>
-            <div class="row row-gap-2">
+            <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Mã K/H: @*<strong>@DocumentUpdate.CusNo</strong>*@
+                    Số phiếu bảo hành: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Tình trạng phiếu: <span class="badge bg-green-lt">Bảo hành</span>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</span>
+                </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-lg-4 col-md-4 col-sm-12">
+                    Mã K/H: <span>@DocumentUpdate.CusNo</span>
                 </div>
                 <div class="col-lg-8 col-md-8 col-sm-12">
-                    Cơ sở: @*<strong>@DocumentUpdate.BranchName</strong>*@
+                    Cơ sở: <span>@DocumentUpdate.BranchName</span>
                 </div>
             </div>
-            <div class="row row-gap-2">
+            <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Tên khách hàng: @*<strong>@DocumentUpdate.FullName</strong>*@
+                    Tên khách hàng: <span>@DocumentUpdate.FullName</span>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Ngày sinh: @*<strong>
+                    Ngày sinh: <span>
                         @(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
                             : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))
-                    </strong>*@
+                    </span>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    CCCD: @*<strong>@DocumentUpdate.CINo</strong>*@
+                    CCCD: <span>@DocumentUpdate.CINo</span>
                 </div>
             </div>
-            <div class="row row-gap-2">
+            <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    SĐT: @*<strong>@DocumentUpdate.Phone1</strong>*@
+                    SĐT: <span>@DocumentUpdate.Phone1</span>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Zalo: @*<strong>@DocumentUpdate.Zalo</strong>*@
+                    Zalo: <span>@DocumentUpdate.Zalo</span>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Facebook: @*<strong>@DocumentUpdate.FaceBook</strong>*@
+                    Facebook: <span>@DocumentUpdate.FaceBook</span>
+                </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-12">
+                    Địa chỉ: <span>@DocumentUpdate.Address</span>
+                </div>
+            </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div>
+            <h4 class="mb-1">Thông tin dịch vụ bảo hành</h4>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-12">
+                    Dịch vụ: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-md-4 col-sm-12">
+                    Nhân viên tư vấn: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    Tình trạng xuất kho: <span class="badge bg-purple-lt"> Đã xuất kho</span>
+                </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-md-4 col-sm-12">
+                    Nhân viên thực hiện: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    Công thức mực: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
                 </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
-﻿using BM.Models;
+﻿using Blazored.LocalStorage;
+using BM.Models;
 using BM.Models.Shared;
 using BM.Web.Commons;
 using BM.Web.Components;
@@ -27,6 +28,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private NavigationManager? _navigationManager { get; init; }
         [Inject] private IWebHostEnvironment? _webHostEnvironment { get; init; }
         [Inject] public IJSRuntime? _jsRuntime { get; init; }
+        [Inject] private ILocalStorageService? _localStorage { get; init; }
         #endregion
 
         #region Properties
@@ -791,15 +793,34 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Chỉ được phép chọn 1 dịch vụ để lập [Phiếu bảo hành]!");
                     return;
                 }
-                if(lstItem[0].WarrantyPeriod <= 0)
+                SalesOrderModel oItem = lstItem[0];
+                if (oItem.WarrantyPeriod <= 0)
                 {
-                    ShowInfo($"Dịch vụ [{lstItem[0].ServiceCode} - {lstItem[0].ServiceName}] không có bảo hành!");
+                    ShowInfo($"Dịch vụ [{oItem.ServiceCode} - {oItem.ServiceName}] không có bảo hành!");
                     return;
                 }
 
                 // lấy các thông tin khách hàng bê qua
-                string key = ""; // mã hóa key
-                _navigationManager!.NavigateTo($"/service-call?key={key}");
+                var oHeader = new
+                {
+                    DocumentUpdate.VoucherNo,
+                    DocumentUpdate.CusNo,
+                    DocumentUpdate.FullName,
+                    DocumentUpdate.Phone1,
+                    DocumentUpdate.Address,
+                    DocumentUpdate.DocEntry,
+                    DocumentUpdate.DateCreate,
+                    DocumentUpdate.DateOfBirth,
+                    DocumentUpdate.CINo,
+                    DocumentUpdate.Zalo,
+                    DocumentUpdate.FaceBook,
+                    oItem.ChemicalFormula,
+                    UserAdvise = oItem.ListUserAdvise == null || !oItem.ListUserAdvise.Any() ? "" : string.Join(", ", oItem.ListUserAdvise)
+                };
+                if(await _localStorage!.ContainKeyAsync("")) await _localStorage!.RemoveItemAsync("");
+                await _localStorage!.SetItemAsStringAsync("", "");
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa key;
+                _navigationManager!.NavigateTo($"/service-call");
             }
             catch (Exception ex)
             {
