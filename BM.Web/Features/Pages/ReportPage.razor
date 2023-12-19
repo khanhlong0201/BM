@@ -1,16 +1,11 @@
-﻿@page "/report-revenue-month-quarter-service" 
-@page "/report-revenue-month-quarter-service-type" 
-@page "/report-outbound" 
+﻿@page "/report-outbound" 
 @page "/report-service" 
 @page "/report-user"  
 @inherits ReportController
 <div class="h-content-filter">
     <div class="row">
-        <div class="col-lg-5 col-md-6 col-sm-12">
-            @if(ItemFilter.Type == nameof(ReportType.DoanhThuQuiThangTheoDichVu)
-            || ItemFilter.Type == nameof(ReportType.DoanhThuQuiThangTheoLoaiDichVu)
-            || ItemFilter.Type == nameof(ReportType.DoanhThuQuiThangTheoNhanVienThucHien)
-            || ItemFilter.Type == nameof(ReportType.DoanhThuQuiThangTheoNhanVienTuVan))
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            @if(pKind==nameof(Kind.QuiThang))
             {
             <div class="d-flex mt-1">
                 <HLabel Value="Quí - Tháng:" IsRequired="true" Style="width: 130px" />
@@ -29,69 +24,122 @@
                     </div> 
             </div>
             }
-            @if (ItemFilter.Type == nameof(ReportType.DoanhThuTheoDichVu)
-         || ItemFilter.Type == nameof(ReportType.DoanhThuTheoLoaiDichVu))
+            @if(pKind==nameof(Kind.TuNgayDenNgay))
             {
-                <div class="d-flex mt-1">
-                    <HLabel Value="Từ ngày/Đến ngày:" Style="width: 130px" />
+            <div class="d-flex mt-1">
+                <HLabel Value="Từ ngày/Đến ngày:" Style="width: 130px" />
                 <div style="width: calc(100% - 130px)">
                     <div class="d-flex justify-content-between">
                         <div style="width: 50%;">
                             <TelerikDatePicker @bind-Value="@ItemFilter.FromDate"
-                                               Placeholder=""
-                                               Format="dd/MM/yyyy"
-                                               Class="btn-noborder-radius-left">
+                                                Placeholder=""
+                                                Format="dd/MM/yyyy"
+                                                Class="btn-noborder-radius-left">
                             </TelerikDatePicker>
                         </div>
                         <div style="width: 50%; margin-left: 2px;">
                             <TelerikDatePicker @bind-Value="@ItemFilter.ToDate"
-                                               Placeholder=""
-                                               Format="dd/MM/yyyy"
-                                               Class="btn-noborder-radius-left">
+                                                Placeholder=""
+                                                Format="dd/MM/yyyy"
+                                                Class="btn-noborder-radius-left">
                             </TelerikDatePicker>
                         </div>
                     </div>
                 </div>
             </div>
             }
-            <div class="d-flex " style="margin-top: 5px">
+            <div class="d-flex mt-1" style="margin-top: 5px">
                 <HLabel Value="Chi nhánh:" Style="width: 130px" IsRequired="true"/>
-                    <div style="width: calc(100% - 130px)">
-                         <TelerikComboBox Data="@ListBranchs"
-                            Value="@ItemFilter.BranchId"
-                            ValueExpression="@(() => ItemFilter.BranchId)"
-                            ValueChanged="@((string value) => ItemFilter.BranchId = value)"
-                            Placeholder="Chọn chi nhánh"
-                            TextField="@nameof(BranchModel.BranchName)"
-                            ValueField="@nameof(BranchModel.BranchId)"
-                            Filterable="true"
-                            ClearButton="false"
-                            Id="cbbBranch"
-                            Class="btn-noborder-radius-left"
-                            Width="100%">
-                        </TelerikComboBox>
-                    </div> 
-            </div>
+                <div style="width: calc(100% - 130px)">
+                        <TelerikComboBox Data="@ListBranchs"
+                        Value="@ItemFilter.BranchId"
+                        ValueExpression="@(() => ItemFilter.BranchId)"
+                        ValueChanged="@((string value) => ItemFilter.BranchId = value)"
+                        Placeholder="Chọn chi nhánh"
+                        TextField="@nameof(BranchModel.BranchName)"
+                        ValueField="@nameof(BranchModel.BranchId)"
+                        Filterable="true"
+                        ClearButton="false"
+                        Id="cbbBranch"
+                        Class="btn-noborder-radius-left"
+                        Width="100%">
+                    </TelerikComboBox>
+                </div> 
+            </div>   
         </div>
-        <div class="col-lg-5 col-md-6 col-sm-12">
-           
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <div class="d-flex mt-1">
-                <HLabel Value="Loại báo cáo:" IsRequired="true" Style="width: 180px" />
+                <HLabel Value="Xem theo:" IsRequired="true" Style="width: 180px" />
                     <div style="width: calc(100% - 130px)">
-                        <TelerikComboBox Value="@pReportType"
-                            ValueChanged="@((string report) => SelectedReportTypeChanged(report))"
-                            Data="@ListTypeReports"
-                            Placeholder="Chọn loại báo cáo..."
+                        <TelerikComboBox @bind-Value="@pKind"
+                            Data="@ListKinds"
+                            Placeholder="Xem theo..."
                             ClearButton="false"
                             TextField="@nameof(ComboboxModel.Name)"
                             ValueField="@nameof(ComboboxModel.Code)"
                             Filterable="true"
                             Class="btn-noborder-radius-left"
                             Id="txtTypeTimeId" Width="100%">
-                        </TelerikComboBox>+++++++++++++++
+                        </TelerikComboBox>
+                    </div> 
+            </div>
+            @if (pReportType == nameof(ReportType.@DoanhThuDichVuLoaiDichVu))
+            {
+                <div class="d-flex mt-1">
+                    <HLabel Value="Dịch vụ - Loại dịch vụ:" IsRequired="true" Style="width: 180px" />
+                    <div style="width: calc(100% - 130px)">
+                        <TelerikComboBox @bind-Value="@pServiceType"
+                            Data="@ListServiceTypes"
+                            Placeholder="Xem theo DV- LDV..."
+                            ClearButton="false"
+                            TextField="@nameof(ComboboxModel.Name)"
+                            ValueField="@nameof(ComboboxModel.Code)"
+                            Filterable="true"
+                            Class="btn-noborder-radius-left"
+                            Id="txtServiceTypeId" Width="100%">
+                        </TelerikComboBox>
+                    </div> 
+                </div>
+            }
+            else if (pReportType == nameof(ReportType.@BaoCaoKPINhanVien))
+            {
+                <div class="d-flex mt-1">
+                    <HLabel Value="NVTVan - NVTHien:" IsRequired="true" Style="width: 180px" />
+                    <div style="width: calc(100% - 130px)">
+                        <TelerikComboBox @bind-Value="@pUserType"
+                            Data="@ListUserTypes"
+                            Placeholder="Xem theo NVTVan- NVTHien..."
+                            ClearButton="false"
+                            TextField="@nameof(ComboboxModel.Name)"
+                            ValueField="@nameof(ComboboxModel.Code)"
+                            Filterable="true"
+                            Class="btn-noborder-radius-left"
+                            Id="txtServiceTypeId" Width="100%">
+                        </TelerikComboBox>
+                    </div> 
+                </div>
+            }
+        </div>
+         <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="d-flex mt-1">
+                <HLabel Value="Loại hiển thị:" IsRequired="true" Style="width: 180px" />
+                    <div style="width: calc(100% - 130px)">
+                        <TelerikComboBox Value="@pChart"
+                             ValueChanged="@((string code) => SelectedChart(code))"
+                            Data="@ListAndCharts"
+                            Placeholder="Xem loại hiển thị..."
+                            ClearButton="false"
+                            TextField="@nameof(ComboboxModel.Name)"
+                            ValueField="@nameof(ComboboxModel.Code)"
+                            Filterable="true"
+                            Class="btn-noborder-radius-left"
+                            Enabled="@(pKind == nameof(Kind.QuiThang)?true:false)"
+                            Id="txtTypeTimeId" Width="100%">
+                        </TelerikComboBox>
                     </div> 
             </div>
         </div>
+
     </div>
 </div>
 <TelerikToolBar Class="border-bottom-0">
@@ -107,6 +155,7 @@
             </TelerikLoader>
         </Template>
     </TelerikLoaderContainer>
+    @if(pChart == nameof(ChartReportType.List)){
     <TelerikGrid Data="@ListReports"
                 @ref="@Grid"
                  Height="100%"
@@ -162,7 +211,7 @@
         </GridAggregates>
         <GridColumns>
          <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
-        @if(ItemFilter.Type == nameof(ReportType.@DoanhThuQuiThangTheoDichVu)){
+        @if(pReportType == nameof(ReportType.@DoanhThuDichVuLoaiDichVu) && pServiceType == nameof(ServiceType.Service) && pKind == nameof(Kind.QuiThang)){
             <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
                 <FooterTemplate>
                     Số dòng: @context.Count
@@ -261,7 +310,7 @@
                     </FooterTemplate>
                 </GridColumn>
             }
-        }else if(ItemFilter.Type == nameof(ReportType.@DoanhThuQuiThangTheoLoaiDichVu)){
+        }else if(pReportType == nameof(ReportType.@DoanhThuDichVuLoaiDichVu) && pServiceType == nameof(ServiceType.ServiceType) && pKind == nameof(Kind.QuiThang)){
         <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên Chi nhánh">
             <FooterTemplate>
                 Số dòng: @context.Count
@@ -359,7 +408,7 @@
             </GridColumn>
             }
         }
-        else if(ItemFilter.Type == nameof(ReportType.@DoanhThuQuiThangTheoNhanVienTuVan)){
+        else if(pReportType == nameof(ReportType.@BaoCaoKPINhanVien) && pUserType == nameof(UserType.ConsultUser) && pKind == nameof(Kind.QuiThang)){
             <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
                 <FooterTemplate>
                     Số dòng: @context.Count
@@ -461,7 +510,7 @@
                 </GridColumn>
             }
         }
-        else if(ItemFilter.Type == nameof(ReportType.@DoanhThuQuiThangTheoNhanVienThucHien)){
+        else if(pReportType == nameof(ReportType.@BaoCaoKPINhanVien) && pUserType == nameof(UserType.ImplementUser) && pKind == nameof(Kind.QuiThang)){
             <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
                 <FooterTemplate>
                     Số dòng: @context.Count
@@ -563,14 +612,14 @@
                 </GridColumn>
             }
         }
-         else if(ItemFilter.Type == nameof(ReportType.@DoanhThuTheoDichVu)){
+         else if(pReportType == nameof(ReportType.@DoanhThuDichVuLoaiDichVu) && pKind == nameof(Kind.TuNgayDenNgay) && pServiceType == nameof(ServiceType.Service)){
             <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
                 <FooterTemplate>
                     Số dòng: @context.Count
                 </FooterTemplate>
             </GridColumn>
-            <GridColumn Filterable="false" Field=@nameof(ReportModel.EnumId) Width="150px" Title="Mã loại dịch vụ"></GridColumn>
-            <GridColumn Filterable="false" Field=@nameof(ReportModel.EnumName) Width="170px" Title="Tên loại dịch vụ "></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumId) Width="150px" Title="Mã loại dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumName) Width="170px" Title="Tên loại dịch vụ "></GridColumn>
             <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceCode) Width="150px" Title="Mã dịch vụ"></GridColumn>
             <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceName) Width="160px" Title="Tên dịch vụ"></GridColumn>
             <GridColumn Filterable="false" Field=@nameof(ReportModel.Qty) Width="150px" Title="Tổng số lượng" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
@@ -581,7 +630,7 @@
             </FooterTemplate>
             </GridColumn>
         }
-        else if(ItemFilter.Type == nameof(ReportType.@DoanhThuTheoLoaiDichVu)){
+        else if(pReportType == nameof(ReportType.@DoanhThuDichVuLoaiDichVu) && pKind == nameof(Kind.TuNgayDenNgay) && pServiceType == nameof(ServiceType.ServiceType)){
             <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
                 <FooterTemplate>
                     Số dòng: @context.Count
@@ -599,5 +648,41 @@
         }
         </GridColumns>
     </TelerikGrid>
+    }
+    else if(pChart == nameof(ChartReportType.Chart) && pKind == nameof(Kind.QuiThang))
+    {
+    <div style="border: 1px solid red;width:@ContainerWidth; height: @ContainerHeight">
+
+    <TelerikChart Width ="100%" Height="100%" @ref="theChart">
+
+        <ChartSeriesItems>
+            <ChartSeries Type="ChartSeriesType.Column" Name="Product 1" Data="@someData">
+            </ChartSeries>
+            <ChartSeries Type="ChartSeriesType.Column" Name="Product 2" Data="@someData">
+            </ChartSeries>
+        </ChartSeriesItems>
+        <ChartCategoryAxes>
+            <ChartCategoryAxis Categories="@xAxisItems"></ChartCategoryAxis>
+
+        </ChartCategoryAxes>
+        <ChartCategoryAxes>
+            <ChartCategoryAxis Categories="@xAxisItems"></ChartCategoryAxis>
+
+        </ChartCategoryAxes>
+        <ChartTitle Text="Quarterly sales trend"></ChartTitle>
+
+    </TelerikChart>
+
+    </div>
+    }
 </div>
 
+@code{
+     string ContainerWidth { get; set; } = "1380px";
+    string ContainerHeight { get; set; } = "400px";
+    Telerik.Blazor.Components.TelerikChart theChart { get; set; }
+
+    public List<object> someData = new List<object>() { 10, 2, 7, 5 };
+
+    public string[] xAxisItems = new string[] { "Q1", "Q2", "Q3", "Q4" };
+}
