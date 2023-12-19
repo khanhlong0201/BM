@@ -611,21 +611,25 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-Weakness}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-Accept}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"");
-                string tblServices = "";
-                for (int i = 0; i < ListSalesOrder.Count; i++)
+                string htmlStateOfHealth = "";
+                // Lặp qua danh sách với bước là 3 phần tử mỗi lần
+                for (int i = 0; i < lstStateOfHealth.Count; i += 3)
                 {
-                    tblServices += @$" <tr>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{(i + 1)}</td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Qty}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px""><span>{ListSalesOrder[i].ChemicalFormula}</span></td>
-                    </tr> ";
+                    // Lấy 3 phần tử từ danh sách, bắt đầu từ vị trí i
+                    var currentGroup = lstStateOfHealth.Skip(i).Take(3);
+                    string htmlTd = "";
+
+                    foreach (var oStateOfHealth in currentGroup)
+                    {
+                        htmlTd += @$"<td style=""border: 1px solid #dddddd;text-align: center;padding:1px;"">
+                                        <span style=""font-size: 10.5px !important"">{oStateOfHealth.EnumName}</span>
+                                    </td>
+                                    <td style=""border: 1px solid #dddddd; width: 40px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 15px;width: 15px;"" /> </td>
+                                    <td style=""border: 1px solid #dddddd; width: 61px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 15px;width: 15px;"" /></td> ";
+                    }
+                    htmlStateOfHealth += @$"<tr>{htmlTd}</tr> ";
                 }
-                sHtmlExport = sHtmlExport.Replace("{bm-cus-services}", $"{tblServices}");
+                sHtmlExport = sHtmlExport.Replace("{bm-lstStateOfHealth}", $"{htmlStateOfHealth}");
                 //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
 
