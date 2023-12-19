@@ -103,10 +103,31 @@ public enum TypeTime
 
 public enum ReportType
 {
-    @DoanhThuQuiThangTheoDichVu,
-    @DoanhThuQuiThangTheoLoaiDichVu,
-    @DoanhThuTheoDichVu,
-    @DoanhThuTheoLoaiDichVu,
-    @DoanhThuQuiThangTheoNhanVienTuVan,
-    @DoanhThuQuiThangTheoNhanVienThucHien,
+    @DoanhThuDichVuLoaiDichVu,
+    @BaoCaoKPINhanVien,
+    @BaoCaoNhapXuatKho
+}
+
+public enum Kind
+{
+    @QuiThang,
+    @TuNgayDenNgay
+}
+
+public enum ServiceType
+{
+    @Service,
+    @ServiceType
+}
+
+public enum UserType
+{
+    @ConsultUser,
+    @ImplementUser
+}
+
+public enum ChartReportType
+{
+    @List,
+    @Chart
 }
