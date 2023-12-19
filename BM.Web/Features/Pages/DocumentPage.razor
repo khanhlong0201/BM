@@ -24,7 +24,7 @@
                     <div id="collapse-info" class="accordion-collapse collapse show" data-bs-parent="#accordion-info">
                         <div class="accordion-body pt-0 px-2 pb-2">
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Số phiếu: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
                                     </div>
@@ -45,7 +45,7 @@
                                 </div>
                             </div>
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
                                     </div>
@@ -55,7 +55,7 @@
                                 </div>
                             </div>
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Tên khách hàng: <strong>@DocumentUpdate.FullName</strong>
                                     </div>
@@ -69,7 +69,7 @@
                                 </div>
                             </div>
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         SĐT: <strong>@DocumentUpdate.Phone1</strong>
                                     </div>
@@ -83,7 +83,7 @@
                             </div>
                             
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Đặc điểm: <strong>@DocumentUpdate.Remark</strong>
                                     </div>
@@ -96,7 +96,7 @@
                                 </div>
                             </div>
                             <div class="mb-1">
-                                <div class="row row-gap-2">
+                                <div class="row row-gap-1">
                                     <div class="col-md-4 col-sm-12">
                                         Tình trạng khách khi sử dụng dịch vụ:
                                         <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" Enabled="@(!pIsLockPage)" />
