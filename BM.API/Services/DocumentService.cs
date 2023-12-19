@@ -747,21 +747,40 @@ public class DocumentService : IDocumentService
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23);
             if (pSearchData.ToDate == null) pSearchData.ToDate = new DateTime(dateTime.Year, dateTime.Month, 1).AddMonths(1).AddDays(7);
             int numDay = int.Parse(_configuration.GetSection("Configs:NumberOfReminderDays").Value);
-            SqlParameter[] sqlParameters = new SqlParameter[3];
+            SqlParameter[] sqlParameters = new SqlParameter[4];
             sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[2] = new SqlParameter("@NumDay", numDay);
+            sqlParameters[3] = new SqlParameter("@BranchId", pSearchData.BranchId);
             data = await _context.GetDataAsync(@$"Select T0.DocEntry, T2.Remark
-                                                       , T2.DateCreate, iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date))) as DateStart
+                                                       , T2.DateCreate, iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date))) as DateStart
                                                        , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
-                                                       , 'DebtReminder' as [Type] -- Nhắc nhợ
+                                                       , '{nameof(EnumType.DebtReminder)}' as [Type] -- Nhắc nhợ
+                                                       , '' as [ServiceCode], '' as [ServiceName]
                                                     from [dbo].[Drafts] as T0 with(nolock)
-                                              inner join Customers as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                              inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
                                                             where T0.DocEntry = T00.DocEntry order by Id desc) as T2
-                                                   where isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
-                                                     and iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date))) 
-                                                         between cast(@FromDate as Date) and cast(@ToDate as Date)"
+                                                   where 1=1 
+                                                     and isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
+                                                     and iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date))) 
+                                                         between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                     and T0.BranchId = @BranchId
+                                                   union all
+                                                  Select T0.DocEntry, '' as Remark
+	                                                   , T0.DateCreate, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date)) as DateStart
+		                                               , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
+		                                               , '{nameof(EnumType.WarrantyReminder)}' as [Type] -- Nhắc bảo hành
+                                                       , T2.[ServiceCode], T3.[ServiceName]
+                                                    from [dbo].[Drafts] as T0 with(nolock)
+                                              inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
+                                              inner join [dbo].[DraftDetails] as T2 with(nolock) on T2.DocEntry = T0.DocEntry
+                                              inner join [dbo].[Services] as T3 with(nolock) on T3.ServiceCode = T2.ServiceCode
+                                                   where 1=1 
+		                                             and isnull(T2.WarrantyPeriod, 0) > 0 and isnull(T2.QtyWarranty, 0) > 0
+		                                             and T0.StatusId = 'Closed' -- phải đóng
+                                                     and DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                     and T0.BranchId = @BranchId"
                     , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -863,22 +882,14 @@ public class DocumentService : IDocumentService
             sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
             sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
             sqlParameters[6] = new SqlParameter("@GuestsPay", oCusDebts.GuestsPay);
-            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark);
+            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark ?? (object)DBNull.Value);
             sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
-            if (oCusDebts.DateDelay != null)
-            {
-                sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay);
-            }
-            else
-            {
-                // Sử dụng DBNull.Value cho tham số SQL nếu DateDelay là null
-                sqlParameters[9] = new SqlParameter("@DateDelay", DBNull.Value);
-            }
-
+            sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay ?? (object)DBNull.Value);
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
-            if (isUpdated && oCusDebts.IsDelay)
+            if (isUpdated && !oCusDebts.IsDelay)
             {
+                // Nếu k phải delay và Tran ok
                 sqlParameters = new SqlParameter[1];
                 sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
                 double dGuestsPayOld = double.Parse(await _context.ExecuteScalarObjectAsync(@"Select isnull(GuestsPay, 0) 
@@ -1216,6 +1227,8 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["Type"])) model.Type = Convert.ToString(record["Type"]);
         if (!Convert.IsDBNull(record["Remark"])) model.RemarkOld = Convert.ToString(record["Remark"]);
         if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
         model.End = model.Start;
         model.Title = $"Nhắc nợ - {model.FullName}";
         model.IsAllDay = true;

@@ -70,6 +70,8 @@ public class SheduleModel
     public string? RemarkOld { get; set; }
     public bool IsDelay { get; set; } // trĩ hoãn lại
     public DateTime? DateDelay { get; set; } // ngày delay lại
+    public string? ServiceCode { get; set; }
+    public string? ServiceName { get; set; }
 }
 
 
