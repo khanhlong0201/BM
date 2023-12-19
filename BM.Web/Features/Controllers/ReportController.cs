@@ -36,6 +36,35 @@ namespace BM.Web.Features.Controllers
 
         #region Override Functions
         /// <summary>
+        /// chọn loại báo cáo
+        /// </summary>
+        /// <param name="supplies"></param>
+        /// <param name="invetory"></param>
+        public async void SelectedReportTypeChanged(string report)
+        {
+            try
+            {
+                if (report == null) return;
+                 pReportType = report; // gán loại báo cáo
+                ItemFilter.Type = report;
+                pReportTypeName = ListTypeReports.FirstOrDefault(m => m.Code == pReportType)?.Name + "";
+                ListBreadcrumbs = new List<BreadcrumbModel>
+                {
+                    new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                    new BreadcrumbModel() { Text = "Hệ thống" },
+                    new BreadcrumbModel() { Text = "Báo cáo" },
+                    new BreadcrumbModel() { Text =  pReportTypeName}
+                };
+                await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
+                _navManager.LocationChanged += LocationChanged;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
         /// chọn quí tháng
         /// </summary>
         /// <param name="supplies"></param>
@@ -165,6 +194,8 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.4);
                     await getDataReports();
                     ListBranchs = await _masterDataService!.GetDataBranchsAsync();
+                    ListBranchs.Add(new BranchModel { BranchId = "", BranchName = "Tất cả chi nhánh" });
+                    ItemFilter.BranchId = ListBranchs.LastOrDefault().BranchId;
                     Grid?.Rebind();
                 }
                 catch (Exception ex)
