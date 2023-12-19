@@ -4,8 +4,13 @@
     {
         if (firstRender)
         {
-            var path = _nav.ToBaseRelativePath(_nav.Uri);
-            _nav.NavigateTo($"/login?returnUrl={path}");
+            try
+            {
+                var path = _nav.ToBaseRelativePath(_nav.Uri);
+                _nav.NavigateTo($"/login?returnUrl={path}");
+            }
+            catch(Exception){}
+        
         }
     }
 }
