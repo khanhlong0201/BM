@@ -804,22 +804,28 @@ namespace BM.Web.Features.Controllers
                 var oHeader = new
                 {
                     DocumentUpdate.VoucherNo,
+                    DocumentUpdate.DocEntry,
                     DocumentUpdate.CusNo,
                     DocumentUpdate.FullName,
                     DocumentUpdate.Phone1,
                     DocumentUpdate.Address,
-                    DocumentUpdate.DocEntry,
-                    DocumentUpdate.DateCreate,
+                    DateCreateBase = DocumentUpdate.DateCreate,
                     DocumentUpdate.DateOfBirth,
                     DocumentUpdate.CINo,
                     DocumentUpdate.Zalo,
                     DocumentUpdate.FaceBook,
                     oItem.ChemicalFormula,
-                    UserAdvise = oItem.ListUserAdvise == null || !oItem.ListUserAdvise.Any() ? "" : string.Join(", ", oItem.ListUserAdvise)
+                    ConsultUserId = oItem.ListUserAdvise == null || !oItem.ListUserAdvise.Any() ? "" : string.Join(", ", oItem.ListUserAdvise),
+                    oItem.ServiceCode,
+                    oItem.ServiceName,
+                    DocumentUpdate.StatusBefore,
+                    DocumentUpdate.HealthStatus,
+                    DocumentUpdate.NoteForAll,
+                    BaseLine = oItem.Id
                 };
-                if(await _localStorage!.ContainKeyAsync("")) await _localStorage!.RemoveItemAsync("");
-                await _localStorage!.SetItemAsStringAsync("", "");
+                if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCall));
                 string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa key;
+                await _localStorage!.SetItemAsStringAsync(nameof(EnumTable.ServiceCall), key);
                 _navigationManager!.NavigateTo($"/service-call");
             }
             catch (Exception ex)

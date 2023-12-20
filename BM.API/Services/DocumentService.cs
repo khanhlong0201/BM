@@ -23,6 +23,7 @@ public interface IDocumentService
     Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
     Task<ResponseModel> CancleOutBoundList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear);
+    Task<ResponseModel> UpdateServiceCallAsync(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -955,6 +956,79 @@ public class DocumentService : IDocumentService
             await _context.DisConnect();
         }
         return data;
+    }    
+    
+    /// <summary>
+    /// lưu thông tin phiếu bảo hành
+    /// hainguyen create 2023/12/20
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdateServiceCallAsync(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = "";
+            ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(pRequest.Json + "")!;
+            oServiceCall.DocEntry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[ServiceCalls] with(nolock)");
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            async Task ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                }
+            }
+            switch (pRequest.Type)
+            {
+                case nameof(EnumType.Add):
+                    sqlParameters[0] = new SqlParameter("@Type", "ServiceCalls");
+                    oServiceCall.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
+                    queryString = @"Insert into [dbo].[ServiceCalls] ([DocEntry],[VoucherNo],[CusNo],[BaseEntry],[BaseLine],[ImplementUserId], [ChemicalFormula]
+                                    ,[StatusBefore],[HealthStatus],[NoteForAll],[StatusId],[BranchId],[DateCreate],[UserCreate],[DateUpdate],[IsDelete])
+                                    values (@DocEntry, @VoucherNo, @CusNo, @BaseEntry, @BaseLine, @ImplementUserId, @ChemicalFormula, @StatusBefore, @HealthStatus
+                                   ,@NoteForAll, @StatusId, @BranchId, @DateTimeNow, @UserId, @DateTimeNow, 0)";
+
+                    sqlParameters = new SqlParameter[14];
+                    sqlParameters[0] = new SqlParameter("@DocEntry", oServiceCall.DocEntry);
+                    sqlParameters[1] = new SqlParameter("@VoucherNo", oServiceCall.VoucherNo);
+                    sqlParameters[2] = new SqlParameter("@CusNo", oServiceCall.CusNo);
+                    sqlParameters[3] = new SqlParameter("@BaseEntry", oServiceCall.BaseEntry);
+                    sqlParameters[4] = new SqlParameter("@BaseLine", oServiceCall.BaseLine);
+                    sqlParameters[5] = new SqlParameter("@ImplementUserId", oServiceCall.ImplementUserId);
+                    sqlParameters[6] = new SqlParameter("@ChemicalFormula", oServiceCall.ChemicalFormula);
+                    sqlParameters[7] = new SqlParameter("@StatusBefore", oServiceCall.StatusBefore ?? (object)DBNull.Value);
+                    sqlParameters[8] = new SqlParameter("@HealthStatus", oServiceCall.HealthStatus ?? (object)DBNull.Value);
+                    sqlParameters[9] = new SqlParameter("@NoteForAll", oServiceCall.NoteForAll ?? (object)DBNull.Value);
+                    sqlParameters[10] = new SqlParameter("@StatusId", oServiceCall.StatusId ?? (object)DBNull.Value);
+                    sqlParameters[11] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[12] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[13] = new SqlParameter("@BranchId", oServiceCall.BranchId);
+                    await ExecQuery();
+                    break;
+                case nameof(EnumType.Update):
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+
+            }    
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
     }    
     #region Private Funtions
     /// <summary>
