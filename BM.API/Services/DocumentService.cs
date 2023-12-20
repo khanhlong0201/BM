@@ -974,8 +974,7 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             string queryString = "";
             ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(pRequest.Json + "")!;
-            oServiceCall.DocEntry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[ServiceCalls] with(nolock)");
-            SqlParameter[] sqlParameters = new SqlParameter[1];
+            SqlParameter[] sqlParameters;
             async Task ExecQuery()
             {
                 var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
@@ -988,6 +987,8 @@ public class DocumentService : IDocumentService
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
+                    oServiceCall.DocEntry = await _context.ExecuteScalarAsync("select isnull(max(DocEntry), 0) + 1 from [dbo].[ServiceCalls] with(nolock)");
+                    sqlParameters = new SqlParameter[1];
                     sqlParameters[0] = new SqlParameter("@Type", "ServiceCalls");
                     oServiceCall.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"Insert into [dbo].[ServiceCalls] ([DocEntry],[VoucherNo],[CusNo],[BaseEntry],[BaseLine],[ImplementUserId], [ChemicalFormula]
@@ -1013,6 +1014,22 @@ public class DocumentService : IDocumentService
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
+                    queryString = @"Update [dbo].[ServiceCalls]
+                                       set [StatusBefore] = @StatusBefore, [HealthStatus] = @HealthStatus, [NoteForAll] = @NoteForAll
+                                         , [ImplementUserId] = @ImplementUserId, [ChemicalFormula] = @ChemicalFormula
+                                         , [StatusId] = @StatusId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                     where [DocEntry] = @DocEntry";
+                    sqlParameters = new SqlParameter[9];
+                    sqlParameters[0] = new SqlParameter("@DocEntry", oServiceCall.DocEntry);
+                    sqlParameters[1] = new SqlParameter("@StatusBefore", oServiceCall.StatusBefore ?? (object)DBNull.Value);
+                    sqlParameters[2] = new SqlParameter("@HealthStatus", oServiceCall.HealthStatus ?? (object)DBNull.Value);
+                    sqlParameters[3] = new SqlParameter("@NoteForAll", oServiceCall.NoteForAll ?? (object)DBNull.Value);
+                    sqlParameters[4] = new SqlParameter("@StatusId", oServiceCall.StatusId);
+                    sqlParameters[5] = new SqlParameter("@ImplementUserId", oServiceCall.ImplementUserId);
+                    sqlParameters[6] = new SqlParameter("@ChemicalFormula", oServiceCall.ChemicalFormula);
+                    sqlParameters[7] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[8] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    await ExecQuery();
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;

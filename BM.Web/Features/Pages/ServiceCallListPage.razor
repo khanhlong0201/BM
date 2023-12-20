@@ -3,7 +3,7 @@
 
 <div class="h-content-filter">
     <div class="row">
-        <div class="col-lg-5 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-5 col-sm-12">
             <div class="d-flex ">
                 <HLabel Value="Tình trạng:" IsRequired="true" Style="width: 130px" />
                 <div style="width: calc(100% - 130px)">
@@ -85,7 +85,7 @@
                 <Template>
                     @{
                         var model = (context as ServiceCallModel)!;
-                        <span class="h-link">@model.VoucherNo</span>
+                        <span class="h-link" @onclick="@(()=> NavigateHandler(model.DocEntry, pLinkPage: "service-call"))">@model.VoucherNo</span>
                     }
                 </Template>
                 <FooterTemplate>
@@ -97,7 +97,7 @@
                 <Template>
                     @{
                         var model = (context as ServiceCallModel)!;
-                        <span class="h-link">@model.VoucherNoBase</span>
+                        <span class="h-link" @onclick="@(()=> NavigateHandler(model.BaseEntry, pLinkPage: "create-ticket"))">@model.VoucherNoBase</span>
                     }
                 </Template>
             </GridColumn> 

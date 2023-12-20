@@ -4,6 +4,7 @@
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/copywriter.png">Lập phiếu xuất kho</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(async()=> await SaveDocHandler())">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(async()=> await SaveDocHandler(EnumType.SaveAndClose))">Lưu & đóng phiếu</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png">In cam kết</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png" >In phiếu xuất kho</ToolBarButton>
 </TelerikToolBar>
@@ -120,7 +121,7 @@
                     </div>
                 </div>
                 <div class="row row-gap-1 mb-1">
-                    <div class="col-md-8 col-sm-12">
+                    <div class="col-md-4 col-sm-12">
                         <HLabel Value="Nhân viên thực hiện:" IsRequired="true" />
                         <TelerikMultiSelect Data="@ListUsers"
                                             @bind-Value="@ListUserImplements"
@@ -130,10 +131,8 @@
                                             AutoClose="false" Width="100%">
                         </TelerikMultiSelect>
                     </div>
-                </div>
-                <div class="row row-gap-1 mb-1">
                     <div class="col-md-8 col-sm-12">
-                        Công thức mực:
+                        <HLabel Value="Công thức mực:" />
                         <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
                     </div>
                 </div>

@@ -172,7 +172,7 @@ namespace BM.Web.Features.Controllers
                 ServiceCallModel oServiceCall = oResult[0];
                 DocumentUpdate.VoucherNo = oServiceCall.VoucherNo;
                 DocumentUpdate.DocEntry = oServiceCall.DocEntry;
-                DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
+                DocumentUpdate.BaseEntry = oServiceCall.BaseEntry;
                 DocumentUpdate.BaseLine = oServiceCall.BaseLine;
                 DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNoBase;
                 DocumentUpdate.StatusId = oServiceCall.StatusId;
@@ -225,8 +225,17 @@ namespace BM.Web.Features.Controllers
                 }
                 string sAction = pIsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 string sStatusId = "";
-                sStatusId = nameof(DocStatus.Pending);
-                bool isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin phiếu bảo hành ?", "Thông báo");
+                bool isConfirm = false;
+                if (pProcess == EnumType.Update)
+                {
+                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu thông tin phiếu bảo hành ?", "Thông báo");
+                    sStatusId = nameof(DocStatus.Pending);
+                }    
+                else
+                {
+                    isConfirm = await _rDialogs!.ConfirmAsync($" Bạn có chắc muốn lưu & đóng thông tin phiếu bảo hành ?", "Thông báo");
+                    sStatusId = nameof(DocStatus.Closed);
+                }
                 if (!isConfirm) return;
                 await ShowLoader();
                 DocumentUpdate.StatusId = sStatusId;
@@ -243,7 +252,7 @@ namespace BM.Web.Features.Controllers
                             { "pStatusId", $"{sStatusId}"},
                         };
                         string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
-                        //_navigationManager!.NavigateTo($"/sales-doclist?key={key}");
+                        _navigationManager!.NavigateTo($"/service-call-list?key={key}");
                         return;
                     }
                     await showVoucher();

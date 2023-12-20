@@ -219,6 +219,26 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
+
+        protected void NavigateHandler(int pDocEntry, string pLinkPage = "service-call")
+        {
+            try
+            {
+                if (pDocEntry <= 0) return;
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                    {
+                        { "pDocEntry", $"{pDocEntry}"},
+                        { "pIsCreate", $"{false}" },
+                    };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navManager!.NavigateTo($"/{pLinkPage}?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "NavigateHandler");
+                ShowError(ex.Message);
+            }
+        }
         #endregion
     }
 }
