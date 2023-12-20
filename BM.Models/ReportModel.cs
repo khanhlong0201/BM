@@ -50,6 +50,7 @@ public class RequestReportModel
     public int UserId { get; set; }
 }
 
+
 public class SheduleModel
 {
     public int DocEntry { get; set; }
@@ -72,6 +73,21 @@ public class SheduleModel
     public DateTime? DateDelay { get; set; } // ngày delay lại
     public string? ServiceCode { get; set; }
     public string? ServiceName { get; set; }
+}
+
+public class ReportChartModel
+{
+    public List<object> ListValue { get; set; }
+    public string[] ListTitle { get; set; }
+    public string Title { get; set; }
+    public string? ServiceCode { get; set; }
+    public string? ServiceName { get; set; }
+    public string? ConsultUserId { get; set; } // mã nhân viên tư vấn
+    public string? ImplementUserId { get; set; } // mã mã nhân viên thực hiện
+    public string? ConsultUserName { get; set; } // Tên nhân viên tư vấn
+    public string? ImplementUserName { get; set; } // Tên mã nhân viên thực hiện
+    public string? EnumId { get; set; }
+    public string? EnumName { get; set; }
 }
 
 

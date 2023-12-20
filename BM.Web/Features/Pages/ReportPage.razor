@@ -1,4 +1,7 @@
-﻿@page "/report-outbound" 
+﻿@using System.Linq;
+@using System;
+@using System.Globalization;
+@page "/report-outbound" 
 @page "/report-service" 
 @page "/report-user"  
 @inherits ReportController
@@ -651,7 +654,7 @@
     }
     else if(pChart == nameof(ChartReportType.Chart) && pKind == nameof(Kind.QuiThang))
     {
-    <div style="border: 1px solid red;width:@ContainerWidth; height: @ContainerHeight">
+   @* <div style="border: 1px solid red;width:@ContainerWidth; height: @ContainerHeight">
 
     <TelerikChart Width ="100%" Height="100%" @ref="theChart">
 
@@ -663,13 +666,41 @@
         </ChartSeriesItems>
         <ChartCategoryAxes>
             <ChartCategoryAxis Categories="@xAxisItems"></ChartCategoryAxis>
-
         </ChartCategoryAxes>
         <ChartCategoryAxes>
             <ChartCategoryAxis Categories="@xAxisItems"></ChartCategoryAxis>
-
         </ChartCategoryAxes>
         <ChartTitle Text="Quarterly sales trend"></ChartTitle>
+
+    </TelerikChart>
+
+    </div>*@
+
+     <div style="border: 1px solid red;width:@ContainerWidth; height: @ContainerHeight">
+
+    <TelerikChart Width ="100%" Height="100%" @ref="theChart">
+
+        <ChartSeriesItems>
+            @foreach(var item in ListChart){
+                <ChartSeries Type="ChartSeriesType.Column" Name="@(item.Title)"   Data="@item.ListValue">
+                    <ChartSeriesTooltip  Visible="true">
+                           <Template>
+                                @if (context.DataItem != null)
+                                {
+                                    double doubleValue = Convert.ToDouble(context.DataItem);
+                                    <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
+                                }
+                            </Template>
+                    </ChartSeriesTooltip>
+                </ChartSeries>
+            }
+        </ChartSeriesItems>
+        @foreach(var item in ListChart){
+            <ChartCategoryAxes>
+                <ChartCategoryAxis Categories="@item.ListTitle" ></ChartCategoryAxis>
+            </ChartCategoryAxes>
+        }
+        <ChartTitle Text="@(TilteReport)"></ChartTitle>
 
     </TelerikChart>
 

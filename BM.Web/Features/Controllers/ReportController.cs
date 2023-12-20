@@ -35,6 +35,9 @@ namespace BM.Web.Features.Controllers
 
         public List<ComboboxModel>? ListAndCharts { get; set; } // lưới hay là biểu đồ
 
+        public List<ReportChartModel> ListChart { get; set; } = new List<ReportChartModel>();
+
+        public string TilteReport = "BIỂU ĐỒ DOANH THU";
 
         public string pKind = "";
         public string pServiceType = "";
@@ -348,6 +351,7 @@ namespace BM.Web.Features.Controllers
                     if (pKind == nameof(Kind.QuiThang))
                     {
                         ItemFilter.Type = "DoanhThuQuiThangTheoDichVu";
+                        TilteReport = "BIỂU ĐỒ DOANH THU THEO DỊCH VỤ";
                     }
                     else if (pKind == nameof(Kind.TuNgayDenNgay))
                     {
@@ -359,6 +363,7 @@ namespace BM.Web.Features.Controllers
                     if (pKind == nameof(Kind.QuiThang))
                     {
                         ItemFilter.Type = "DoanhThuQuiThangTheoLoaiDichVu";
+                        TilteReport = "BIỂU ĐỒ DOANH THU THEO LOẠI DỊCH VỤ";
                     }
                     else if (pKind == nameof(Kind.TuNgayDenNgay))
                     {
@@ -374,6 +379,7 @@ namespace BM.Web.Features.Controllers
                     if (pKind == nameof(Kind.QuiThang))
                     {
                         ItemFilter.Type = "DoanhThuQuiThangTheoNhanVienTuVan";
+                        TilteReport = "BIỂU ĐỒ DOANH THU THEO NHÂN VIÊN TƯ VẤN";
                     }
                     else if (pKind == nameof(Kind.TuNgayDenNgay))
                     {
@@ -385,6 +391,7 @@ namespace BM.Web.Features.Controllers
                     if (pKind == nameof(Kind.QuiThang))
                     {
                         ItemFilter.Type = "DoanhThuQuiThangTheoNhanVienThucHien";
+                        TilteReport = "BIỂU ĐỒ DOANH THU THEO NHÂN VIÊN THỰC HIỆN";
                     }
                     else if (pKind == nameof(Kind.TuNgayDenNgay))
                     {
@@ -408,6 +415,69 @@ namespace BM.Web.Features.Controllers
 
             //ItemFilter.IsAdmin = pIsAdmin;
             ListReports = await _documentService!.GetDataReportAsync(ItemFilter);
+
+
+            ListChart = new List<ReportChartModel>();
+            
+            if(pChart == nameof(ChartReportType.Chart))
+            {
+
+                if (ListReports !=null && ListReports.Count > 0)
+                {
+                    foreach (var item in ListReports)
+                    {
+                        List<object> val = new List<object>();
+                        string[] xAxisItems = new string[] { };
+                        if (pKind == nameof(Kind.QuiThang) && ItemFilter.TypeTime == nameof(TypeTime.Qui))
+                        {
+                            val.Add(item.Total_01);
+                            val.Add(item.Total_02);
+                            val.Add(item.Total_03);
+                            val.Add(item.Total_04);
+                            xAxisItems = new string[] { "Q1", "Q2", "Q3", "Q4" };
+                        }
+                        else if (pKind == nameof(Kind.QuiThang) && ItemFilter.TypeTime == nameof(TypeTime.Thang))
+                        {
+                            val.Add(item.Total_01);
+                            val.Add(item.Total_02);
+                            val.Add(item.Total_03);
+                            val.Add(item.Total_04);
+                            val.Add(item.Total_04);
+                            val.Add(item.Total_05);
+                            val.Add(item.Total_06);
+                            val.Add(item.Total_07);
+                            val.Add(item.Total_08);
+                            val.Add(item.Total_09);
+                            val.Add(item.Total_10);
+                            val.Add(item.Total_11);
+                            val.Add(item.Total_12);
+                            xAxisItems = new string[] { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12" };
+                        }
+                        if(pReportType == nameof(ReportType.DoanhThuDichVuLoaiDichVu))
+                        {
+                            if(pServiceType == nameof(ServiceType.Service))
+                            {
+                                ListChart.Add(new ReportChartModel { ListTitle = xAxisItems, ListValue = val, Title = item.ServiceCode +" - " +item.ServiceName }); 
+                            }else if (pServiceType == nameof(ServiceType.ServiceType))
+                            {
+                                ListChart.Add(new ReportChartModel { ListTitle = xAxisItems, ListValue = val, Title = item.EnumId + " - " + item.EnumName });
+                            }
+                        }
+                        else if (pReportType == nameof(ReportType.BaoCaoKPINhanVien))
+                        {
+                            if (pUserType == nameof(UserType.ConsultUser))
+                            {
+                                ListChart.Add(new ReportChartModel { ListTitle = xAxisItems, ListValue = val, Title = item.ConsultUserId + " - " + item.ConsultUserName });
+                            }
+                            else if (pUserType == nameof(UserType.ImplementUser))
+                            {
+                                ListChart.Add(new ReportChartModel { ListTitle = xAxisItems, ListValue = val, Title = item.ImplementUserId + " - " + item.ImplementUserName });
+                            }
+                        }
+                    }
+                }
+            }
+
             Grid?.Rebind();
             await InvokeAsync(StateHasChanged);
         }
