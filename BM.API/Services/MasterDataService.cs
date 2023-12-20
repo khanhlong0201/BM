@@ -90,14 +90,14 @@ public class MasterDataService : IMasterDataService
             if (pRequest.Type == nameof(EnumType.Add))
             {
                 oBranch.BranchId = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters);
-                queryString = @"Insert into [dbo].[Branchs]  ([BranchId], [BranchName], [IsActive], [Address], [PhoneNumber], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate])
-                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, @DateTimeNow, @UserId , null, null )";
+                queryString = @"Insert into [dbo].[Branchs]  ([BranchId], [BranchName], [IsActive], [Address], [PhoneNumber], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate], [ListServiceType])
+                values ( @BranchId , @BranchName , @IsActive , @Address , @PhoneNumber, @DateTimeNow, @UserId , null, null, @ListServiceType)";
             }
             else
             {
-                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = @DateTimeNow , UserUpdate = @UserId where BranchId = @BranchId";
+                queryString = "Update [dbo].[Branchs] set BranchName = @BranchName , IsActive = @IsActive , Address = @Address , PhoneNumber = @PhoneNumber , DateUpdate = @DateTimeNow , UserUpdate = @UserId, ListServiceType = @ListServiceType where BranchId = @BranchId";
             }
-            sqlParameters = new SqlParameter[7];
+            sqlParameters = new SqlParameter[8];
             sqlParameters[0] = new SqlParameter("@BranchId", oBranch.BranchId);
             sqlParameters[1] = new SqlParameter("@BranchName", oBranch.BranchName);
             sqlParameters[2] = new SqlParameter("@IsActive", oBranch.IsActive);
@@ -105,6 +105,7 @@ public class MasterDataService : IMasterDataService
             sqlParameters[4] = new SqlParameter("@PhoneNumber", oBranch.PhoneNumber + "");
             sqlParameters[5] = new SqlParameter("@UserId", pRequest.UserId + "");
             sqlParameters[6] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            sqlParameters[7] = new SqlParameter("@ListServiceType", oBranch.ListServiceType + "");
 
             var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
             if (data != null && data.Rows.Count > 0)
@@ -139,7 +140,7 @@ public class MasterDataService : IMasterDataService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@UserId", pUserid);
             data = await _context.GetDataAsync(@"Select [Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber]
-                    , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] 
+                    , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] , [ListServiceType]
                     from [dbo].[Users] where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId)"
                     , DataRecordToUserModel, sqlParameters, commandType: CommandType.Text);
         }
@@ -188,12 +189,12 @@ public class MasterDataService : IMasterDataService
                     }    
                     sqlParameters[0] = new SqlParameter("@Type", "Users");
                     oUser.EmpNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy mã Nhân viên
-                    queryString = @"Insert into [dbo].[Users] ([Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber], [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [IsDelete])
-                                    values ( @Id , @EmpNo , @UserName , @Password , @LastPassword, @FullName, @PhoneNumber , @Email, @Address, @DateOfBirth, @DateOfWork, @IsAdmin, @BranchId, @DateTimeNow, @UserId, 0 )";
+                    queryString = @"Insert into [dbo].[Users] ([Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber], [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [IsDelete], [ListServiceType])
+                                    values ( @Id , @EmpNo , @UserName , @Password , @LastPassword, @FullName, @PhoneNumber , @Email, @Address, @DateOfBirth, @DateOfWork, @IsAdmin, @BranchId, @DateTimeNow, @UserId, 0 ,@ListServiceType)";
 
                     int iUserId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from Users with(nolock)");
                     string sPassword = EncryptHelper.Encrypt(oUser.Password + "");
-                    sqlParameters = new SqlParameter[15];
+                    sqlParameters = new SqlParameter[16];
                     sqlParameters[0] = new SqlParameter("@Id", iUserId);
                     sqlParameters[1] = new SqlParameter("@EmpNo", oUser.EmpNo);
                     sqlParameters[2] = new SqlParameter("@UserName", oUser.UserName);
@@ -209,15 +210,16 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[12] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
                     sqlParameters[13] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[14] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[15] = new SqlParameter("@ListServiceType", oUser.ListServiceType ?? (object)DBNull.Value);
                     await ExecQuery();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[Users]
                                        set [FullName] = @FullName , [PhoneNumber] = @PhoneNumber, [Email] = @Email, [Address] = @Address, [DateOfBirth] = @DateOfBirth, [DateOfWork] = @DateOfWork
-                                         , [IsAdmin] = @IsAdmin, [BranchId] = @BranchId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                         , [IsAdmin] = @IsAdmin, [BranchId] = @BranchId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId, ListServiceType = @ListServiceType
                                      where [Id] = @Id";
 
-                    sqlParameters = new SqlParameter[11];
+                    sqlParameters = new SqlParameter[12];
                     sqlParameters[0] = new SqlParameter("@Id", oUser.Id);
                     sqlParameters[1] = new SqlParameter("@FullName", oUser.FullName);
                     sqlParameters[2] = new SqlParameter("@PhoneNumber", oUser.PhoneNumber ?? (object)DBNull.Value);
@@ -229,6 +231,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[8] = new SqlParameter("@BranchId", oUser.BranchId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[11] = new SqlParameter("@ListServiceType", oUser.ListServiceType ?? (object)DBNull.Value);
                     await ExecQuery();
                     break;
                 case nameof(EnumType.@ChangePassWord):
@@ -1311,6 +1314,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) branch.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) branch.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) branch.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["ListServiceType"])) branch.ListServiceType = Convert.ToString(record["ListServiceType"]);
+        if (!Convert.IsDBNull(record["ListServiceType"])) branch.ListServiceTypes = branch.ListServiceType?.Split(",")?.ToList();
         return branch;
     }
 
@@ -1339,6 +1344,8 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) user.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) user.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) user.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["ListServiceType"])) user.ListServiceType = Convert.ToString(record["ListServiceType"]);
+        if (!Convert.IsDBNull(record["ListServiceType"])) user.ListServiceTypes = user.ListServiceType?.Split(",")?.ToList();
         return user;
     }
 

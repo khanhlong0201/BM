@@ -28,6 +28,7 @@ public class UserController : BMControllerBase
     public bool IsShowDialog { get; set; }
     public bool IsCreate { get; set; } = true;
     public HConfirm? _rDialogs { get; set; }
+    public List<EnumModel>? ListServiceTypes { get; set; }
 
     #endregion
 
@@ -60,6 +61,7 @@ public class UserController : BMControllerBase
                 await _progressService!.SetPercent(0.4);
                 await getDataUsers();
                 ListBranchs = await _masterDataService!.GetDataBranchsAsync();
+                ListServiceTypes = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.@ServiceType));
             }
             catch (Exception ex)
             {
@@ -133,6 +135,7 @@ public class UserController : BMControllerBase
                 UserUpdate.UserCreate = pItemDetails.UserCreate;
                 UserUpdate.UserCreate = pItemDetails.UserCreate;
                 IsCreate = false;
+                UserUpdate.ListServiceTypes = pItemDetails.ListServiceType?.Split(",")?.ToList(); //loại dịch vụ
             }
             IsShowDialog = true;
             _EditContext = new EditContext(UserUpdate);
@@ -156,7 +159,7 @@ public class UserController : BMControllerBase
                 ShowWarning("Nhập lại mật khẩu không đúng so với mật khẩu! Vui lòng nhập lại.");
                 return;
             }
-
+            UserUpdate.ListServiceType = UserUpdate.ListServiceTypes == null || !UserUpdate.ListServiceTypes.Any() ? "" : string.Join(",", UserUpdate.ListServiceTypes);
             await ShowLoader();
             bool isSuccess = await _masterDataService!.UpdateUserAsync(JsonConvert.SerializeObject(UserUpdate), sAction, pUserId);
             if (isSuccess)
