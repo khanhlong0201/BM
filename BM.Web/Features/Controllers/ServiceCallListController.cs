@@ -196,11 +196,12 @@ namespace BM.Web.Features.Controllers
             {
                 if (string.IsNullOrWhiteSpace(ReasonDeny))
                 {
-                    ShowWarning("Vui lòng điền lý do hủy đơn!");
+                    ShowWarning("Vui lòng điền lý do hủy phiếu bảo hành!");
                     return;
                 }
                 await ShowLoader();
-                bool isSuccess = await _documentService!.CancleDocList(string.Join(",", SelectedDocuments!.Select(m => m.DocEntry)), ReasonDeny, pUserId);
+                bool isSuccess = await _documentService!.CancleDocList(string.Join(",", SelectedDocuments!.Select(m => m.DocEntry))
+                    , ReasonDeny, pUserId, nameof(EnumTable.ServiceCalls));
                 if (isSuccess)
                 {
                     IsShowDialogDelete = false;

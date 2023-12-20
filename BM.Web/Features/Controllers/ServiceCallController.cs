@@ -99,9 +99,9 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.4);
                     if(pIsCreate)
                     {
-                        if (await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall)))
+                        if (await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls)))
                         {
-                            string sSvCall = await _localStorage!.GetItemAsStringAsync(nameof(EnumTable.ServiceCall));
+                            string sSvCall = await _localStorage!.GetItemAsStringAsync(nameof(EnumTable.ServiceCalls));
                             ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(EncryptHelper.Decrypt(sSvCall));
                             DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNo;
                             DocumentUpdate.BaseEntry = oServiceCall.DocEntry;

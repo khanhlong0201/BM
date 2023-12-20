@@ -209,7 +209,8 @@ namespace BM.Web.Features.Controllers
                     return;
                 }
                 await ShowLoader();
-                bool isSuccess = await _documentService!.CancleDocList(string.Join(",", SelectedDocuments!.Select(m => m.DocEntry)), ReasonDeny , pUserId);
+                bool isSuccess = await _documentService!.CancleDocList(string.Join(",", SelectedDocuments!.Select(m => m.DocEntry))
+                        , ReasonDeny , pUserId, nameof(EnumTable.Drafts));
                 if (isSuccess)
                 {
                     IsShowDialogDelete = false;

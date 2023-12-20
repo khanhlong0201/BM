@@ -13,7 +13,7 @@ public interface ICliDocumentService
     Task<List<DocumentModel>?> GetDataDocumentsAsync(SearchModel pSearch);
     Task<Dictionary<string, string>?> GetDocByIdAsync(int pDocEntry);
     Task<List<DocumentModel>?> GetDocByCusNoAsync(string pCusNo);
-    Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId);
+    Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId, string pTableName);
     Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch);
     Task<List<ReportModel>?> GetDataReportAsync(RequestReportModel pSearch);
     Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
@@ -286,7 +286,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
     /// <param name="pAction"></param>
     /// <param name="pUserId"></param>
     /// <returns></returns>
-    public async Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId)
+    public async Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId, string pTableName)
     {
         try
         {
@@ -294,7 +294,8 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             {
                 Json = pJsonIds,
                 JsonDetail = pReasonDelete,
-                UserId = pUserId
+                UserId = pUserId,
+                Type = pTableName
             };
             //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);

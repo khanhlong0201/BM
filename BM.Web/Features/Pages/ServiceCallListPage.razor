@@ -47,7 +47,7 @@
     <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/remove_grid.png" 
         Enabled="@(ItemFilter.StatusId == nameof(DocStatus.Pending))"
-        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy đơn</ToolBarButton>
+        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy phiếu</ToolBarButton>
 </TelerikToolBar>
 
 <div class="h-table-content" style=" height: calc(100vh - 230px);">
@@ -116,9 +116,9 @@
             </GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.ServiceCode) Width="125px" Title="Mã dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.ServiceName) Width="180px" Title="Tên dịch vụ"></GridColumn>
-            <GridColumn Field=@nameof(ServiceCallModel.NoteForAll) Width="170px" Title="Ghi chú"></GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.Phone1) Width="140px" Title="SĐT"></GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.BranchName) Width="170px" Title="Tên chi nhánh"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.NoteForAll) Width="170px" Title="Ghi chú"></GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="165px" Title="Ngày giờ cập nhật"></GridColumn>
             <GridColumn Field=@nameof(ServiceCallModel.ReasonDelete) Width="170px" Title="Lý do hủy"></GridColumn>
         </GridColumns>
@@ -129,9 +129,9 @@
          SaveAndClosed="@(()=> CancleDocListHandler())"
          IsShowButtonSaveAdnCreate="false"
          Width="50%"
-         Title="Xác nhận hủy đơn hàng">
+         Title="Xác nhận hủy phiếu bảo hành">
     <div>
-        <HLabel For="txtReason" Value="Lý do hủy đơn:" IsRequired="true" />
+        <HLabel For="txtReason" Value="Lý do hủy phiếu bảo hành:" IsRequired="true" />
         <TelerikTextBox @bind-Value="@ReasonDeny" Id="txtReason" />
     </div>
 </HDialog>

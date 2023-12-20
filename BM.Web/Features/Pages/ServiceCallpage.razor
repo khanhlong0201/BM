@@ -9,120 +9,133 @@
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
     <div class="card card-lg mt-1" style="padding: 10px">
-        <div>
-            <h4 class="mb-1">Thông tin chung</h4>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số hóa đơn: <span class="h-link">@($"{DocumentUpdate.VoucherNoBase}")</span>
-                </div>
-                <div class="col-lg-8 col-md-8 col-sm-12">
-                    Ngày chứng từ gốc: <strong>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</strong>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu bảo hành: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Tình trạng bảo hành:
-                    @{
-                        string color = "badge bg-cyan-lt";
-                        if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "badge bg-green-lt";
-                        else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "badge bg-red-lt";
-                        <span class="@(color)">
-                            @($" {DocumentUpdate.StatusName}")
-                        </span>
-                    }
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)</span>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Mã K/H: <span>@DocumentUpdate.CusNo</span>
-                </div>
-                <div class="col-lg-8 col-md-8 col-sm-12">
-                    Cơ sở: <span>@DocumentUpdate.BranchName</span>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Tên khách hàng: <span>@DocumentUpdate.FullName</span>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Ngày sinh: <span>
-                        @(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
-                            : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))
-                    </span>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    CCCD: <span>@DocumentUpdate.CINo</span>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    SĐT: <span>@DocumentUpdate.Phone1</span>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Zalo: <span>@DocumentUpdate.Zalo</span>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-12">
-                    Facebook: <span>@DocumentUpdate.FaceBook</span>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-12">
-                    Địa chỉ: <span>@DocumentUpdate.Address</span>
-                </div>
-            </div>
-            <div class="row row-gap-1">
-                <div class="col-md-4 col-sm-12">
-                    Tình trạng khách khi sử dụng dịch vụ:
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore"/>
-                </div>
-                <div class="col-md-4 col-sm-12">
-                    Tình trạng sức khỏe:
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
-                </div>
-                <div class="col-md-4 col-sm-12">
-                    Ghi chú đơn hàng:
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+        <div class="accordion" id="accordion-info">
+            <div class="accordion-item" style="border: none">
+                <span class="accordion-header" id="heading-1">
+                    <button class="accordion-button " style="padding-top: 5px; padding-bottom: 5px;padding-left: 0px;"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#collapse-info" aria-expanded="true">
+                        <h4 class="mb-1">Thông tin chung</h4>
+                    </button>
+                </span>
+                <div id="collapse-info" class="accordion-collapse collapse show" data-bs-parent="#accordion-info">
+                    <div class="accordion-body pt-0 px-2 pb-2">
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Số hóa đơn: <strong class="h-link">@($"{DocumentUpdate.VoucherNoBase}")</strong>
+                            </div>
+                            <div class="col-lg-8 col-md-8 col-sm-12">
+                                Ngày chứng từ gốc: <strong>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Số phiếu bảo hành: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Tình trạng bảo hành:
+                                @{
+                                    string color = "badge bg-cyan-lt";
+                                    if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "badge bg-green-lt";
+                                    else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "badge bg-red-lt";
+                                    <strong class="@(color)">
+                                        @($" {DocumentUpdate.StatusName}")
+                                    </strong>
+                                }
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Ngày tạo: <strong>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Mã K/H: <strong class="h-link">@DocumentUpdate.CusNo</strong>
+                            </div>
+                            <div class="col-lg-8 col-md-8 col-sm-12">
+                                Cơ sở: <strong>@DocumentUpdate.BranchName</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Tên khách hàng: <strong>@DocumentUpdate.FullName</strong>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Ngày sinh: <strong>
+                                    @(DocumentUpdate.DateOfBirth == null ? DATA_CUSTOMER_EMPTY
+                                        : DocumentUpdate.DateOfBirth.Value.ToString(DefaultConstants.FORMAT_DATE))
+                                </strong>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                CCCD: <strong>@DocumentUpdate.CINo</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                SĐT: <strong>@DocumentUpdate.Phone1</strong>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Zalo: <strong>@DocumentUpdate.Zalo</strong>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Facebook: <strong>@DocumentUpdate.FaceBook</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1 mb-1">
+                            <div class="col-12">
+                                Địa chỉ: <strong>@DocumentUpdate.Address</strong>
+                            </div>
+                        </div>
+                        <div class="row row-gap-1">
+                            <div class="col-md-4 col-sm-12">
+                                Tình trạng khách khi sử dụng dịch vụ:
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                            </div>
+                            <div class="col-md-4 col-sm-12">
+                                Tình trạng sức khỏe:
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
+                            </div>
+                            <div class="col-md-4 col-sm-12">
+                                Ghi chú đơn hàng:
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="dropdown-divider"></div>
         <div>
             <h4 class="mb-1">Thông tin dịch vụ bảo hành</h4>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-12">
-                    Dịch vụ: <span>@($"{DocumentUpdate.ServiceCode} - {DocumentUpdate.ServiceName}")</span>
+            <div class="px-2 pb-2">
+                <div class="row row-gap-1 mb-1">
+                    <div class="col-12">
+                        Dịch vụ: <strong>@($"{DocumentUpdate.ServiceCode} - {DocumentUpdate.ServiceName}")</strong>
+                    </div>
                 </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-md-4 col-sm-12">
-                    Nhân viên tư vấn: <span>@($"{DocumentUpdate.ConsultUserId}")</span>
+                <div class="row row-gap-1 mb-1">
+                    <div class="col-md-4 col-sm-12">
+                        Nhân viên tư vấn: <strong>@($"{DocumentUpdate.ConsultUserId}")</strong>
+                    </div>
+                    <div class="col-md-8 col-sm-12">
+                        Tình trạng xuất kho: <strong class="badge bg-purple-lt"> Đã xuất kho</strong>
+                    </div>
                 </div>
-                <div class="col-md-8 col-sm-12">
-                    Tình trạng xuất kho: <span class="badge bg-purple-lt"> Đã xuất kho</span>
+                <div class="row row-gap-1 mb-1">
+                    <div class="col-md-8 col-sm-12">
+                        <HLabel Value="Nhân viên thực hiện:" IsRequired="true" />
+                        <TelerikMultiSelect Data="@ListUsers"
+                                            @bind-Value="@ListUserImplements"
+                                            ValueField="@nameof(ComboboxModel.Code)"
+                                            TextField="@nameof(ComboboxModel.Name)"
+                                            FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                            AutoClose="false" Width="100%">
+                        </TelerikMultiSelect>
+                    </div>
                 </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-md-8 col-sm-12">
-                    <HLabel Value="Nhân viên thực hiện:" IsRequired= "true" />
-                    <TelerikMultiSelect Data="@ListUsers"
-                        @bind-Value="@ListUserImplements"
-                        ValueField="@nameof(ComboboxModel.Code)"
-                        TextField="@nameof(ComboboxModel.Name)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        AutoClose="false" Width="100%">
-                    </TelerikMultiSelect>
-                </div>
-            </div>
-            <div class="row row-gap-1 mb-1">
-                <div class="col-md-8 col-sm-12">
-                    Công thức mực:
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
+                <div class="row row-gap-1 mb-1">
+                    <div class="col-md-8 col-sm-12">
+                        Công thức mực:
+                        <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
+                    </div>
                 </div>
             </div>
         </div>

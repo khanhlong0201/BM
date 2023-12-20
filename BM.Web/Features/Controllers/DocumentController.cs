@@ -823,9 +823,9 @@ namespace BM.Web.Features.Controllers
                     DocumentUpdate.NoteForAll,
                     BaseLine = oItem.Id
                 };
-                if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCall));
+                if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls));
                 string data = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa dữ liệu
-                await _localStorage!.SetItemAsStringAsync(nameof(EnumTable.ServiceCall), data);
+                await _localStorage!.SetItemAsStringAsync(nameof(EnumTable.ServiceCalls), data);
                 Dictionary<string, string> pParams = new Dictionary<string, string>
                 {
                     { "pIsCreate", $"{true}" }

@@ -599,9 +599,10 @@ public class DocumentService : IDocumentService
         ResponseModel response = new ResponseModel();
         try
         {
+            //pRequest.Type: Chưa table Name
             await _context.Connect();
             SqlParameter[] sqlParameters;
-            string queryString = @$"UPDATE [dbo].[Drafts] 
+            string queryString = @$"UPDATE [dbo].[{pRequest.Type}] 
                                       set [StatusId] = '{nameof(DocStatus.Cancled)}', [ReasonDelete] = @ReasonDelete, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
                                     where [DocEntry] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
             sqlParameters = new SqlParameter[4];
