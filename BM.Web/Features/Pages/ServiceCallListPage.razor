@@ -1,0 +1,137 @@
+﻿@page "/service-call-list"
+@inherits ServiceCallListController
+
+<div class="h-content-filter">
+    <div class="row">
+        <div class="col-lg-5 col-md-6 col-sm-12">
+            <div class="d-flex ">
+                <HLabel Value="Tình trạng:" IsRequired="true" Style="width: 130px" />
+                <div style="width: calc(100% - 130px)">
+                    <TelerikComboBox @bind-Value="@ItemFilter.StatusId"
+                                     Data="@ListStatus"
+                                     Placeholder="Chọn tình trạng..."
+                                     ClearButton="false"
+                                     TextField="@nameof(ComboboxModel.Name)"
+                                     ValueField="@nameof(ComboboxModel.Code)"
+                                     Filterable="true"
+                                     Class="btn-noborder-radius-left"
+                                     Id="txtStatusId" Width="100%">
+                    </TelerikComboBox>
+                </div>
+            </div>
+            <div class="d-flex mt-1">
+                <HLabel Value="Từ ngày/Đến ngày:" Style="width: 130px" />
+                <div style="width: calc(100% - 130px)">
+                    <div class="d-flex justify-content-between">
+                        <div style="width: 50%;">
+                            <TelerikDatePicker @bind-Value="@ItemFilter.FromDate"
+                                               Placeholder=""
+                                               Format="dd/MM/yyyy"
+                                               Class="btn-noborder-radius-left">
+                            </TelerikDatePicker>
+                        </div>
+                        <div style="width: 50%; margin-left: 2px;">
+                            <TelerikDatePicker @bind-Value="@ItemFilter.ToDate"
+                                               Placeholder=""
+                                               Format="dd/MM/yyyy"
+                                               Class="btn-noborder-radius-left">
+                            </TelerikDatePicker>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<TelerikToolBar Class="border-bottom-0">
+    <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/remove_grid.png" 
+        Enabled="@(ItemFilter.StatusId == nameof(DocStatus.Pending))"
+        OnClick="@(()=> OpenDialogDeleteHandler())">Hủy đơn</ToolBarButton>
+</TelerikToolBar>
+
+<div class="h-table-content" style=" height: calc(100vh - 230px);">
+    <TelerikLoaderContainer OverlayThemeColor="light"
+                            Visible="@(!IsInitialDataLoadComplete)"
+                            Text="@null" Class="grid-initial-data-loader">
+        <Template>
+            <TelerikLoader Type="@LoaderType.InfiniteSpinner"
+                           Size="@(ThemeConstants.Loader.Size.Medium)">
+            </TelerikLoader>
+        </Template>
+    </TelerikLoaderContainer>
+    <TelerikGrid Data="@ListDocuments"
+                 Height="100%"
+                 Width="100%"
+                 RowHeight="25"
+                 Pageable="true"
+                 PageSize="@DefaultConstants.PAGE_SIZE"
+                 Sortable="true"
+                 Resizable="true"
+                 FilterMode="@GridFilterMode.FilterMenu"
+                 SelectionMode="@GridSelectionMode.Multiple"
+                 ScrollMode="@GridScrollMode.Scrollable"
+                 OnRowDoubleClick="@OnRowDoubleClickHandler"
+                 @bind-SelectedItems="@SelectedDocuments">
+        <GridSettings>
+            <GridPagerSettings InputType="PagerInputType.Input" />
+        </GridSettings>
+        <GridAggregates>
+            <GridAggregate Field=@nameof(ServiceCallModel.VoucherNo) Aggregate="@GridAggregateType.Count" />
+        </GridAggregates>
+        <GridColumns>
+            <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.VoucherNo) Width="135px" MaxResizableWidth="140" Title="Số lệnh">
+                <Template>
+                    @{
+                        var model = (context as ServiceCallModel)!;
+                        <span class="h-link">@model.VoucherNo</span>
+                    }
+                </Template>
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="150px" Title="Ngày giờ tạo"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.VoucherNoBase) Width="135px" MaxResizableWidth="140" Title="Số hóa đơn">
+                <Template>
+                    @{
+                        var model = (context as ServiceCallModel)!;
+                        <span class="h-link">@model.VoucherNoBase</span>
+                    }
+                </Template>
+            </GridColumn> 
+            <GridColumn Field=@nameof(ServiceCallModel.CusNo) Width="115px" Title="Mã KH"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.StatusName) Width="140px" Title="Tình trạng">
+                <Template>
+                    @{
+                        var model = (context as ServiceCallModel);
+                        string color = "text-cyan";
+                        if (model!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
+                        else if (model!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
+                        <span class="@(color)">@model!.StatusName</span>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.ServiceCode) Width="125px" Title="Mã dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.ServiceName) Width="180px" Title="Tên dịch vụ"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.NoteForAll) Width="170px" Title="Ghi chú"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.Phone1) Width="140px" Title="SĐT"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.BranchName) Width="170px" Title="Tên chi nhánh"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="165px" Title="Ngày giờ cập nhật"></GridColumn>
+            <GridColumn Field=@nameof(ServiceCallModel.ReasonDelete) Width="170px" Title="Lý do hủy"></GridColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+<HDialog @bind-IsVisible="@IsShowDialogDelete"
+         SaveAndClosed="@(()=> CancleDocListHandler())"
+         IsShowButtonSaveAdnCreate="false"
+         Width="50%"
+         Title="Xác nhận hủy đơn hàng">
+    <div>
+        <HLabel For="txtReason" Value="Lý do hủy đơn:" IsRequired="true" />
+        <TelerikTextBox @bind-Value="@ReasonDeny" Id="txtReason" />
+    </div>
+</HDialog>

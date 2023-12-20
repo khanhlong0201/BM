@@ -824,9 +824,14 @@ namespace BM.Web.Features.Controllers
                     BaseLine = oItem.Id
                 };
                 if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCall));
-                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa key;
-                await _localStorage!.SetItemAsStringAsync(nameof(EnumTable.ServiceCall), key);
-                _navigationManager!.NavigateTo($"/service-call");
+                string data = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa dữ liệu
+                await _localStorage!.SetItemAsStringAsync(nameof(EnumTable.ServiceCall), data);
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pIsCreate", $"{true}" }
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navigationManager!.NavigateTo($"/service-call?key={key}");
             }
             catch (Exception ex)
             {

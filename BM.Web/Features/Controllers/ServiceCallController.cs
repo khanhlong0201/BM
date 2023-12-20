@@ -5,6 +5,7 @@ using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Telerik.Blazor;
@@ -83,40 +84,61 @@ namespace BM.Web.Features.Controllers
             {
                 try
                 {
-                    await _progressService!.SetPercent(0.4);
-                    if (await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall)))
+                    // đọc giá tri câu query
+                    var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
+                    if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
                     {
-                        string sSvCall = await _localStorage!.GetItemAsStringAsync(nameof(EnumTable.ServiceCall));
-                        ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(EncryptHelper.Decrypt(sSvCall));
-                        pIsCreate = true;
-                        DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNo;
-                        DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
-                        DocumentUpdate.BaseLine = oServiceCall.BaseLine;
-                        DocumentUpdate.CusNo = oServiceCall.CusNo;
-                        DocumentUpdate.FullName = oServiceCall.FullName;
-                        DocumentUpdate.Phone1 = oServiceCall.Phone1;
-                        DocumentUpdate.Address = oServiceCall.Address;
-                        DocumentUpdate.DateCreateBase = oServiceCall.DateCreateBase;
-                        DocumentUpdate.DateOfBirth = oServiceCall.DateOfBirth;
-                        DocumentUpdate.CINo = oServiceCall.CINo;
-                        DocumentUpdate.Zalo = oServiceCall.Zalo;
-                        DocumentUpdate.FaceBook = oServiceCall.FaceBook;
-                        DocumentUpdate.ConsultUserId = DocumentUpdate.ConsultUserId;
-                        DocumentUpdate.ServiceCode = oServiceCall.ServiceCode;
-                        DocumentUpdate.ServiceName = oServiceCall.ServiceName;
-                        DocumentUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
-                        DocumentUpdate.StatusBefore = oServiceCall.StatusBefore;
-                        DocumentUpdate.HealthStatus = oServiceCall.HealthStatus;
-                        DocumentUpdate.NoteForAll = oServiceCall.NoteForAll;
-
-                        // danh sách nhân viên
-                        var listUsers = await _masterDataService!.GetDataUsersAsync();
-                        if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m => new ComboboxModel()
+                        string key = uri.Query.Substring(5); // để tránh parse lỗi;    
+                        Dictionary<string, string> pParams = JsonConvert.DeserializeObject<Dictionary<string, string>>(EncryptHelper.Decrypt(key));
+                        if (pParams != null && pParams.Any())
                         {
-                            Code = m.EmpNo,
-                            Name = $"{m.EmpNo}-{m.FullName}"
-                        });
-                    }    
+                            if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
+                            if (pParams.ContainsKey("pDocEntry")) pDocEntry = Convert.ToInt32(pParams["pDocEntry"]);
+                        }
+                    }
+                    await _progressService!.SetPercent(0.4);
+                    if(pIsCreate)
+                    {
+                        if (await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCall)))
+                        {
+                            string sSvCall = await _localStorage!.GetItemAsStringAsync(nameof(EnumTable.ServiceCall));
+                            ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(EncryptHelper.Decrypt(sSvCall));
+                            DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNo;
+                            DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
+                            DocumentUpdate.BaseLine = oServiceCall.BaseLine;
+                            DocumentUpdate.CusNo = oServiceCall.CusNo;
+                            DocumentUpdate.FullName = oServiceCall.FullName;
+                            DocumentUpdate.Phone1 = oServiceCall.Phone1;
+                            DocumentUpdate.Address = oServiceCall.Address;
+                            DocumentUpdate.DateCreateBase = oServiceCall.DateCreateBase;
+                            DocumentUpdate.DateOfBirth = oServiceCall.DateOfBirth;
+                            DocumentUpdate.CINo = oServiceCall.CINo;
+                            DocumentUpdate.Zalo = oServiceCall.Zalo;
+                            DocumentUpdate.FaceBook = oServiceCall.FaceBook;
+                            DocumentUpdate.ConsultUserId = oServiceCall.ConsultUserId;
+                            DocumentUpdate.ServiceCode = oServiceCall.ServiceCode;
+                            DocumentUpdate.ServiceName = oServiceCall.ServiceName;
+                            DocumentUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                            DocumentUpdate.StatusBefore = oServiceCall.StatusBefore;
+                            DocumentUpdate.HealthStatus = oServiceCall.HealthStatus;
+                            DocumentUpdate.NoteForAll = oServiceCall.NoteForAll;
+                            
+                        }
+                    }
+                    else
+                    {
+                        // Vô từ page lập chưng từ
+                        await showVoucher();
+                    }
+
+                    // danh sách nhân viên
+                    var listUsers = await _masterDataService!.GetDataUsersAsync();
+                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m => new ComboboxModel()
+                    {
+                        Code = m.EmpNo,
+                        Name = $"{m.EmpNo}-{m.FullName}"
+                    });
+
                 }
                 catch (Exception ex)
                 {
@@ -132,6 +154,55 @@ namespace BM.Web.Features.Controllers
         }
 
         #endregion Override Functions
+
+        #region Private Functions
+
+        private async Task showVoucher()
+        {
+            if (pDocEntry <= 0)
+            {
+                ShowWarning("Vui lòng tải lại trang hoặc liên hệ IT để được hổ trợ");
+                return;
+            }
+            SearchModel ItemFilter = new SearchModel();
+            ItemFilter.IdDraftDetail = pDocEntry;
+            var oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
+            if(oResult != null && oResult.Any())
+            {
+                ServiceCallModel oServiceCall = oResult[0];
+                DocumentUpdate.VoucherNo = oServiceCall.VoucherNo;
+                DocumentUpdate.DocEntry = oServiceCall.DocEntry;
+                DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
+                DocumentUpdate.BaseLine = oServiceCall.BaseLine;
+                DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNoBase;
+                DocumentUpdate.StatusId = oServiceCall.StatusId;
+                DocumentUpdate.StatusName = oServiceCall.StatusName;
+                DocumentUpdate.DateCreate = oServiceCall.DateCreate;
+                DocumentUpdate.BranchId = oServiceCall.BranchId;
+                DocumentUpdate.BranchName = oServiceCall.BranchName;
+                DocumentUpdate.CusNo = oServiceCall.CusNo;
+                DocumentUpdate.FullName = oServiceCall.FullName;
+                DocumentUpdate.Phone1 = oServiceCall.Phone1;
+                DocumentUpdate.Address = oServiceCall.Address;
+                DocumentUpdate.DateCreateBase = oServiceCall.DateCreateBase;
+                DocumentUpdate.DateOfBirth = oServiceCall.DateOfBirth;
+                DocumentUpdate.CINo = oServiceCall.CINo;
+                DocumentUpdate.Zalo = oServiceCall.Zalo;
+                DocumentUpdate.FaceBook = oServiceCall.FaceBook;
+                DocumentUpdate.ConsultUserId = oServiceCall.ConsultUserId;
+                DocumentUpdate.ServiceCode = oServiceCall.ServiceCode;
+                DocumentUpdate.ServiceName = oServiceCall.ServiceName;
+                DocumentUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                DocumentUpdate.StatusBefore = oServiceCall.StatusBefore;
+                DocumentUpdate.HealthStatus = oServiceCall.HealthStatus;
+                DocumentUpdate.NoteForAll = oServiceCall.NoteForAll;
+                ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+            }    
+        }    
+
+        #endregion
+
+        #region Protected Functions
 
         protected async Task SaveDocHandler(EnumType pProcess = EnumType.Update)
         {
@@ -175,7 +246,7 @@ namespace BM.Web.Features.Controllers
                         //_navigationManager!.NavigateTo($"/sales-doclist?key={key}");
                         return;
                     }
-                    //await showVoucher();
+                    await showVoucher();
                 }
             }
             catch (Exception ex)
@@ -190,7 +261,6 @@ namespace BM.Web.Features.Controllers
             }
         }
 
-        #region Protected Functions
         #endregion
     }
 }

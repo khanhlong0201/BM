@@ -13,15 +13,15 @@
             <h4 class="mb-1">Thông tin chung</h4>
             <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu gốc: <span>@($"{DocumentUpdate.VoucherNoBase}")</span>
+                    Số hóa đơn: <span class="h-link">@($"{DocumentUpdate.VoucherNoBase}")</span>
                 </div>
                 <div class="col-lg-8 col-md-8 col-sm-12">
-                    Ngày chứng từ gốc: <span>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</span>
+                    Ngày chứng từ gốc: <strong>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</strong>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu bảo hành: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    Số phiếu bảo hành: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
                     Tình trạng bảo hành:
@@ -35,7 +35,7 @@
                     }
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</span>
+                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)</span>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
@@ -108,7 +108,7 @@
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
-                <div class="col-md-4 col-sm-12">
+                <div class="col-md-8 col-sm-12">
                     <HLabel Value="Nhân viên thực hiện:" IsRequired= "true" />
                     <TelerikMultiSelect Data="@ListUsers"
                         @bind-Value="@ListUserImplements"
@@ -118,6 +118,8 @@
                         AutoClose="false" Width="100%">
                     </TelerikMultiSelect>
                 </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
                 <div class="col-md-8 col-sm-12">
                     Công thức mực:
                     <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />

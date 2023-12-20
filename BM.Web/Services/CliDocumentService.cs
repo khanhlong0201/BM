@@ -23,6 +23,7 @@ public interface ICliDocumentService
     Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId);
     Task<List<ReportModel>?> GetRevenueReportAsync(int pYear);
     Task<bool> UpdateServiceCallAsync(string pJson, string pAction, int pUserId);
+    Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -602,5 +603,38 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return false;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách phiếu bảo hành
+    /// </summary>
+    /// <param name="pSearch"></param>
+    /// <returns></returns>
+    public async Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch)
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_GET_SERVICE_CALL, pSearch);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<ServiceCallModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
     }
 }

@@ -24,6 +24,7 @@ public interface IDocumentService
     Task<ResponseModel> CancleOutBoundList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear);
     Task<ResponseModel> UpdateServiceCallAsync(RequestModel pRequest);
+    Task<IEnumerable<ServiceCallModel>> GetServiceCallsAsync(SearchModel pSearchData);
 }
 public class DocumentService : IDocumentService
 {
@@ -1029,7 +1030,59 @@ public class DocumentService : IDocumentService
             await _context.DisConnect();
         }
         return response;
-    }    
+    }
+
+    /// <summary>
+    /// lấy dach sách các phiếu bảo hành dịch vụ
+    /// </summary>
+    /// <param name="pSearchData"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ServiceCallModel>> GetServiceCallsAsync(SearchModel pSearchData)
+    {
+        IEnumerable<ServiceCallModel> data;
+        try
+        {
+            await _context.Connect();
+            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
+            if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
+            SqlParameter[] sqlParameters = new SqlParameter[6];
+            sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId + "");
+            sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
+            sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
+            sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
+            sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
+            sqlParameters[5] = new SqlParameter("@DocEntry", pSearchData.IdDraftDetail);
+            data = await _context.GetDataAsync(@$"select T0.DocEntry, T0.VoucherNo, T0.BaseEntry, T0.BaseLine, T0.ImplementUserId, T0.ChemicalFormula, T0.StatusId, T2.DateCreate as DateCreateBase
+                     , T0.StatusBefore, T0.HealthStatus, T0.NoteForAll, T0.BranchId, T0.UserCreate, T0.DateCreate, T0.DateUpdate
+            	     , T0.UserUpdate, T0.ReasonDelete, T2.VoucherNo as VoucherNoBase, T1.ServiceCode, T3.ServiceName, T4.BranchName
+            	     , T0.CusNo, T5.FullName, T5.Phone1, T1.ConsultUserId, T5.DateOfBirth, T5.CINo, T5.Phone2, T5.Zalo, T5.FaceBook, T5.[Address]
+            	     , case T0.StatusId 
+            	       when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
+                       when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
+                       else N'Chờ xử lý' end as StatusName
+                  from [dbo].[ServiceCalls] as T0 with(nolock)
+            inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.BaseEntry = T1.DocEntry and T0.BaseLine = T1.Id
+            inner join [dbo].[Drafts] as T2 with(nolock) on T1.DocEntry = T2.DocEntry
+            inner join [dbo].[Services] as T3 with(nolock) on T1.ServiceCode = T3.ServiceCode
+            inner join [dbo].[Branchs] as T4 with(nolock) on T0.BranchId = T4.BranchId
+            inner join [dbo].[Customers] as T5 with(nolock) on T0.CusNo = T5.CusNo
+                 where 1=1 
+                       and (
+                                (@DocEntry > 0 and T0.DocEntry = @DocEntry) 
+                                or (@DocEntry <= 0 and cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                              and (@StatusId = 'All' or (@StatusId <> 'All' and T0.[StatusId] = @StatusId))
+                                              and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId)))
+                           )
+            order by T0.DocEntry desc"
+                    , DataRecordToServiceCallModel, sqlParameters, commandType: CommandType.Text);
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ
@@ -1328,6 +1381,47 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["Remark"])) model.Remark = Convert.ToString(record["Remark"]);
         if (!Convert.IsDBNull(record["IsDelay"])) model.IsDelay = Convert.ToBoolean(record["IsDelay"]);
         if (!Convert.IsDBNull(record["DateDelay"])) model.DateDelay = Convert.ToDateTime(record["DateDelay"]);
+        return model;
+    }
+
+    /// <summary>
+    /// lấy danh sách các phiếu bảo hành
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ServiceCallModel DataRecordToServiceCallModel(IDataRecord record)
+    {
+        ServiceCallModel model = new();
+        if (!Convert.IsDBNull(record["DocEntry"])) model.DocEntry = Convert.ToInt32(record["DocEntry"]);
+        if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
+        if (!Convert.IsDBNull(record["BaseEntry"])) model.BaseEntry = Convert.ToInt32(record["BaseEntry"]);
+        if (!Convert.IsDBNull(record["BaseLine"])) model.BaseLine = Convert.ToInt32(record["BaseLine"]);
+        if (!Convert.IsDBNull(record["ImplementUserId"])) model.ImplementUserId = Convert.ToString(record["ImplementUserId"]);
+        if (!Convert.IsDBNull(record["ChemicalFormula"])) model.ChemicalFormula = Convert.ToString(record["ChemicalFormula"]);
+        if (!Convert.IsDBNull(record["StatusId"])) model.StatusId = Convert.ToString(record["StatusId"]);
+        if (!Convert.IsDBNull(record["StatusBefore"])) model.StatusBefore = Convert.ToString(record["StatusBefore"]);
+        if (!Convert.IsDBNull(record["HealthStatus"])) model.HealthStatus = Convert.ToString(record["HealthStatus"]);
+        if (!Convert.IsDBNull(record["NoteForAll"])) model.NoteForAll = Convert.ToString(record["NoteForAll"]);
+        if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
+        if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["CusNo"])) model.CusNo = Convert.ToString(record["CusNo"]);
+        if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
+        if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);
+        if (!Convert.IsDBNull(record["ConsultUserId"])) model.ConsultUserId = Convert.ToString(record["ConsultUserId"]);
+        if (!Convert.IsDBNull(record["StatusName"])) model.StatusName = Convert.ToString(record["StatusName"]);
+        if (!Convert.IsDBNull(record["VoucherNoBase"])) model.VoucherNoBase = Convert.ToString(record["VoucherNoBase"]);
+        if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
+        if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
+        if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
+        if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
+        if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
+        if (!Convert.IsDBNull(record["UserUpdate"])) model.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
+        if (!Convert.IsDBNull(record["ReasonDelete"])) model.ReasonDelete = Convert.ToString(record["ReasonDelete"]);
+        if (!Convert.IsDBNull(record["DateCreateBase"])) model.DateCreateBase = Convert.ToDateTime(record["DateCreateBase"]);
+        if (!Convert.IsDBNull(record["DateOfBirth"])) model.DateOfBirth = Convert.ToDateTime(record["DateOfBirth"]);
+        if (!Convert.IsDBNull(record["CINo"])) model.CINo = Convert.ToString(record["CINo"]);
+        if (!Convert.IsDBNull(record["Zalo"])) model.Zalo = Convert.ToString(record["Zalo"]);
+        if (!Convert.IsDBNull(record["FaceBook"])) model.FaceBook = Convert.ToString(record["FaceBook"]);
         return model;
     }
     #endregion

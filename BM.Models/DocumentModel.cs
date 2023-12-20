@@ -93,7 +93,6 @@ public class ServiceCallModel : Auditable
     public string? HealthStatus { get; set; }
     public string? NoteForAll { get; set; }
     public string? BranchId { get; set; }
-    public string? Remark { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public string? BranchName { get; set; }
     public string? ServiceCode { get; set; }
