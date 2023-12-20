@@ -25,6 +25,8 @@ namespace BM.Web.Features.Controllers
         public bool IsShowDialog { get; set; }
         public bool IsCreate { get; set; } = true;
         public HConfirm? _rDialogs { get; set; }
+
+        public List<EnumModel>? ListServiceTypes { get; set; }
         #endregion
 
         #region Override Functions
@@ -55,6 +57,8 @@ namespace BM.Web.Features.Controllers
                 {
                     await _progressService!.SetPercent(0.4);
                     await getDataBranchs();
+
+                    ListServiceTypes = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.@ServiceType));
                 }
                 catch (Exception ex)
                 {
@@ -116,6 +120,7 @@ namespace BM.Web.Features.Controllers
                     BranchUpdate.PhoneNumber = pItemDetails!.PhoneNumber;
                     BranchUpdate.Address = pItemDetails!.Address;
                     BranchUpdate.IsActive = pItemDetails!.IsActive;
+                    BranchUpdate.ListServiceTypes = pItemDetails.ListServiceType?.Split(",")?.ToList(); // ldv
                     IsCreate = false;
                 }
                 IsShowDialog = true;
@@ -135,6 +140,8 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
+
+                BranchUpdate.ListServiceType = BranchUpdate.ListServiceTypes == null || !BranchUpdate.ListServiceTypes.Any() ? "" : string.Join(",", BranchUpdate.ListServiceTypes);
                 await ShowLoader();
                 bool isSuccess = await _masterDataService!.UpdateBranchAsync(JsonConvert.SerializeObject(BranchUpdate), sAction, pUserId);
                 if (isSuccess)

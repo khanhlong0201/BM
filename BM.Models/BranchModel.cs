@@ -21,5 +21,7 @@ namespace BM.Models
         public int? UserCreate { get; set; }
         public DateTime? DateUpdate { get; set; }
         public int? UserUpdate { get; set; }
+        public string? ListServiceType { get; set; } // loại dịch vụ
+        public List<string>? ListServiceTypes { get; set; } // danh sách nhân dịch vụ trên UI
     }
 }

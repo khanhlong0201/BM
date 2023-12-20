@@ -33,6 +33,8 @@ public class UserModel : Auditable
     public string? ReEnterPassword { get; set; }
     public string? PasswordNew { get; set; }
     public string? BranchName { get; set; }
+    public string? ListServiceType { get; set; } // loại dịch vụ
+    public List<string>? ListServiceTypes { get; set; } // ds dịch vụ trên UI
 }
 
 /// <summary>
