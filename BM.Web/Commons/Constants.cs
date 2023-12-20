@@ -49,6 +49,7 @@ public static class EndpointConstants
     public const string URL_MASTERDATA_USER_LOGIN = "MasterData/Login";
     public const string URL_MASTERDATA_DELETE = "MasterData/DeleteData";
     public const string URL_DOCUMENT_UPDATE_SALES_ORDER = "Document/UpdateSalesOrder";
+    public const string URL_DOCUMENT_UPDATE_SERVICE_CALL = "Document/UpdateServiceCall";
 
     public const string URL_MASTERDATA_GET_SUPPLIES = "MasterData/GetSupplies";
     public const string URL_MASTERDATA_UPDATE_SUPPLIES = "MasterData/UpdateSupplies";
@@ -58,6 +59,7 @@ public static class EndpointConstants
     public const string URL_MASTERDATA_UPDATE_INVETORY = "MasterData/UpdateInventory";
 
     public const string URL_DOCUMENT_GET_SALES_ORDER = "Document/GetDocList";
+    public const string URL_DOCUMENT_GET_SERVICE_CALL = "Document/GetServiceCalls";
     public const string URL_DOCUMENT_GET_DOC_BY_ID = "Document/GetDocById";
     public const string URL_DOCUMENT_GET_DOC_BY_CUSNO = "Document/GetDocClosedByGuest";
     public const string URL_DOCUMENT_CANCLE_DOC_LIST = "Document/CancleDocList";

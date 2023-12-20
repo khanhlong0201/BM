@@ -73,3 +73,36 @@ public class CustomerDebtsModel
     public DateTime? DateDelay { get; set; } // ngày delay lại
 }
 
+public class ServiceCallModel : Auditable
+{
+    public int DocEntry { get; set; }
+    public string? VoucherNo { get; set; }
+    public int BaseEntry { get; set; }
+    public int BaseLine { get; set; }
+    public string? VoucherNoBase { get; set; }
+    public DateTime DateCreateBase { get; set; }
+    public string? CusNo { get; set; }
+    public string? FullName { get; set; }
+    public string? Phone1 { get; set; }
+    public string? CINo { get; set; } // CCCD
+    public string? Email { get; set; }
+    public string? FaceBook { get; set; }
+    public string? Zalo { get; set; }
+    public string? Address { get; set; }
+    public string? StatusBefore { get; set; }
+    public string? HealthStatus { get; set; }
+    public string? NoteForAll { get; set; }
+    public string? BranchId { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? BranchName { get; set; }
+    public string? ServiceCode { get; set; }
+    public string? ServiceName { get; set; }
+    public string? ConsultUserId { get; set; } // ds mã nhân viên tư vấn
+    public string? ImplementUserId { get; set; } // ds mã nhân viên tư vấn
+    public string? ChemicalFormula { get; set; } // công thức mực
+    public string? StatusOutBound { get; set; } //trạng thái xuất kho
+    public string? StatusId { get; set; }
+    public string? StatusName { get; set; }
+
+}
+

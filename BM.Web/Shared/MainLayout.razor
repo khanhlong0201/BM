@@ -153,7 +153,7 @@
                                         </span>
                                     </a>
                                 </li>
-                                <li class="nav-item dropdown @(PageActive == "/sales-doclist" || PageActive == "/outbound-list"  ? "active": "")">
+                                <li class="nav-item dropdown @(PageActive == "/sales-doclist" || PageActive == "/outbound-list" || PageActive == "/service-call-list" ? "active": "")">
                                     <a class="nav-link dropdown-toggle" href="#navbar-psmonitor" data-bs-toggle="dropdown" role="button" aria-expanded="false">
                                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -174,7 +174,10 @@
                                         <a class="dropdown-item" href="sales-doclist">
                                             Theo dõi đơn hàng
                                         </a>
-                                                <a class="dropdown-item" href="outbound-list">
+                                        <a class="dropdown-item" href="service-call-list">
+                                            Theo dõi bảo hành
+                                        </a>
+                                        <a class="dropdown-item" href="outbound-list">
                                             Theo dõi phiếu xuất kho
                                         </a>
                                     </div>

@@ -22,6 +22,8 @@ public interface ICliDocumentService
     Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
     Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId);
     Task<List<ReportModel>?> GetRevenueReportAsync(int pYear);
+    Task<bool> UpdateServiceCallAsync(string pJson, string pAction, int pUserId);
+    Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -550,6 +552,87 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "GetRevenueReportAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return default;
+    }
+
+    /// <summary>
+    /// cập nhật thông tin ServiceCall
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pAction"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateServiceCallAsync(string pJson, string pAction, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                Type = pAction,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_UPDATE_SERVICE_CALL, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    string sMessage = pAction == nameof(EnumType.Add) ? DefaultConstants.MESSAGE_INSERT : DefaultConstants.MESSAGE_UPDATE;
+                    _toastService.ShowSuccess($"{sMessage} thông tin phiếu bảo hành!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdateServiceCallAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Call API lấy danh sách phiếu bảo hành
+    /// </summary>
+    /// <param name="pSearch"></param>
+    /// <returns></returns>
+    public async Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch)
+    {
+        try
+        {
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_GET_SERVICE_CALL, pSearch);
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                if (httpResponse.IsSuccessStatusCode) return JsonConvert.DeserializeObject<List<ServiceCallModel>>(content);
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                    return null;
+                }
+                var oMessage = JsonConvert.DeserializeObject<ResponseModel>(content);
+                _toastService.ShowError($"{oMessage?.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetDataDocumentsAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;

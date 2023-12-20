@@ -3,7 +3,7 @@
 
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/copywriter.png">Lập phiếu xuất kho</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/save-folder.png" >Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(async()=> await SaveDocHandler())">Lưu thông tin</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png">In cam kết</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png" >In phiếu xuất kho</ToolBarButton>
 </TelerikToolBar>
@@ -13,21 +13,29 @@
             <h4 class="mb-1">Thông tin chung</h4>
             <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu gốc: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    Số hóa đơn: <span class="h-link">@($"{DocumentUpdate.VoucherNoBase}")</span>
                 </div>
                 <div class="col-lg-8 col-md-8 col-sm-12">
-                    Ngày chứng từ gốc: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</span>
+                    Ngày chứng từ gốc: <strong>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</strong>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Số phiếu bảo hành: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    Số phiếu bảo hành: <strong>@($"{DocumentUpdate.VoucherNo}")</strong>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Tình trạng phiếu: <span class="badge bg-green-lt">Bảo hành</span>
+                    Tình trạng bảo hành:
+                    @{
+                        string color = "badge bg-cyan-lt";
+                        if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "badge bg-green-lt";
+                        else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "badge bg-red-lt";
+                        <span class="@(color)">
+                            @($" {DocumentUpdate.StatusName}")
+                        </span>
+                    }
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-12">
-                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE)</span>
+                    Ngày tạo: <span>@DocumentUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)</span>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
@@ -68,31 +76,53 @@
                     Địa chỉ: <span>@DocumentUpdate.Address</span>
                 </div>
             </div>
+            <div class="row row-gap-1">
+                <div class="col-md-4 col-sm-12">
+                    Tình trạng khách khi sử dụng dịch vụ:
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore"/>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    Tình trạng sức khỏe:
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    Ghi chú đơn hàng:
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+                </div>
+            </div>
         </div>
         <div class="dropdown-divider"></div>
         <div>
             <h4 class="mb-1">Thông tin dịch vụ bảo hành</h4>
             <div class="row row-gap-1 mb-1">
                 <div class="col-12">
-                    Dịch vụ: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    Dịch vụ: <span>@($"{DocumentUpdate.ServiceCode} - {DocumentUpdate.ServiceName}")</span>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
                 <div class="col-md-4 col-sm-12">
-                    Nhân viên tư vấn: <span>@($"{DocumentUpdate.VoucherNo}")</span>
+                    Nhân viên tư vấn: <span>@($"{DocumentUpdate.ConsultUserId}")</span>
                 </div>
                 <div class="col-md-8 col-sm-12">
                     Tình trạng xuất kho: <span class="badge bg-purple-lt"> Đã xuất kho</span>
                 </div>
             </div>
             <div class="row row-gap-1 mb-1">
-                <div class="col-md-4 col-sm-12">
-                    Nhân viên thực hiện: <span>@($"{DocumentUpdate.VoucherNo}")</span>
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
-                </div>
                 <div class="col-md-8 col-sm-12">
-                    Công thức mực: <span>@($"{DocumentUpdate.VoucherNo}")</span>
-                    <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                    <HLabel Value="Nhân viên thực hiện:" IsRequired= "true" />
+                    <TelerikMultiSelect Data="@ListUsers"
+                        @bind-Value="@ListUserImplements"
+                        ValueField="@nameof(ComboboxModel.Code)"
+                        TextField="@nameof(ComboboxModel.Name)"
+                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                        AutoClose="false" Width="100%">
+                    </TelerikMultiSelect>
+                </div>
+            </div>
+            <div class="row row-gap-1 mb-1">
+                <div class="col-md-8 col-sm-12">
+                    Công thức mực:
+                    <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
                 </div>
             </div>
         </div>

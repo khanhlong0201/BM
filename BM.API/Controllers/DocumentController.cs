@@ -326,5 +326,53 @@ namespace BM.API.Controllers
             }
 
         }
+
+        [HttpPost]
+        [Route("UpdateServiceCall")]
+        public async Task<IActionResult> UpdateServiceCall([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _documentervice.UpdateServiceCallAsync(request);
+
+                if (response == null || response.StatusCode != 0) return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "UpdateServiceCall");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
+
+        [HttpPost]
+        [Route("GetServiceCalls")]
+        public async Task<IActionResult> GetServiceCalls(SearchModel pSearchData)
+        {
+            try
+            {
+                var data = await _documentervice.GetServiceCallsAsync(pSearchData);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "GetServiceCalls");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+            }
+
+        }
     }
 }
