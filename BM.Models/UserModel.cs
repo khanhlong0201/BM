@@ -7,7 +7,7 @@ public class UserModel : Auditable
     public int Id { get; set; }
     public string? EmpNo { get; set; }
 
-   // [Required(ErrorMessage = "Vui lòng điền Tên tài khoản")]
+    [Required(ErrorMessage = "Vui lòng điền Tên tài khoản")]
     public string? UserName { get; set; }
 
     [Required(ErrorMessage = "Vui lòng điền Mật khẩu")]
@@ -34,6 +34,7 @@ public class UserModel : Auditable
     public string? PasswordNew { get; set; }
     public string? BranchName { get; set; }
     public string? ListServiceType { get; set; } // loại dịch vụ
+    [Required(ErrorMessage = "Vui lòng chọn dịch vụ chỉ định cho nhân viên")]
     public List<string>? ListServiceTypes { get; set; } // ds dịch vụ trên UI
 }
 
