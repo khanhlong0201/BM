@@ -41,12 +41,12 @@ namespace BM.Web.Features.Controllers
                 await base.OnInitializedAsync();
                 ListTypeEnums = new List<ComboboxModel>()
                 {
-
                     new ComboboxModel() {Code = nameof(EnumType.@ServiceType), Name = "Loại dịch vụ"},
                     new ComboboxModel() {Code = nameof(EnumType.@SkinType), Name = "Loại da"},
                     new ComboboxModel() {Code = nameof(EnumType.@ServicePack), Name = "Gói dịch vụ"},
                     new ComboboxModel() {Code = nameof(EnumType.@Unit), Name = "Đơn vị tính"},
-                    new ComboboxModel() {Code = nameof(EnumType.@StateOfHealth), Name = "Tình trạng sức khỏe"}
+                    new ComboboxModel() {Code = nameof(EnumType.@StateOfHealth), Name = "Tình trạng sức khỏe"},
+                    new ComboboxModel() {Code = nameof(EnumType.@SuppliesType), Name = "Loại vật tư"}
                 };
                 pEnumType = nameof(EnumType.ServiceType);
                 var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
@@ -66,6 +66,9 @@ namespace BM.Web.Features.Controllers
                         break;
                     case "/STATE-OF-HEALTH":
                         pEnumType = nameof(EnumType.@StateOfHealth);
+                        break;
+                    case "/SUPPLIES-TYPE":
+                        pEnumType = nameof(EnumType.SuppliesType);
                         break;
                 }
                 pEnumTypeName = ListTypeEnums.FirstOrDefault(m => m.Code == pEnumType)?.Name + "";
@@ -137,6 +140,9 @@ namespace BM.Web.Features.Controllers
                 case "/STATE-OF-HEALTH":
                     pEnumType = nameof(EnumType.@StateOfHealth);
                     break;
+                case "/SUPPLIES-TYPE":
+                    pEnumType = nameof(EnumType.SuppliesType);
+                    break;
             }
             pEnumTypeName = ListTypeEnums?.FirstOrDefault(m => m.Code == pEnumType)?.Name + "";
             ListBreadcrumbs = new List<BreadcrumbModel>
@@ -179,6 +185,10 @@ namespace BM.Web.Features.Controllers
                     else if (currentLocation.Contains("/state-of-health"))
                     {
                         await setDataBreadCrumChanged("/state-of-health");
+                    }
+                    else if (currentLocation.Contains("/supplies-type"))
+                    {
+                        await setDataBreadCrumChanged("/supplies-type");
                     }
                 }
             }

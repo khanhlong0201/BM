@@ -53,6 +53,7 @@ public class SearchModel
     public bool IsAdmin { get; set; }
     public int IdDraftDetail { get; set; }
     public string? BranchId { get; set; }
+    public string? Type { get; set; }
 }
 
 public enum EnumType
@@ -70,7 +71,8 @@ public enum EnumType
     @StateOfHealth,
     @ChangePassWord,
     @DebtReminder,
-    @WarrantyReminder
+    @WarrantyReminder,
+    @SuppliesType,
 }
 
 public enum EnumTable
@@ -131,4 +133,12 @@ public enum ChartReportType
 {
     @List,
     @Chart
+}
+
+public enum SuppliesKind // loại vật tư, ( phổ thông, khuyến mãi, mực tê)
+{
+    @Popular,
+    @Promotion,
+    @Ink
+
 }

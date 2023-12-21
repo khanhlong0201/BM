@@ -25,6 +25,10 @@ public class ServiceModel : Auditable
     public int QtyWarranty { get; set; } // số lần bảo hành
     public string? PackageId { get; set; } // gói dịch vụ
     public string? PackageName { get; set; }
+    public bool IsOutBound { get; set; }// dịch vụ phải xuất kho ?
+    public string? ListPromotionSupplies { get; set; }//biến ds khuyến mãi 
+     public List<string>? ListPromotionSuppliess { get; set; }//ds khuyến mãi 
+
 }
 
 /// <summary>

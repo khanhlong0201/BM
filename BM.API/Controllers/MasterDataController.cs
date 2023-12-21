@@ -405,13 +405,13 @@ namespace BM.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetSupplies")]
-        public async Task<IActionResult> GetSupplies()
+        public async Task<IActionResult> GetSupplies([FromBody] SearchModel pSearchData)
         {
             try
             {
-                var data = await _masterService.GetSuppliesAsync();
+                var data = await _masterService.GetSuppliesAsync(pSearchData);
                 return Ok(data);
             }
             catch (Exception ex)

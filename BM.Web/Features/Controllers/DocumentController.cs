@@ -51,6 +51,7 @@ namespace BM.Web.Features.Controllers
         public EditContext? _EditOutBoundContext { get; set; }
         public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
         public List<SuppliesModel>? ListSuppplies { get; set; }
+        public SearchModel ItemFilter { get; set; } = new SearchModel();
         #endregion
 
         #region Override Functions
@@ -146,7 +147,7 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
-                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
+                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
                 }
                 catch (Exception ex)
                 {
@@ -259,7 +260,7 @@ namespace BM.Web.Features.Controllers
                 {
 
                 }
-                ListSuppplies = await _masterDataService!.GetDataSuppliesAsync();
+                ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
                 IsShowOutBound = true;
                 _EditOutBoundContext = new EditContext(OutBoundUpdate);
             }

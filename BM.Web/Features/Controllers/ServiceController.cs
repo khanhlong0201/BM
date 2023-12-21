@@ -40,6 +40,9 @@ namespace BM.Web.Features.Controllers
         public TelerikGrid<TreatmentRegimenModel>? RefListTreatments { get; set; }
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+
+        public List<SuppliesModel>? ListSupplies { get; set; } = new List<SuppliesModel>();
+        public SearchModel? ItemFilter { get; set; } = new SearchModel();
         #endregion
 
         #region Override Functions
@@ -73,6 +76,9 @@ namespace BM.Web.Features.Controllers
                     await getDataServices();
                     ListServicesType = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServiceType));
                     ListPackages = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.ServicePack));
+
+                    ItemFilter.Type = nameof(SuppliesKind.Promotion);//khuyến mãi
+                    ListSupplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
                 }
                 catch (Exception ex)
                 {
@@ -168,6 +174,7 @@ namespace BM.Web.Features.Controllers
                     ServiceUpdate.WarrantyPeriod = pItemDetails!.WarrantyPeriod;
                     ServiceUpdate.QtyWarranty = pItemDetails!.QtyWarranty;
                     ServiceUpdate.Description = pItemDetails!.Description;
+                    ServiceUpdate.ListPromotionSuppliess = pItemDetails.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
                     IsCreate = false;
                 }
                 IsShowDialog = true;
@@ -187,6 +194,7 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
+                ServiceUpdate.ListPromotionSupplies = ServiceUpdate.ListPromotionSuppliess == null || !ServiceUpdate.ListPromotionSuppliess.Any() ? "" : string.Join(",", ServiceUpdate.ListPromotionSuppliess);
                 await ShowLoader();
                 bool isSuccess = await _masterDataService!.UpdateServiceAsync(JsonConvert.SerializeObject(ServiceUpdate), sAction, pUserId);
                 if (isSuccess)

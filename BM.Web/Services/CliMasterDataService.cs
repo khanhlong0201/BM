@@ -29,7 +29,7 @@ public interface ICliMasterDataService
     Task LogoutAsync();
     Task<bool> DeleteDataAsync(string pTableName, string pReasonDelete, string pValue, int pUserId);
 
-    Task<List<SuppliesModel>?> GetDataSuppliesAsync();
+    Task<List<SuppliesModel>?> GetDataSuppliesAsync(SearchModel pSearch);
     Task<bool> UpdateSuppliesAsync(string pJson, string pAction, int pUserId);
     Task<List<PriceModel>?> GetDataPricesByServiceAsync(string pServiceCode);
     Task<bool> UpdatePriceAsync(string pJson, string pAction, int pUserId);
@@ -757,11 +757,11 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     /// Call API lấy danh sách vật tư
     /// </summary>
     /// <returns></returns>
-    public async Task<List<SuppliesModel>?> GetDataSuppliesAsync()
+    public async Task<List<SuppliesModel>?> GetDataSuppliesAsync(SearchModel pSearch)
     {
         try
         {
-            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SUPPLIES);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_MASTERDATA_GET_SUPPLIES, pSearch);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else

@@ -19,6 +19,7 @@ namespace BM.Web.Features.Controllers
         #region Properties
         public bool IsInitialDataLoadComplete { get; set; } = true;
         public List<EnumModel>? ListEnums { get; set; } //đơn vị tính
+        public List<EnumModel>? ListSuppliesTypes { get; set; } //Loại vật tư
         public List<SuppliesModel>? ListSupplies { get; set; }
         public IEnumerable<SuppliesModel>? SelectedSupplies { get; set; } = new List<SuppliesModel>();
         public SuppliesModel SuppliesUpdate { get; set; } = new SuppliesModel();
@@ -33,6 +34,9 @@ namespace BM.Web.Features.Controllers
         public bool IsShowIntoUpdateInv { get; set; }
         public bool IsCreate { get; set; } = true;
         public HConfirm? _rDialogs { get; set; }
+        public SearchModel ItemFilter { get; set; } = new SearchModel();
+
+        public List<ComboboxModel>? ListKinds { get; set; } //kiểu của vât tư
         #endregion
 
         #region Override Functions
@@ -63,6 +67,14 @@ namespace BM.Web.Features.Controllers
                 {
                     await _progressService!.SetPercent(0.4);
                     ListEnums = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.Unit));
+                    ListSuppliesTypes = await _masterDataService!.GetDataEnumsAsync(nameof(EnumType.@SuppliesType));
+                    ListKinds = new List<ComboboxModel>()
+                    {
+                        new ComboboxModel() {Code = nameof(SuppliesKind.@Popular), Name = "Phổ thông"},
+                        new ComboboxModel() {Code = nameof(SuppliesKind.@Promotion), Name = "Khuyến mãi"},
+                        new ComboboxModel() {Code = nameof(SuppliesKind.@Ink), Name = "Mực - Loại Tê"},
+                    };
+
                     await getData();
                     await getDataInv();
 
@@ -93,7 +105,8 @@ namespace BM.Web.Features.Controllers
         {
             ListSupplies = new List<SuppliesModel>();
             SelectedSupplies = new List<SuppliesModel>();
-            ListSupplies = await _masterDataService!.GetDataSuppliesAsync();
+            
+            ListSupplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
         }
 
         #endregion
@@ -205,6 +218,11 @@ namespace BM.Web.Features.Controllers
             try
             {
                 IsShowIntoInv = true;
+                ListInvetoryCreate = new List<InvetoryModel>();
+                foreach(var item in ListSupplies)
+                {
+                    ListInvetoryCreate.Add(new InvetoryModel { SuppliesCode = item.SuppliesCode, SuppliesName = item.SuppliesName, EnumId = item.EnumId,EnumName= item.EnumName });
+                }
             }
             catch (Exception ex)
             {
