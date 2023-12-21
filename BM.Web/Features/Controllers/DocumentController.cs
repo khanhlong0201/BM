@@ -199,6 +199,7 @@ namespace BM.Web.Features.Controllers
                     oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
                     oLine.StatusOutBound = item.StatusOutBound;
+                    oLine.JServiceCall = item.JServiceCall;
                     ListSalesOrder.Add(oLine);
                 }       
             }    
