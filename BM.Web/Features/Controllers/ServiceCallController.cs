@@ -170,6 +170,7 @@ namespace BM.Web.Features.Controllers
             if(oResult != null && oResult.Any())
             {
                 ServiceCallModel oServiceCall = oResult[0];
+                pIsLockPage = oServiceCall.StatusId != nameof(DocStatus.Pending); // lock page
                 DocumentUpdate.VoucherNo = oServiceCall.VoucherNo;
                 DocumentUpdate.DocEntry = oServiceCall.DocEntry;
                 DocumentUpdate.BaseEntry = oServiceCall.BaseEntry;

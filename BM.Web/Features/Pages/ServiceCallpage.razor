@@ -88,15 +88,15 @@
                         <div class="row row-gap-1">
                             <div class="col-md-4 col-sm-12">
                                 Tình trạng khách khi sử dụng dịch vụ:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" Enabled="@(!pIsLockPage)" />
                             </div>
                             <div class="col-md-4 col-sm-12">
                                 Tình trạng sức khỏe:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" Enabled="@(!pIsLockPage)" />
                             </div>
                             <div class="col-md-4 col-sm-12">
                                 Ghi chú đơn hàng:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" Enabled="@(!pIsLockPage)" />
                             </div>
                         </div>
                     </div>
@@ -128,12 +128,13 @@
                                             ValueField="@nameof(ComboboxModel.Code)"
                                             TextField="@nameof(ComboboxModel.Name)"
                                             FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                            Enabled="@(!pIsLockPage)"
                                             AutoClose="false" Width="100%">
                         </TelerikMultiSelect>
                     </div>
                     <div class="col-md-8 col-sm-12">
                         <HLabel Value="Công thức mực:" />
-                        <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
+                        <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtChemicalFormula" Enabled="@(!pIsLockPage)" />
                     </div>
                 </div>
             </div>
