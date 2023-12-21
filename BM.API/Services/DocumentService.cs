@@ -146,6 +146,7 @@ public class DocumentService : IDocumentService
                , isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
                , (select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
                , IIF(isnull(T5.DocEntry,0) <> 0,N'Rồi',N'Chưa') as [StatusOutBound]
+               , (select * from ServiceCalls where BaseEntry = T0.DocEntry for json path) as JServiceCall
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -208,6 +209,7 @@ public class DocumentService : IDocumentService
                     oLine.ImplementUserId = Convert.ToString(item["ImplementUserId"]);
                     oLine.ChemicalFormula = Convert.ToString(item["ChemicalFormula"]);
                     oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
+                    oLine.JServiceCall = Convert.ToString(item["JServiceCall"]);
                     lstDetails.Add(oLine);
                 }
                 data = new Dictionary<string, string>()

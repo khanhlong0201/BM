@@ -56,6 +56,7 @@ public class DocumentDetailModel : Auditable
     public double WarrantyPeriod { get; set; }
     public int QtyWarranty { get; set; }
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
+    public string? JServiceCall { get; set; } // json các phiếu bảo hành 
 }
 
 public class CustomerDebtsModel
