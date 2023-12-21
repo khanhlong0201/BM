@@ -223,11 +223,11 @@ namespace BM.API.Controllers
 
         [HttpGet]
         [Route("GetServices")]
-        public async Task<IActionResult> GetServices()
+        public async Task<IActionResult> GetServices(string pBranchId, int pUserId, string pLoadAll = "ALL")
         {
             try
             {
-                var data = await _masterService.GetServicessAsync();
+                var data = await _masterService.GetServicessAsync(pBranchId, pUserId, pLoadAll);
                 return Ok(data);
             }
             catch (Exception ex)

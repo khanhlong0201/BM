@@ -22,7 +22,7 @@ public interface ICliMasterDataService
     Task<bool> UpdateEnumAsync(string pJson, string pAction, int pUserId);
     Task<List<CustomerModel>?> GetDataCustomersAsync();
     Task<bool> UpdateCustomerAsync(string pJson, string pAction, int pUserId);
-    Task<List<ServiceModel>?> GetDataServicesAsync();
+    Task<List<ServiceModel>?> GetDataServicesAsync(string pBranchId, int pUserId, string pLoadAll = "ALL");
     Task<bool> UpdateServiceAsync(string pJson, string pAction, int pUserId);
     Task<CustomerModel?> GetCustomerByIdAsync(string pCustomer);
     Task<string> LoginAsync(LoginViewModel request);
@@ -427,11 +427,17 @@ public class CliMasterDataService : CliServiceBase, ICliMasterDataService
     /// lấy danh sách dịch vụ
     /// </summary>
     /// <returns></returns>
-    public async Task<List<ServiceModel>?> GetDataServicesAsync()
+    public async Task<List<ServiceModel>?> GetDataServicesAsync(string pBranchId, int pUserId, string pLoadAll)
     {
         try
         {
-            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SERVICE);
+            Dictionary<string, object?> pParams = new Dictionary<string, object?>()
+            {
+                {"pBranchId", $"{pBranchId}"},
+                {"pUserId", $"{pUserId}"},
+                {"pLoadAll", $"{pLoadAll}"},
+            };
+            HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_MASTERDATA_GET_SERVICE, pParams);
             var checkContent = ValidateJsonContent(httpResponse.Content);
             if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
             else

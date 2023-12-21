@@ -93,7 +93,8 @@ namespace BM.Web.Features.Controllers
         {
             ListServices = new List<ServiceModel>();
             SelectedServices = new List<ServiceModel>();
-            ListServices = await _masterDataService!.GetDataServicesAsync();
+            string loadAll = pIsAdmin ? "ALL" : nameof(EnumTable.Services);
+            ListServices = await _masterDataService!.GetDataServicesAsync(pBranchId, pUserId, pLoadAll: loadAll);
         }
 
         private async Task getDataPricesList()
