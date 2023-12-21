@@ -279,9 +279,26 @@ namespace BM.Web.Features.Controllers
             try
             {
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
-                await ShowLoader();
+                if (ListInvetoryCreate == null || ListInvetoryCreate.Count == 0)
+                {
+                    ShowWarning("Không có dòng dữ liệu nào để lưu tồn kho");
+                    return;
+                }
 
-                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(ListInvetoryCreate), sAction, pUserId);
+                var listCheckSave = ListInvetoryCreate.Where(d => d.QtyInv > 0 && d.Price > 0).FirstOrDefault();
+                if (listCheckSave == null)
+                {
+                    ShowWarning("Bạn phải nhận [Số lượng] và [Giá] để có để lưu được tồn kho");
+                    return;
+                }
+
+                var listCheck = ListInvetoryCreate.Where(d => d.QtyInv <= 0 || d.Price <= 0 || d.QtyInv == null  || d.Price == null).FirstOrDefault();
+                var confirm = listCheck !=null ? await _rDialogs!.ConfirmAsync($" {"Những dòng dữ liệu có [Số lượng] <= 0 hoặc [Giá] <=0 sẽ không được lưu, Bạn có chắc muốn lưu?"} ")  : await _rDialogs!.ConfirmAsync($" {"Bạn có chắc muốn lưu những dòng đã chọn"} ");
+                if (!confirm) return;
+
+                List<InvetoryModel>? listInvetoryCreate = ListInvetoryCreate.Where(d => d.QtyInv > 0 && d.Price > 0).ToList();
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(listInvetoryCreate), sAction, pUserId);
                 if (isSuccess)
                 {
                     await getDataInv();
