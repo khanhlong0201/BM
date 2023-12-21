@@ -65,6 +65,26 @@
             </GridColumn>
             <GridColumn Field=@nameof(ServiceModel.EnumName) Width="160px" Title="Loại dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.PackageName) Width="190px" Title="Gói dịch vụ"></GridColumn>
+             <GridColumn Field=@nameof(ServiceModel.ListPromotionSupplies) Width="270px" Title="Danh sách vật tư khuyến mãi">
+                <Template>
+                     <TelerikMultiSelect Data="@ListSupplies"
+                        @bind-Value="@((context as ServiceModel).ListPromotionSuppliess)"
+                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                        TextField="@nameof(SuppliesModel.SuppliesName)"
+                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                        Enabled="false"
+                        AutoClose="false" Width="100%">
+                        </TelerikMultiSelect>
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.IsOutBound) Width="170px" Title="Cần lập phiếu xuất kho  ?">
+                <Template>
+                    @{
+                        var model = (context as ServiceModel);
+                        <TelerikCheckBox @bind-Value="@model!.IsOutBound" Enabled="false" />
+                    }
+                </Template>
+            </GridColumn>
             <GridColumn Field=@nameof(ServiceModel.Description) Width="190px" Title="Mô tả"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.WarrantyPeriod) Width="170px" Title="Số tháng bảo hành"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.QtyWarranty) Width="170px" Title="Số lần bảo hành"></GridColumn>
@@ -86,6 +106,10 @@
             <HLabel For="txtBranchName" Value="Tên dịch vụ:" IsRequired="true" />
             <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceName" Id="txtBranchName" />
             <HValidationTooltip ValidationFor="@(()=> ServiceUpdate!.ServiceName)" Id="txtBranchName" />
+        </div>
+       <div class="mt-2">
+            <TelerikCheckBox @bind-Value="@ServiceUpdate.IsOutBound" Id="ckbIsOutBound" />
+            <HLabel Value="Cần lập phiếu xuất kho ?" For="ckbIsOutBound" />
         </div>
         <div class="mt-2">
             <HLabel Value="Đơn giá:" IsRequired="true" />
@@ -132,7 +156,17 @@
                     </TelerikComboBox>
                 </div>
             </div>
-            
+        </div>
+         <div class="mt-2">
+            <HLabel For="txtBranchName" Value="Danh sách vật tư khuyến mãi:" />
+            <TelerikMultiSelect Data="@ListSupplies"
+                        @bind-Value="@ServiceUpdate.ListPromotionSuppliess"
+                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                        TextField="@nameof(SuppliesModel.SuppliesName)"
+                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                        AutoClose="false" Width="100%">
+
+            </TelerikMultiSelect>
         </div>
         <div class="mt-2">
             <div class="row row-gap-2">

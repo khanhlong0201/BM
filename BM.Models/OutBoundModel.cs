@@ -35,5 +35,5 @@ public class OutBoundModel : Auditable
     public string? VoucherNoDraft { get; set; }// số chứng từ 
     public List<string>? ListChargeUser { get; set; } // danh sách nhân viên phụ trách
     public string? UserNameCreate { get; set; }
-
+    public string? Type { get; set; } // kiểu xuất kho ( theo dịch vụ, xuất kho bất kỳ thời điểm nào)
 }

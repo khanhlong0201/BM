@@ -52,6 +52,8 @@
                         </FooterTemplate>
                     </GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.SuppliesName) Width="270px" Title="Tên vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesTypeName) Width="160px" Title="Tên loại vật tư" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.TypeName) Width="160px" Title="Kiểu" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="120px" Title="Đơn vị tính" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.QtyIntoInv) Width="200px" Title="Tổng số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.QtyOutBound) Width="200px" Title="Tổng số lượng xuất kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
@@ -142,6 +144,40 @@
             <TelerikTextBox @bind-Value="@SuppliesUpdate.SuppliesName" Id="txtSuppliesName" />
             <HValidationTooltip ValidationFor="@(()=> SuppliesUpdate.SuppliesName)" Id="txtSuppliesName" />
         </div>
+        <div class="mt-2">
+                <HLabel For="cbbSuppliesTypeCode" Value="Loại vật tư:" IsRequired="true" />
+                <TelerikComboBox Data="@ListSuppliesTypes"
+                    Value="@SuppliesUpdate.SuppliesTypeCode"
+                    ValueExpression="@(() => SuppliesUpdate.SuppliesTypeCode)"
+                    ValueChanged="@((string value) => SuppliesUpdate.SuppliesTypeCode = value)"
+                    Placeholder="Chọn loại vật tư"
+                    TextField="@nameof(EnumModel.EnumName)"
+                    ValueField="@nameof(EnumModel.EnumId)"
+                    Filterable="true"
+                    ClearButton="false"
+                    Id="cbbSuppliesTypeCode"
+                    Class="btn-noborder-radius-left"
+                    Width="100%">
+                </TelerikComboBox>
+                <HValidationTooltip ValidationFor="@(()=> SuppliesUpdate.SuppliesTypeCode)" Id="cbbSuppliesTypeCode" />
+            </div>
+             <div class="mt-2">
+                <HLabel For="cbbSuppliesTypeCode" Value="Kiểu:" IsRequired="true" />
+                <TelerikComboBox Data="@ListKinds"
+                    Value="@SuppliesUpdate.Type"
+                    ValueExpression="@(() => SuppliesUpdate.Type)"
+                    ValueChanged="@((string value) => SuppliesUpdate.Type = value)"
+                    Placeholder="Chọn kiểu"
+                    TextField="@nameof(ComboboxModel.Name)"
+                    ValueField="@nameof(ComboboxModel.Code)"
+                    Filterable="true"
+                    ClearButton="false"
+                    Id="cbbSuppliesTypeCode"
+                    Class="btn-noborder-radius-left"
+                    Width="100%">
+                </TelerikComboBox>
+                <HValidationTooltip ValidationFor="@(()=> SuppliesUpdate.Type)" Id="cbbSuppliesTypeCode" />
+            </div>
          <div class="mt-2">
                 <HLabel For="cbbUnit" Value="Đơn vị tính:" IsRequired="true" />
                 <TelerikComboBox Data="@ListEnums"
