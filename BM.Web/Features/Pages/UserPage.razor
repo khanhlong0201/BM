@@ -58,7 +58,7 @@
                     }
                 </Template>
             </GridColumn>
-            <GridColumn Field=@nameof(UserModel.ListServiceType) Width="170px" Title="Dịch vụ thao tác"></GridColumn>
+            <GridColumn Field=@nameof(UserModel.ListServiceType) Width="190px" Title="Loại dịch vụ triển khai"></GridColumn>
             <GridColumn Field=@nameof(UserModel.PhoneNumber) Width="140px" Title="Số điện thoại"></GridColumn>
             <GridColumn Field=@nameof(UserModel.Address) Width="240px" Title="Địa chỉ"></GridColumn>
             <GridColumn Field=@nameof(UserModel.Email) Width="120px" Title="Email"></GridColumn>
@@ -134,7 +134,7 @@
             <HValidationTooltip ValidationFor="@(()=> UserUpdate.BranchId)" Id="cbbBranch" />
         </div>
          <div class="mt-2">
-            <HLabel For="multiCboListServiceTypes" Value="Loại dịch vụ sử dụng:" IsRequired="true" />
+            <HLabel For="multiCboListServiceTypes" Value="Loại dịch vụ triển khai:" IsRequired="true" />
             <TelerikMultiSelect Data="@ListServiceTypes"
                         @bind-Value="@UserUpdate.ListServiceTypes"
                         ValueField="@nameof(EnumModel.EnumId)"

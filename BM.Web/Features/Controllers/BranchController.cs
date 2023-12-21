@@ -150,6 +150,7 @@ namespace BM.Web.Features.Controllers
                     if (pEnum == EnumType.SaveAndCreate)
                     {
                         BranchUpdate = new BranchModel();
+                        IsCreate = true;
                         _EditContext = new EditContext(BranchUpdate);
                         return;
                     }

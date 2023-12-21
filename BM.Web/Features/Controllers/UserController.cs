@@ -172,6 +172,8 @@ public class UserController : BMControllerBase
                 {
                     UserUpdate = new UserModel();
                     _EditContext = new EditContext(UserUpdate);
+                    IsCreate = true;
+                    UserUpdate.BranchId = pBranchId; // defaul chi nhánh
                     return;
                 }
                 IsShowDialog = false;
