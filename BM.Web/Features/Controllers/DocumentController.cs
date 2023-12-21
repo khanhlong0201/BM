@@ -821,6 +821,9 @@ namespace BM.Web.Features.Controllers
                     DocumentUpdate.StatusBefore,
                     DocumentUpdate.HealthStatus,
                     DocumentUpdate.NoteForAll,
+                    DocumentUpdate.SkinType,
+                    oItem.WarrantyPeriod,
+                    oItem.QtyWarranty,
                     BaseLine = oItem.Id
                 };
                 if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls));
