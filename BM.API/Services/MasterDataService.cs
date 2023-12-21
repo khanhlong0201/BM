@@ -20,7 +20,7 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateEnums(RequestModel pRequest);
     Task<IEnumerable<CustomerModel>> GetCustomersAsync();
     Task<ResponseModel> UpdateCustomer(RequestModel pRequest);
-    Task<IEnumerable<ServiceModel>> GetServicessAsync();
+    Task<IEnumerable<ServiceModel>> GetServicessAsync(string pBranchId, int pUserId, string pLoadAll);
     Task<ResponseModel> UpdateService(RequestModel pRequest);
 
     Task<IEnumerable<UserModel>> Login(LoginRequestModel pRequest);
@@ -507,13 +507,33 @@ public class MasterDataService : IMasterDataService
     /// </summary>
     /// <param name="pBranchId"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<ServiceModel>> GetServicessAsync()
+    public async Task<IEnumerable<ServiceModel>> GetServicessAsync(string pBranchId, int pUserId, string pLoadAll)
     {
         IEnumerable<ServiceModel> data;
         try
         {
             await _context.Connect();
-            data = await _context.GetDataAsync(@"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[PackageId],T2.[EnumName] as [PackageName]
+            string sCondition = string.Empty;
+
+            // VIẾT VẬY CHO ĐỠ RỐI
+            if(pLoadAll?.ToUpper() == "ALL") sCondition = string.Empty; // load tất cả
+            else if (pLoadAll?.ToUpper() == nameof(EnumTable.Services).ToUpper())
+            {
+                // voo page danh mục
+                // lấy theo chi nhánh
+                sCondition = @"and CHARINDEX(',' + T1.EnumId + ',', ',' + (select top 1 ListServiceType from [Branchs] with(nolock) where BranchId = @BranchId) + ',', 0) > 0";
+            }
+            else
+            {
+                // vô page lập chứng từ -> đi theo nhân viên
+                // lấy theo chi nhánh + theo nhân viên
+                sCondition = @"and CHARINDEX(',' + T1.EnumId + ',', ',' + (select top 1 ListServiceType from [Branchs] with(nolock) where BranchId = @BranchId) + ',', 0) > 0
+                               and CHARINDEX(',' + T1.EnumId + ',', ',' + (select top 1 ListServiceType from [Users] with(nolock) where Id = @UserId) + ',', 0) > 0";
+            }
+            SqlParameter[] sqlParameters = new SqlParameter[2];
+            sqlParameters[0] = new SqlParameter("@BranchId", pBranchId);
+            sqlParameters[1] = new SqlParameter("@UserId", pUserId);
+            data = await _context.GetDataAsync(@$"select [ServiceCode],[ServiceName],T0.[EnumId],T1.[EnumName],T0.[PackageId],T2.[EnumName] as [PackageName]
                          ,T0.[Description],[WarrantyPeriod],[QtyWarranty],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
                          ,isnull((select top 1 Price from [dbo].[Prices] as T00 with(nolock) where T0.[ServiceCode] = T00.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [Price]
                          ,t0.ListPromotionSupplies 
@@ -521,8 +541,9 @@ public class MasterDataService : IMasterDataService
                     from [dbo].[Services] as T0 with(nolock) 
               inner join [dbo].[Enums] as T1 with(nolock) on T0.[EnumId] = T1.[EnumId]
                left join [dbo].[Enums] as T2 with(nolock) on T0.[PackageId] = T2.[EnumId]
-                   where T0.[IsDelete] = 0 order by [ServiceCode] desc"
-                    , DataRecordToServiceModel, commandType: CommandType.Text);
+                   where T0.[IsDelete] = 0 {sCondition}
+                order by [ServiceCode] desc"
+                    , DataRecordToServiceModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally

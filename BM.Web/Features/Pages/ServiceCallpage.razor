@@ -3,9 +3,9 @@
 
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/copywriter.png">Lập phiếu xuất kho</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(async()=> await SaveDocHandler())">Lưu thông tin</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@(async()=> await SaveDocHandler(EnumType.SaveAndClose))">Lưu & đóng phiếu</ToolBarButton>
-    <ToolBarButton ImageUrl="../assets/printer.png">In cam kết</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" Visible="@(!pIsLockPage)" OnClick="@(async()=> await SaveDocHandler())">Lưu thông tin</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/save-folder.png" Visible="@(!pIsLockPage)" OnClick="@(async()=> await SaveDocHandler(EnumType.SaveAndClose))">Lưu & đóng phiếu</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/printer.png" OnClick="@(async()=> await PrintCommitedDocHandler())">In cam kết</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/printer.png" >In phiếu xuất kho</ToolBarButton>
 </TelerikToolBar>
 <div class="h-content-filter" style="border-top: 1px solid var(--tblr-border-color)">
@@ -81,22 +81,25 @@
                             </div>
                         </div>
                         <div class="row row-gap-1 mb-1">
-                            <div class="col-12">
+                            <div class="col-lg-4 col-md-4 col-sm-12">
+                                Loại da: <strong>@DocumentUpdate.SkinType</strong>
+                            </div>
+                            <div class="col-lg-8 col-md-8 col-sm-12">
                                 Địa chỉ: <strong>@DocumentUpdate.Address</strong>
                             </div>
                         </div>
                         <div class="row row-gap-1">
                             <div class="col-md-4 col-sm-12">
                                 Tình trạng khách khi sử dụng dịch vụ:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.StatusBefore" Id="txtStatusBefore" Enabled="@(!pIsLockPage)" />
                             </div>
                             <div class="col-md-4 col-sm-12">
                                 Tình trạng sức khỏe:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.HealthStatus" Id="txtHealthStatus" Enabled="@(!pIsLockPage)" />
                             </div>
                             <div class="col-md-4 col-sm-12">
                                 Ghi chú đơn hàng:
-                                <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" />
+                                <TelerikTextBox @bind-Value="@DocumentUpdate!.NoteForAll" Id="txtNoteForAll" Enabled="@(!pIsLockPage)" />
                             </div>
                         </div>
                     </div>
@@ -128,12 +131,13 @@
                                             ValueField="@nameof(ComboboxModel.Code)"
                                             TextField="@nameof(ComboboxModel.Name)"
                                             FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                            Enabled="@(!pIsLockPage)"
                                             AutoClose="false" Width="100%">
                         </TelerikMultiSelect>
                     </div>
                     <div class="col-md-8 col-sm-12">
                         <HLabel Value="Công thức mực:" />
-                        <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtStatusBefore" />
+                        <TelerikTextBox @bind-Value="@DocumentUpdate!.ChemicalFormula" Id="txtChemicalFormula" Enabled="@(!pIsLockPage)" />
                     </div>
                 </div>
             </div>

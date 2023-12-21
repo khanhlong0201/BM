@@ -50,18 +50,7 @@
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(BranchModel.BranchName) Width="270px" Title="Tên chi nhánh"></GridColumn>
-            <GridColumn Field=@nameof(BranchModel.ListServiceType) Width="270px" Title="Loại dịch vụ">
-                <Template>
-                     <TelerikMultiSelect Data="@ListServiceTypes"
-                        @bind-Value="@((context as BranchModel).ListServiceTypes)"
-                        ValueField="@nameof(EnumModel.EnumId)"
-                        TextField="@nameof(EnumModel.EnumName)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
-                        AutoClose="false" Width="100%">
-                        </TelerikMultiSelect>
-                </Template>
-            </GridColumn>
+            <GridColumn Field=@nameof(BranchModel.ListServiceType) Width="190px" Title="Loại dịch vụ triển khai"></GridColumn>
             <GridColumn Field=@nameof(BranchModel.IsActive) Width="140px" Title="Đang hoạt động ?">
                 <Template>
                     @{
@@ -86,21 +75,23 @@
             <HLabel Value="Mã chi nhánh:" />
             <TelerikTextBox @bind-Value="@BranchUpdate!.BranchId" Class="h-link" Enabled="false" />
         </div>
-        <div class="mt-2">
-            <HLabel For="txtBranchName" Value="Loại dịch vụ:" IsRequired="true" />
-            <TelerikMultiSelect Data="@ListServiceTypes"
-                        @bind-Value="@BranchUpdate.ListServiceTypes"
-                        ValueField="@nameof(EnumModel.EnumId)"
-                        TextField="@nameof(EnumModel.EnumName)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        AutoClose="false" Width="100%">
-
-            </TelerikMultiSelect>
-        </div>
          <div class="mt-2">
             <HLabel For="txtBranchName" Value="Tên chi nhánh:" IsRequired="true" />
             <TelerikTextBox @bind-Value="@BranchUpdate.BranchName" Id="txtBranchName" />
             <HValidationTooltip ValidationFor="@(()=> BranchUpdate.BranchName)" Id="txtBranchName" />
+        </div>
+        <div class="mt-2">
+            <HLabel For="multiCboListServiceTypes" Value="Loại dịch vụ triển khai:" IsRequired="true" />
+            <TelerikMultiSelect Data="@ListServiceTypes"
+                                @bind-Value="@BranchUpdate.ListServiceTypes"
+                                ValueField="@nameof(EnumModel.EnumId)"
+                                TextField="@nameof(EnumModel.EnumName)"
+                                FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                Id="multiCboListServiceTypes"
+                                AutoClose="false" Width="100%">
+
+            </TelerikMultiSelect>
+            <HValidationTooltip ValidationFor="@(()=> BranchUpdate.ListServiceTypes)" Id="multiCboListServiceTypes" />
         </div>
         <div class="mt-2">
             <HLabel For="txtPhoneNumber" Value="Số điện thoại:" IsRequired="true" />

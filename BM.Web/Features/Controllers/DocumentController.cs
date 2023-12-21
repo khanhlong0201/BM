@@ -132,8 +132,10 @@ namespace BM.Web.Features.Controllers
                     await _progressService!.SetPercent(0.6);
                     if(!pIsLockPage)
                     {
+                        // Admin thì lấy theo chi nhánh ngược lại -> lấy theo chi nhánh + theo nhân viên
+                        string loadAll = pIsAdmin ? nameof(EnumTable.Services) : nameof(EnumTable.Drafts);
                         // lấy danh sách dịch vụ
-                        var listServices = await _masterDataService!.GetDataServicesAsync();
+                        var listServices = await _masterDataService!.GetDataServicesAsync(pBranchId, pUserId, pLoadAll: loadAll);
                         if (listServices != null && listServices.Any())
                         {
                             ListGroupServices = listServices.GroupBy(m => string.IsNullOrEmpty(m.PackageName) ? $"{m.EnumName}"
@@ -822,6 +824,9 @@ namespace BM.Web.Features.Controllers
                     DocumentUpdate.StatusBefore,
                     DocumentUpdate.HealthStatus,
                     DocumentUpdate.NoteForAll,
+                    DocumentUpdate.SkinType,
+                    oItem.WarrantyPeriod,
+                    oItem.QtyWarranty,
                     BaseLine = oItem.Id
                 };
                 if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls));

@@ -54,6 +54,7 @@ public class UserController : BMControllerBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
             try
@@ -116,6 +117,7 @@ public class UserController : BMControllerBase
             {
                 IsCreate = true;
                 UserUpdate = new UserModel();
+                UserUpdate.BranchId = pBranchId; // defaul chi nhánh
             }
             else
             {
@@ -127,6 +129,7 @@ public class UserController : BMControllerBase
                 UserUpdate.Email = pItemDetails.Email;
                 UserUpdate.Address = pItemDetails.Address;
                 UserUpdate.Password = EncryptHelper.Decrypt(pItemDetails.Password + "");
+                UserUpdate.ReEnterPassword = UserUpdate.Password;
                 UserUpdate.DateOfBirth = pItemDetails.DateOfBirth;
                 UserUpdate.DateOfWork = pItemDetails.DateOfWork;
                 UserUpdate.IsAdmin = pItemDetails.IsAdmin;
@@ -169,6 +172,8 @@ public class UserController : BMControllerBase
                 {
                     UserUpdate = new UserModel();
                     _EditContext = new EditContext(UserUpdate);
+                    IsCreate = true;
+                    UserUpdate.BranchId = pBranchId; // defaul chi nhánh
                     return;
                 }
                 IsShowDialog = false;

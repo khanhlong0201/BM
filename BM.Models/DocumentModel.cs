@@ -103,6 +103,10 @@ public class ServiceCallModel : Auditable
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public string? StatusId { get; set; }
     public string? StatusName { get; set; }
+    public double WarrantyPeriod { get; set; }
+    public string? SkinType { get; set; }
+    public int QtyWarranty { get; set; }
+    public double Amount { get; set; }
 
 }
 

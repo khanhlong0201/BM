@@ -50,7 +50,7 @@
                 </FooterTemplate>
             </GridColumn>
             <GridColumn Field=@nameof(UserModel.FullName) Width="270px" Title="Tên nhân viên"></GridColumn>
-            <GridColumn Field=@nameof(UserModel.IsAdmin) Width="140px" Title="Admin ?">
+            <GridColumn Field=@nameof(UserModel.IsAdmin) Width="120px" Title="Admin ?">
                 <Template>
                     @{
                         var model = (context as UserModel);
@@ -58,18 +58,7 @@
                     }
                 </Template>
             </GridColumn>
-             <GridColumn Field=@nameof(UserModel.ListServiceType) Width="270px" Title="Loại dịch vụ">
-                <Template>
-                     <TelerikMultiSelect Data="@ListServiceTypes"
-                        @bind-Value="@((context as UserModel).ListServiceTypes)"
-                        ValueField="@nameof(EnumModel.EnumId)"
-                        TextField="@nameof(EnumModel.EnumName)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
-                        AutoClose="false" Width="100%">
-                        </TelerikMultiSelect>
-                </Template>
-            </GridColumn>
+            <GridColumn Field=@nameof(UserModel.ListServiceType) Width="190px" Title="Loại dịch vụ triển khai"></GridColumn>
             <GridColumn Field=@nameof(UserModel.PhoneNumber) Width="140px" Title="Số điện thoại"></GridColumn>
             <GridColumn Field=@nameof(UserModel.Address) Width="240px" Title="Địa chỉ"></GridColumn>
             <GridColumn Field=@nameof(UserModel.Email) Width="120px" Title="Email"></GridColumn>
@@ -86,9 +75,15 @@
          Title="@(IsCreate ? "Thêm mới nhân viên" : $"Cập nhật nhân viên {UserUpdate!.EmpNo}")">
     <EditForm EditContext="@_EditContext">
         <DataAnnotationsValidator />
-        <div>
-            <HLabel Value="Mã nhân viên:" />
-            <TelerikTextBox @bind-Value="@UserUpdate!.EmpNo" Class="h-link" Enabled="false"  />
+        <div class="row row-gap-2 align-items-end mt-1">
+            <div class="col-md-6 col-sm-12">
+                <HLabel Value="Mã nhân viên:" />
+                <TelerikTextBox @bind-Value="@UserUpdate!.EmpNo" Class="h-link" Enabled="false" />
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <TelerikCheckBox @bind-Value="@UserUpdate.IsAdmin" Id="ckbIsAdmin" />
+                <HLabel Value="Quản trị viên?" For="ckbIsAdmin" />
+            </div>
         </div>
         <div class="mt-2">
             <HLabel For="txtFullName" Value="Tên nhân viên:" IsRequired="true" />
@@ -100,22 +95,27 @@
             <TelerikTextBox @bind-Value="@UserUpdate.UserName" Id="txtUserName" />
             <HValidationTooltip ValidationFor="@(()=> UserUpdate.UserName)" Id="txtUserName" />
         </div>
-        <div class="mt-2">
-            <HLabel For="txtPassWord" Value="Mật khẩu:" IsRequired="true" />
-            <div style="display: flex">
-                <TelerikTextBox Password="@isPasswordHidden" @bind-Value="@UserUpdate.Password" Id="txtPassWord" />
-                <i @onclick="@(() => HiddenPassword())" class="@(isPasswordHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px; margin-top:7px; cursor: pointer;"></i>  
+        @if(IsCreate)
+        {
+            <div class="row row-gap-2 mt-2">
+                <div class="col-md-6 col-sm-12">
+                    <HLabel For="txtPassWord" Value="Mật khẩu:" IsRequired="true" />
+                    <div style="display: flex">
+                        <TelerikTextBox Password="@isPasswordHidden" @bind-Value="@UserUpdate.Password" Id="txtPassWord" />
+                        <i @onclick="@(() => HiddenPassword())" class="@(isPasswordHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px; margin-top:7px; cursor: pointer;"></i>
+                    </div>
+                    <HValidationTooltip ValidationFor="@(()=> UserUpdate.Password)" Id="txtPassWord" />
+                </div>
+                <div class="col-md-6 col-sm-12">
+                    <HLabel For="txtPassWord" Value="Nhập lại mật khẩu:" IsRequired="true" />
+                    <div style="display: flex">
+                        <TelerikTextBox Password="@isReEnterPasswordAgainHidden" @bind-Value="@UserUpdate.ReEnterPassword" Id="txtPassWord" />
+                        <i @onclick="@(() => HiddenReEnterPassword())" class="@(isReEnterPasswordAgainHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px;margin-top:7px; cursor: pointer;"></i>
+                    </div>
+                    <HValidationTooltip ValidationFor="@(()=> UserUpdate.ReEnterPassword)" Id="txtPassWord" />
+                </div>
             </div>
-            <HValidationTooltip ValidationFor="@(()=> UserUpdate.Password)" Id="txtPassWord" />
-        </div>
-        <div class="mt-2">
-            <HLabel For="txtPassWord" Value="Nhập lại mật khẩu:" IsRequired="true" />
-            <div style="display: flex">
-                <TelerikTextBox Password="@isReEnterPasswordAgainHidden" @bind-Value="@UserUpdate.ReEnterPassword" Id="txtPassWord" />
-                <i @onclick="@(() => HiddenReEnterPassword())" class="@(isReEnterPasswordAgainHidden ? "fa fa-eye-slash":"far fa-eye")" id="togglePassword" style="margin-left: 5px;margin-top:7px; cursor: pointer;"></i>  
-            </div>
-            <HValidationTooltip ValidationFor="@(()=> UserUpdate.ReEnterPassword)" Id="txtPassWord" />
-        </div>
+        } 
         <div class="mt-2">
             <HLabel For="cbbBranch" Value="Chi nhánh:" IsRequired="true" />
             <TelerikComboBox Data="@ListBranchs"
@@ -134,23 +134,26 @@
             <HValidationTooltip ValidationFor="@(()=> UserUpdate.BranchId)" Id="cbbBranch" />
         </div>
          <div class="mt-2">
-            <HLabel For="txtBranchName" Value="Loại dịch vụ:" IsRequired="true" />
+            <HLabel For="multiCboListServiceTypes" Value="Loại dịch vụ triển khai:" IsRequired="true" />
             <TelerikMultiSelect Data="@ListServiceTypes"
                         @bind-Value="@UserUpdate.ListServiceTypes"
                         ValueField="@nameof(EnumModel.EnumId)"
                         TextField="@nameof(EnumModel.EnumName)"
                         FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                        Id="multiCboListServiceTypes"
                         AutoClose="false" Width="100%">
-
             </TelerikMultiSelect>
+            <HValidationTooltip ValidationFor="@(()=> UserUpdate.ListServiceTypes)" Id="multiCboListServiceTypes" />
         </div>
-        <div class="mt-2">
-            <HLabel For="txtPhoneNumber" Value="Số điện thoại:" />
-            <TelerikTextBox @bind-Value="@UserUpdate.PhoneNumber" Id="txtPhoneNumber" />
-        </div>
-        <div class="mt-2">
-            <HLabel For="txtEmail" Value="Email:" />
-            <TelerikTextBox @bind-Value="@UserUpdate.Email" Id="txtEmail" />
+        <div class="row row-gap-2 mt-2">
+            <div class="col-md-6 col-sm-12">
+                <HLabel For="txtPhoneNumber" Value="Số điện thoại:" />
+                <TelerikTextBox @bind-Value="@UserUpdate.PhoneNumber" Id="txtPhoneNumber" />
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <HLabel For="txtEmail" Value="Email:" />
+                <TelerikTextBox @bind-Value="@UserUpdate.Email" Id="txtEmail" />
+            </div>
         </div>
         <div class="mt-2">
             <HLabel For="txtAddress" Value="Địa chỉ:" />
@@ -173,10 +176,6 @@
                     Class="btn-noborder-radius-left">
                 </TelerikDatePicker>
             </div>
-        </div>
-        <div class="mt-2">
-            <TelerikCheckBox @bind-Value="@UserUpdate.IsAdmin" Id="ckbIsAdmin" />
-            <HLabel Value="Supper Admin?" For="ckbIsAdmin" />
         </div>
     </EditForm>
 </HDialog>
