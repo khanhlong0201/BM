@@ -6,6 +6,8 @@ public class RequestModel
     public string? Json { get; set; }
     public string? Type { get; set; }
     public string? JsonDetail { get; set; }
+    public int BaseEntry { get; set; }
+    public int BaseLine { get; set; }
 }
 
 public class ResponseModel

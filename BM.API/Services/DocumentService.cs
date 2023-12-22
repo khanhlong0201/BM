@@ -25,6 +25,7 @@ public interface IDocumentService
     Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear);
     Task<ResponseModel> UpdateServiceCallAsync(RequestModel pRequest);
     Task<IEnumerable<ServiceCallModel>> GetServiceCallsAsync(SearchModel pSearchData);
+    Task<ResponseModel> CheckExistsDataAsync(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -146,7 +147,17 @@ public class DocumentService : IDocumentService
                , isnull((select top 1 Price from [dbo].[Prices] with(nolock) where [ServiceCode] = T1.[ServiceCode] and [IsActive]= 1 order by [IsActive] desc, [DateUpdate] desc), 0) as [PriceOld]
                , (select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) where T00.EnumType = 'SkinType' and T3.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
                , IIF(isnull(T5.DocEntry,0) <> 0,N'Rồi',N'Chưa') as [StatusOutBound]
-               , (select * from ServiceCalls where BaseEntry = T0.DocEntry for json path) as JServiceCall
+               , (select T00.DocEntry, T00.VoucherNo, T00.BaseEntry, T00.BaseLine, T00.ImplementUserId, T00.ChemicalFormula, T00.StatusId, T2.DateCreate as DateCreateBase
+                       , T00.StatusBefore, T00.HealthStatus, T00.NoteForAll, T00.BranchId, T00.UserCreate, T00.DateCreate, T00.DateUpdate
+            	       , T00.UserUpdate, T00.ReasonDelete, T1.ServiceCode, T4.ServiceName, T04.BranchName
+            	       , case T00.StatusId 
+            	         when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
+                         when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
+                         else N'Chờ xử lý' end as StatusName 
+					from [dbo].[ServiceCalls] as T00 with(nolock) 
+			  inner join [dbo].[Branchs] as T04 with(nolock) on T00.BranchId = T04.BranchId
+			       where T00.BaseEntry = T0.DocEntry and T00.IsDelete = 0 and T00.StatusId <> 'Cancled'
+                order by T00.DocEntry desc for json path) as JServiceCall
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -1103,6 +1114,54 @@ public class DocumentService : IDocumentService
         }
         return data;
     }
+    
+    /// <summary>
+    /// Kiểm tra tồn tại dữ liệu
+    /// Thêm type muốn kiểm tra
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> CheckExistsDataAsync(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters;
+            switch (pRequest.Type)
+            {
+                case nameof(EnumTable.ServiceCalls):
+                    // kiểm tra tồn tại phiếu bảo hành đang Pending hay k
+                    // Buộc phải hoàn thành phiếu có tình trạng pending
+                    sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@BaseEntry", pRequest.BaseEntry);
+                    sqlParameters[1] = new SqlParameter("@BaseLine", pRequest.BaseLine);
+                    response.StatusCode = (int)HttpStatusCode.OK;
+                    object? oServiceCall= await _context.ExecuteScalarObjectAsync(@$"select VoucherNo from ServiceCalls as T0 with(nolock) 
+                    where BaseEntry = @BaseEntry and BaseLine = @BaseLine and T0.StatusId = '{nameof(DocStatus.Pending)}'", sqlParameters);
+                    if(oServiceCall != null)
+                    {
+                        response.StatusCode = (int)HttpStatusCode.Conflict;
+                        response.Message = $"Tồn tại phiếu bảo hành [{Convert.ToString(oServiceCall)}] đang chờ xử lý!";
+                    }
+                    break;
+                default:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = "Không xác định được phương thức!";
+                    break;
+            }    
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }    
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ

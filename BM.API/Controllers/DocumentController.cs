@@ -374,5 +374,31 @@ namespace BM.API.Controllers
             }
 
         }
+
+        [HttpPost]
+        [Route("CheckExistsData")]
+        public async Task<IActionResult> CheckExistsData([FromBody] RequestModel request)
+        {
+            try
+            {
+                var response = await _documentervice.CheckExistsDataAsync(request);
+                if (response == null || response.StatusCode != 0) return StatusCode(response?.StatusCode ?? StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = response?.StatusCode ?? StatusCodes.Status400BadRequest,
+                    Message = response?.Message ?? "Vui lòng liên hệ IT để được hổ trợ."
+                });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "DocumentController", "CheckExistsData");
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
+
+            }
+        }
     }
 }
