@@ -149,7 +149,8 @@ namespace BM.Web.Features.Controllers
                         Code = m.EmpNo,
                         Name = $"{m.EmpNo}-{m.FullName}"
                     });
-                    ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
+                    // khi call mới gọi
+                    //ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
                 }
                 catch (Exception ex)
                 {
@@ -200,7 +201,11 @@ namespace BM.Web.Features.Controllers
                     oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
                     oLine.StatusOutBound = item.StatusOutBound;
-                    oLine.JServiceCall = item.JServiceCall;
+                    if(!string.IsNullOrEmpty(item.JServiceCall))
+                    {
+                        // danh sách phiếu bảo hành
+                        oLine.ListServiceCalls = JsonConvert.DeserializeObject<List<ServiceCallModel>>(item.JServiceCall);
+                    }    
                     ListSalesOrder.Add(oLine);
                 }       
             }    
@@ -803,7 +808,14 @@ namespace BM.Web.Features.Controllers
                     ShowInfo($"Dịch vụ [{oItem.ServiceCode} - {oItem.ServiceName}] không có bảo hành!");
                     return;
                 }
-
+                // call API kiểm tra dữ liệu có phiếu nào dang dở không
+                await ShowLoader();
+                RequestModel pRequest = new RequestModel();
+                pRequest.BaseEntry = pDocEntry;
+                pRequest.BaseLine = oItem.Id;
+                pRequest.Type = nameof(EnumTable.ServiceCalls);
+                bool checkDataExistsPending = await _documentService!.CheckDataExistsAsync(pRequest);
+                if (!checkDataExistsPending) return;
                 // lấy các thông tin khách hàng bê qua
                 var oHeader = new
                 {
@@ -847,8 +859,29 @@ namespace BM.Web.Features.Controllers
             }
             finally
             {
+                await Task.Delay(100);
                 await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected void NavigateHandler(int pDocEntry, string pLinkPage = "service-call")
+        {
+            try
+            {
+                if (pDocEntry <= 0) return;
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pDocEntry", $"{pDocEntry}"},
+                    { "pIsCreate", $"{false}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navigationManager!.NavigateTo($"/{pLinkPage}?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "NavigateHandler");
+                ShowError(ex.Message);
             }
         }
         #endregion

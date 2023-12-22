@@ -24,6 +24,7 @@ public interface ICliDocumentService
     Task<List<ReportModel>?> GetRevenueReportAsync(int pYear);
     Task<bool> UpdateServiceCallAsync(string pJson, string pAction, int pUserId);
     Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch);
+    Task<bool> CheckDataExistsAsync(RequestModel pRequest);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -637,5 +638,50 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
             _toastService.ShowError(ex.Message);
         }
         return default;
+    }
+
+    /// <summary>
+    /// Call API check dữ liệu trùng
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<bool> CheckDataExistsAsync(RequestModel pRequest)
+    {
+        try
+        {
+            if(pRequest == null)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_INVALID_DATA);
+                return false;
+            }    
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_CHECK_EXISTS_DATA, pRequest);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode) return true;
+                if(oResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    _toastService.ShowInfo($"{oResponse.Message}");
+                    return false;
+                }    
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CheckDataExistsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
     }
 }
