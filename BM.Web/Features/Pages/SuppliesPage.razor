@@ -4,6 +4,7 @@
 <TelerikTabStrip>
     <TabStripTab Title="Quản lý vật tư">
         <TelerikToolBar Class="border-bottom-0">
+            <ToolBarButton ImageUrl="../assets/copywriter.png" OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenDialogHandler())">Thêm mới</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/remove_grid.png"  OnClick="@(()=> DeleteDataHandler())">Xóa dòng</ToolBarButton>
@@ -243,11 +244,79 @@
         </div>
          <div>
             <HLabel Value="Giá nhập kho/Đơn vị tính:"  IsRequired="true"/>
-            <TelerikNumericTextBox Min="500"  Step="500"  @bind-Value="@InvetoryHistoryUpdate.Price" Class="bh-link"  Id="txtQty" />
+            <TelerikNumericTextBox Min="500"  Step="500" Format="@DefaultConstants.FORMAT_CURRENCY" @bind-Value="@InvetoryHistoryUpdate.Price" Class="bh-link"  Id="txtQty" />
         </div>
          <div>
             <HLabel Value="Số lượng nhập kho:"  IsRequired="true"/>
-            <TelerikNumericTextBox @bind-Value="@InvetoryHistoryUpdate.QtyInv" Class="bh-link" Min="1" Id="txtQty" />
+            <TelerikNumericTextBox @bind-Value="@InvetoryHistoryUpdate.QtyInv" Format="@DefaultConstants.FORMAT_CURRENCY" Class="bh-link" Min="1" Id="txtQty" />
         </div>
     </EditForm>
 </HDialog>
+
+@*Lập phiếu xuất kho theo yêu cầu *@
+<HDialog @bind-IsVisible="@IsShowOutBound"
+         IsShowButtonSaveAdnCreate="false"
+         Width="65%"
+         SaveAndClosed="@(()=> SaveOutBoundHandler())"
+         Title="@($"Lập lệnh và xuất kho theo yêu cầu")">
+    <EditForm EditContext="@_EditOutBoundContext">
+        <DataAnnotationsValidator />
+        <div class="row row-gap-2">
+            <div class="col-md-4 col-sm-12">
+                <HLabel Value="Cơ sở: " />
+                <strong>@OutBoundUpdate.BranchName</strong>
+            </div>
+        </div>
+         <div class="mt-2">
+            <HLabel For="txtColorImplement" Value="Dụng cụ: " />
+             @if (ListSuppliesOutBound != null && ListSuppliesOutBound.Any()){
+                @foreach(var oItem in ListSuppliesOutBound)
+                {
+                     <div class="mt-2 row">
+                         <div class="col-2">
+                            <strong> @($"{oItem.SuppliesName} ")</strong>
+                         </div>
+                         <div class="col-2" style="margin-top: 5px">
+                             <HLabel For="txtColorImplement" Value="@("Tổng số lượng tồn kho: ")" /> 
+                              <strong> @($"{oItem.QtyInv} ")</strong>
+                         </div>
+                         <div class="col-2" style="margin-top: 5px">
+                            <HLabel For="txtColorImplement" Value="@("ĐVT trong kho: ")" /> 
+                            <strong> @($"{oItem.EnumName} ")</strong>
+                         </div>
+                         <div class="col-2" style="margin-top: 5px">
+                             <HLabel For="txtColorImplement" Value="Nhập số lượng xuất:" /> 
+                         </div>
+                          <div class="col-2">
+                            <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0"  Step="1"  @bind-Value="@oItem.Qty" Enabled="@(oItem.QtyInv <= 0? false :true)" Id="txtQty" /> 
+                         </div>
+                         <div class="col-2" style="margin-top: 5px">
+                            <HLabel For="txtColorImplement" Value="@("ĐVT xuất kho: ")" /> 
+                            <strong> @(oItem.SuppliesCode + "" =="VT008"? "Giọt": oItem.EnumName)</strong>
+                         </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                }
+            }
+        </div>
+         <div class="mt-2 row">
+            <div class="col-6">
+                <HLabel For="FullName" Value="Nhân viên xuất kho:" />
+                <TelerikTextBox @bind-Value="@FullName" Id="FullName"  Enabled="false" />
+             
+             </div>
+            <div class="col-6">
+                 <HLabel For="ChargeUser" Value="Nhân viên phụ trách:" IsRequired="true" />
+                 <TelerikMultiSelect Data="@ListUsers"
+                        @bind-Value="@OutBoundUpdate.ListChargeUser"
+                        ValueField="@nameof(ComboboxModel.Code)"
+                        TextField="@nameof(ComboboxModel.Name)"
+                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                        AutoClose="false" Width="100%">
+                </TelerikMultiSelect>
+                 
+            </div>
+        </div>
+    </EditForm>
+</HDialog>
+

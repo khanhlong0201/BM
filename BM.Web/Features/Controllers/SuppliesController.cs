@@ -15,6 +15,7 @@ namespace BM.Web.Features.Controllers
         #region Dependency Injection
         [Inject] private ILogger<BranchController>? _logger { get; init; }
         [Inject] private ICliMasterDataService? _masterDataService { get; init; }
+        [Inject] private ICliDocumentService? _documentService { get; init; }
         #endregion
         #region Properties
         public bool IsInitialDataLoadComplete { get; set; } = true;
@@ -37,6 +38,13 @@ namespace BM.Web.Features.Controllers
         public SearchModel ItemFilter { get; set; } = new SearchModel();
 
         public List<ComboboxModel>? ListKinds { get; set; } //kiểu của vât tư
+
+        public bool IsShowOutBound { get; set; } = false;
+        public EditContext? _EditOutBoundContext { get; set; }
+        public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
+        public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
+        public List<SuppliesModel>? ListSuppliesOutBound { get; set; }
+
         #endregion
 
         #region Override Functions
@@ -75,6 +83,14 @@ namespace BM.Web.Features.Controllers
                         new ComboboxModel() {Code = nameof(SuppliesKind.@Ink), Name = "Mực - Loại Tê"},
                     };
 
+                    // danh sách nhân viên
+                    var listUsers = await _masterDataService!.GetDataUsersAsync();
+                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m => new ComboboxModel()
+                    {
+                        Code = m.EmpNo,
+                        Name = $"{m.EmpNo}-{m.FullName}"
+                    });
+
                     await getData();
                     await getDataInv();
 
@@ -112,6 +128,91 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
+        protected async void ShowOutBoundHandler(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
+        {
+            try
+            {
+                if (pAction == EnumType.Add)
+                {
+                   
+                    await ShowLoader();
+
+                    OutBoundUpdate.BranchName = pBranchName;
+                    OutBoundUpdate.FullName = FullName;
+                    OutBoundUpdate.BranchId = pBranchId;
+                    OutBoundUpdate.Type = nameof(OutBoundType.ByRequest);
+                }
+                else
+                {
+
+                }
+                ItemFilter.Type = nameof(SuppliesKind.Promotion) + "," + nameof(SuppliesKind.Ink);
+                ListSuppliesOutBound = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
+                IsShowOutBound = true;
+                _EditOutBoundContext = new EditContext(OutBoundUpdate);
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "ShowOutBound");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected async void SaveOutBoundHandler(EnumType pProcess = EnumType.Update)
+        {
+            try
+            {
+                string sAction = nameof(EnumType.Add);
+                //bool isConfirm = false;
+                //isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc muốn lưu phiếu xuất này ?", "Thông báo");
+                //if (!isConfirm) return;
+                await ShowLoader();
+                if (ListSuppliesOutBound != null && ListSuppliesOutBound.Any())
+                {
+                    var CheckListSupplies = ListSuppliesOutBound.Where(d => d.Qty > d.QtyInv).FirstOrDefault();
+                    if (CheckListSupplies != null)
+                    {
+                        ShowWarning("Số lượng xuất phải <= Tổng số lượng tồn kho");
+                        await ShowLoader(false);
+                        return;
+                    }
+                    var listSuppliesOutBound = ListSuppliesOutBound.Select(m => new SuppliesOutBoundModel()
+                    {
+                        SuppliesCode = m.SuppliesCode,
+                        SuppliesName = m.SuppliesName,
+                        EnumId = m.EnumId,
+                        EnumName = m.EnumName,
+                        Qty = m.SuppliesCode =="VT008" ?m.Qty/200: m.Qty,
+                        QtyInv = m.QtyInv
+                    });
+                    OutBoundUpdate.ChargeUser = OutBoundUpdate.ListChargeUser == null || !OutBoundUpdate.ListChargeUser.Any() ? "" : string.Join(",", OutBoundUpdate.ListChargeUser);
+                    OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
+                }
+                bool isSuccess = await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    IsShowOutBound = false;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveDocHandler");
+                IsShowOutBound = false;
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         protected async void ReLoadDataInvHandler()
         {
             try
@@ -297,6 +398,7 @@ namespace BM.Web.Features.Controllers
                 if (!confirm) return;
 
                 List<InvetoryModel>? listInvetoryCreate = ListInvetoryCreate.Where(d => d.QtyInv > 0 && d.Price > 0).ToList();
+                InvetoryHistoryUpdate.BranchId = pBranchId;
                 await ShowLoader();
                 bool isSuccess = await _masterDataService!.UpdateInvetoryAsync(JsonConvert.SerializeObject(InvetoryHistoryUpdate), JsonConvert.SerializeObject(listInvetoryCreate), sAction, pUserId);
                 if (isSuccess)
@@ -308,6 +410,13 @@ namespace BM.Web.Features.Controllers
                         ListInvetoryCreate = new List<InvetoryModel>();
                         return;
                     }
+
+                    var listUsers = await _masterDataService!.GetDataUsersAsync();
+                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m => new ComboboxModel()
+                    {
+                        Code = m.EmpNo,
+                        Name = $"{m.EmpNo}-{m.FullName}"
+                    });
                     IsShowIntoInv = false;
                     IsShowIntoUpdateInv = false;
                     return;

@@ -31,7 +31,7 @@ public interface IMasterDataService
     Task<IEnumerable<PriceModel>> GetPriceListByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdatePrice(RequestModel pRequest);
     Task<IEnumerable<InvetoryModel>> GetInventoryAsync();
-    Task<ResponseModel> UpdateInventory(RequestModel pRequest);
+    Task<ResponseModel> UpdateInventory(RequestModel pRequest); // nhập kho
     Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
     Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync();
@@ -952,7 +952,7 @@ public class MasterDataService : IMasterDataService
 													    )  where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
 													    and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId) t5 on t0.SuppliesCode = t5.SuppliesCode and t0.EnumId = t5.EnumId
                         left join Enums t6 on t0.SuppliesType = t6.EnumId
-                        where t0.IsDelete = 0 and t1.EnumType ='Unit' and (@Type = '' or t0.[Type] = @Type) order by t0.[DateCreate] desc"
+                        where t0.IsDelete = 0 and t1.EnumType ='Unit' and (@TYPE=''  OR CHARINDEX(','+T0.[Type]+',',','+@TYPE+',')>0) order by t0.[DateCreate] desc"
                        , DataRecordToSuppliesModel, sqlParameters, commandType: CommandType.Text);
             
         }
@@ -1076,11 +1076,11 @@ public class MasterDataService : IMasterDataService
                 sqlParameters = new SqlParameter[7];
                 sqlParameters[0] = new SqlParameter("@SuppliesCode", oSupplies.SuppliesCode);
                 sqlParameters[1] = new SqlParameter("@SuppliesName", oSupplies.SuppliesName);
-                sqlParameters[2] = new SqlParameter("@EnumId", oSupplies.EnumId);
+                sqlParameters[2] = new SqlParameter("@EnumId", oSupplies.EnumId ?? (object)DBNull.Value);
                 sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
                 sqlParameters[4] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                sqlParameters[5] = new SqlParameter("@SuppliesTypeCode", oSupplies.SuppliesTypeCode);
-                sqlParameters[6] = new SqlParameter("@Type", oSupplies.Type);
+                sqlParameters[5] = new SqlParameter("@SuppliesTypeCode", oSupplies.SuppliesTypeCode ?? (object)DBNull.Value);
+                sqlParameters[6] = new SqlParameter("@Type", oSupplies.Type ?? (object)DBNull.Value);
             }
             switch (pRequest.Type)
             {
@@ -1172,14 +1172,14 @@ public class MasterDataService : IMasterDataService
                     {
 
                         sqlParameters = new SqlParameter[8];
-                        sqlParameters[0] = new SqlParameter("@SuppliesCode", oInv.SuppliesCode);
-                        sqlParameters[1] = new SqlParameter("@QtyInv", oInv.QtyInv);
-                        sqlParameters[2] = new SqlParameter("@Price", oInv.Price);
-                        sqlParameters[3] = new SqlParameter("@BranchId", oInv.BranchId);
-                        sqlParameters[4] = new SqlParameter("@Absid", oInv.Absid);
+                        sqlParameters[0] = new SqlParameter("@SuppliesCode", oInv.SuppliesCode ?? (object)DBNull.Value);
+                        sqlParameters[1] = new SqlParameter("@QtyInv", oInv.QtyInv ?? (object)DBNull.Value);
+                        sqlParameters[2] = new SqlParameter("@Price", oInv.Price ?? (object)DBNull.Value);
+                        sqlParameters[3] = new SqlParameter("@BranchId", oInvotory.BranchId ?? (object)DBNull.Value);
+                        sqlParameters[4] = new SqlParameter("@Absid", oInv.Absid ?? (object)DBNull.Value);
                         sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                         sqlParameters[6] = new SqlParameter("@UserId", pRequest.UserId);
-                        sqlParameters[7] = new SqlParameter("@EnumId", oInv.EnumId);
+                        sqlParameters[7] = new SqlParameter("@EnumId", oInv.EnumId ?? (object)DBNull.Value);
                         isUpdated = await ExecQuery();
 
                         if (!isUpdated)

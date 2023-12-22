@@ -19,7 +19,7 @@ public interface IDocumentService
     Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData);
     Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry);
     Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
-    Task<ResponseModel> UpdateOutBound(RequestModel pRequest);
+    Task<ResponseModel> UpdateOutBound(RequestModel pRequest); // xuất kho
     Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
     Task<ResponseModel> CancleOutBoundList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetRevenueReportAsync(int pYear);
@@ -57,21 +57,8 @@ public class DocumentService : IDocumentService
             sqlParameters[2] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
             sqlParameters[4] = new SqlParameter("@IdDraftDetail", pSearchData.IdDraftDetail);
-            data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, t6.FullName as [ChargeUserName],
-                        t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft,
-						t7.FullName as [UserNameCreate]
-                        from OutBound t0 with(nolock)
-                        inner join DraftDetails t1 with(nolock) on t0.BaseEntry = t1.DocEntry and t0.IdDraftDetail = t1.Id
-                        inner join Drafts t2 with(nolock) on t0.BaseEntry = t2.DocEntry
-                        inner join Branchs t3 with(nolock) on t0.BranchId = t3.BranchId
-                        inner join Customers t4 with(nolock) on t2.CusNo = t4.CusNo
-                        inner join [Services] t5 with(nolock) on t1.ServiceCode = t5.ServiceCode
-                        left join [Users] t6 with(nolock) on t0.ChargeUser = t6.EmpNo
-						inner join [Users] t7 with(nolock) on t0.UserCreate = t7.Id
-                        where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
-                                                and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
-                        and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,-1) = -1 or t1.Id = @IdDraftDetail)
-                            order by [DocEntry] desc"
+            data = await _context.GetDataAsync(@$"s
+"
                     , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -479,11 +466,11 @@ public class DocumentService : IDocumentService
 
             void setParameter()
             {
-                sqlParameters = new SqlParameter[18];
-                sqlParameters[0] = new SqlParameter("@DocEntry", oOutBound.DocEntry);
-                sqlParameters[1] = new SqlParameter("@VoucherNo", oOutBound.VoucherNo);
-                sqlParameters[2] = new SqlParameter("@BaseEntry", oOutBound.BaseEntry);
-                sqlParameters[3] = new SqlParameter("@IdDraftDetail", oOutBound.IdDraftDetail);// oDraft.DiscountCode ?? (object)DBNull.Value);
+                sqlParameters = new SqlParameter[19];
+                sqlParameters[0] = new SqlParameter("@DocEntry", oOutBound.DocEntry ?? (object)DBNull.Value);
+                sqlParameters[1] = new SqlParameter("@VoucherNo", oOutBound.VoucherNo ?? (object)DBNull.Value);
+                sqlParameters[2] = new SqlParameter("@BaseEntry", oOutBound.BaseEntry ?? (object)DBNull.Value);
+                sqlParameters[3] = new SqlParameter("@IdDraftDetail", oOutBound.IdDraftDetail ?? (object)DBNull.Value);// oDraft.DiscountCode ?? (object)DBNull.Value);
                 sqlParameters[4] = new SqlParameter("@ColorImplement", oOutBound.ColorImplement ?? (object)DBNull.Value);
                 sqlParameters[5] = new SqlParameter("@SuppliesQtyList", oOutBound.SuppliesQtyList ?? (object)DBNull.Value);
                 sqlParameters[6] = new SqlParameter("@AnesthesiaType", oOutBound.AnesthesiaType ?? (object)DBNull.Value);
@@ -495,9 +482,10 @@ public class DocumentService : IDocumentService
                 sqlParameters[12] = new SqlParameter("@EndTime", oOutBound.StartTime ?? (object)DBNull.Value);
                 sqlParameters[13] = new SqlParameter("@Problems", oOutBound.Problems ?? (object)DBNull.Value);
                 sqlParameters[14] = new SqlParameter("@ChargeUser", oOutBound.ChargeUser ?? (object)DBNull.Value);
-                sqlParameters[15] = new SqlParameter("@BranchId", oOutBound.BranchId);
+                sqlParameters[15] = new SqlParameter("@BranchId", oOutBound.BranchId ?? (object)DBNull.Value);
                 sqlParameters[16] = new SqlParameter("@UserId", pRequest.UserId);
                 sqlParameters[17] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                sqlParameters[18] = new SqlParameter("@Type", oOutBound.Type ?? (object)DBNull.Value);
             }
 
             switch (pRequest.Type)
@@ -510,9 +498,9 @@ public class DocumentService : IDocumentService
                     oOutBound.DocEntry = iDocentry;
                     oOutBound.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"INSERT INTO [dbo].[OutBound]  ([DocEntry],[VoucherNo] ,[BaseEntry] ,[IdDraftDetail],[ColorImplement] ,[SuppliesQtyList] ,[AnesthesiaType]  ,[AnesthesiaQty]  ,
-                                [DarkTestColor],[CoadingColor] ,[LibColor] ,[StartTime] ,[EndTime]  ,[Problems] ,[ChargeUser]  ,[BranchId],[DateCreate] ,[UserCreate] ,[IsDelete])
+                                [DarkTestColor],[CoadingColor] ,[LibColor] ,[StartTime] ,[EndTime]  ,[Problems] ,[ChargeUser]  ,[BranchId],[DateCreate] ,[UserCreate] ,[IsDelete], Type)
                     	        values (@DocEntry, @VoucherNo, @BaseEntry, @IdDraftDetail, @ColorImplement, @SuppliesQtyList, @AnesthesiaType, @AnesthesiaQty,
-                                @DarkTestColor,@CoadingColor,@LibColor, @StartTime, @EndTime, @Problems, @ChargeUser,@BranchId, @DateTimeNow, @UserId, 0)";
+                                @DarkTestColor,@CoadingColor,@LibColor, @StartTime, @EndTime, @Problems, @ChargeUser,@BranchId, @DateTimeNow, @UserId, 0, @Type)";
 
                     setParameter();
                     await ExecQuery();
@@ -537,6 +525,7 @@ public class DocumentService : IDocumentService
                                       ,[BranchId] = @BranchId
                                       ,[DateUpdate] = @DateTimeNow
                                       ,[UserUpdate] = @UserId
+                                      ,Type = @Type
                                      where [DocEntry] = @DocEntry";
                     setParameter();
                     await ExecQuery();

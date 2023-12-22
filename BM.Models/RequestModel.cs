@@ -140,5 +140,10 @@ public enum SuppliesKind // loại vật tư, ( phổ thông, khuyến mãi, m�
     @Popular,
     @Promotion,
     @Ink
+}
 
+public enum OutBoundType 
+{
+    @ByService, // xuất kho theo dịch vụ
+    @ByRequest, // xuất kho theo yêu cầu
 }
