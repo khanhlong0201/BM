@@ -72,6 +72,7 @@ public class SalesOrderModel
     public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public List<ServiceCallModel>? ListServiceCalls { get; set; }
+    public bool IsOutBound { get; set; } //bắt buộc xuất kho
 }
 
 public class TreatmentRegimenModel : Auditable

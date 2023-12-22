@@ -34,9 +34,9 @@
                                             string color = "text-cyan";
                                             if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
                                             else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
-                                                        <strong class="@(color)">
-                                                            @($"{DocumentUpdate.StatusName}")
-                                                        </strong>
+                                                            <strong class="@(color)">
+                                                                @($"{DocumentUpdate.StatusName}")
+                                                            </strong>
                                         }
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
@@ -202,7 +202,11 @@
                                                 @($"{Math.Round(oItem.WarrantyPeriod, 2)} tháng/{@oItem.QtyWarranty} lần")
                                             </div>
                                             <div class="text-secondary">
-                                                Tình trạng xuất kho:<span class="@(oItem.StatusOutBound+""=="Chưa"?"badge bg-purple-lt":"badge bg-green-lt")"> @oItem.StatusOutBound</span>
+                                                @if(oItem.IsOutBound){
+                                                   <span>Tình trạng xuất kho:</span><span class="@(oItem.StatusOutBound+""=="Chưa"?"badge bg-purple-lt":"badge bg-green-lt")"> @oItem.StatusOutBound</span>
+                                                }else{
+                                                    <span class="badge bg-blue-lt"> Không phải xuất kho</span>
+                                                }
                                             </div>
                                         </td>
                                         <td class="text-end">
@@ -260,9 +264,9 @@
                                                             string colorWarranty = "badge bg-cyan-lt";
                                                             if (oServiceCall!.StatusId == nameof(DocStatus.Closed)) colorWarranty = "badge bg-green-lt";
                                                             else if (oServiceCall!.StatusId == nameof(DocStatus.Cancled)) colorWarranty = "badge bg-red-lt";
-                                                            <span class="@(colorWarranty)">
-                                                                @($" {oServiceCall.StatusName}")
-                                                            </span>
+                                                                <span class="@(colorWarranty)">
+                                                                    @($" {oServiceCall.StatusName}")
+                                                                </span>
                                                         }
                                                     </div>
                                                     <div class="text-secondary">
@@ -285,44 +289,44 @@
                                 double pSumTotal = ListSalesOrder?.Sum(m => m.Amount) ?? 0;
                                 DocumentUpdate.GuestsPay = pSumTotal <= 0 ? 0 : DocumentUpdate.GuestsPay;
                                 DocumentUpdate.Debt = pSumTotal <= 0 ? 0 : DocumentUpdate.Debt;
-                                <tr>
-                                    <td class="text-center"></td>
-                                    <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
-                                    <td colspan="2" class="text-end">
-                                        @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                    </td>
-                                    <td colspan="3"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center"></td>
-                                    <td colspan="3" class="strong text-end">Khách trả:</td>
-                                    <td colspan="2" class="text-end">
-                                        @if(!pIsLockPage)
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td colspan="3" class="strong text-end">Tổng tiền dịch vụ:</td>
+                                        <td colspan="2" class="text-end">
+                                            @(pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td colspan="3" class="strong text-end">Khách trả:</td>
+                                        <td colspan="2" class="text-end">
+                                            @if(!pIsLockPage)
                                         {
-                                            <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
-                                                            @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
+                                                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
+                                                                @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
                                         }
                                         else
                                         {
-                                            @(DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY))
-                                            <span>đ</span>
+                                                @(DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY))
+                                                <span>đ</span>
                                         }
 
-                                    </td>
-                                    <td colspan="3"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-center"></td>
-                                    <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
-                                    <td colspan="2" class="text-red font-weight-bold text-end">
-                                        @{
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td colspan="3" class="font-weight-bold text-uppercase text-end">Công nợ:</td>
+                                        <td colspan="2" class="text-red font-weight-bold text-end">
+                                            @{
                                             DocumentUpdate.Debt = pSumTotal <= 0 || DocumentUpdate.GuestsPay >= pSumTotal ? 0 
                                             : pSumTotal - DocumentUpdate.GuestsPay;
-                                        }
-                                        @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
-                                    </td>
-                                    <td colspan="3"></td>
-                                </tr>
+                                            }
+                                            @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
                             }
                             
                         </tbody>

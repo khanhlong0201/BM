@@ -140,11 +140,12 @@ public class DocumentService : IDocumentService
             	       , case T00.StatusId 
             	         when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
                          when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
-                         else N'Chờ xử lý' end as StatusName 
+                         else N'Chờ xử lý' end as StatusName
 					from [dbo].[ServiceCalls] as T00 with(nolock) 
 			  inner join [dbo].[Branchs] as T04 with(nolock) on T00.BranchId = T04.BranchId
 			       where T00.BaseEntry = T0.DocEntry and T00.IsDelete = 0 and T00.StatusId <> 'Cancled'
                 order by T00.DocEntry desc for json path) as JServiceCall
+				,   isnull(T4.IsOutBound,cast(0 as bit)) as IsOutBound
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -208,6 +209,7 @@ public class DocumentService : IDocumentService
                     oLine.ChemicalFormula = Convert.ToString(item["ChemicalFormula"]);
                     oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
                     oLine.JServiceCall = Convert.ToString(item["JServiceCall"]);
+                    oLine.IsOutBound = Convert.ToBoolean(item["IsOutBound"]);
                     lstDetails.Add(oLine);
                 }
                 data = new Dictionary<string, string>()

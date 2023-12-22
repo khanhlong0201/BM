@@ -201,7 +201,8 @@ namespace BM.Web.Features.Controllers
                     oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
                     oLine.StatusOutBound = item.StatusOutBound;
-                    if(!string.IsNullOrEmpty(item.JServiceCall))
+                    oLine.IsOutBound = item.IsOutBound;
+                    if (!string.IsNullOrEmpty(item.JServiceCall))
                     {
                         // danh sách phiếu bảo hành
                         oLine.ListServiceCalls = JsonConvert.DeserializeObject<List<ServiceCallModel>>(item.JServiceCall);
@@ -268,6 +269,7 @@ namespace BM.Web.Features.Controllers
                 {
 
                 }
+                ItemFilter.Type = nameof(SuppliesKind.Popular);
                 ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
                 IsShowOutBound = true;
                 _EditOutBoundContext = new EditContext(OutBoundUpdate);
@@ -414,6 +416,14 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Vui lòng chọn dịch vụ!");
                     return;
                 }
+
+                var checkOutBound = ListSalesOrder.Where(d => d.IsOutBound && d.StatusOutBound + "" == "Chưa").FirstOrDefault();
+                if (pProcess == EnumType.SaveAndClose && checkOutBound !=null)
+                {
+                    ShowWarning($"Tồn tại dịch vụ [{checkOutBound.ServiceCode +" - "+ checkOutBound.ServiceName}] cần phải lập phiếu xuất kho trước khi thanh toán");
+                    return;
+                }
+
                 string sAction = pIsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 string sStatusId = "";
                 bool isConfirm = false;
