@@ -36,7 +36,7 @@ public interface IMasterDataService
     Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
     Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync(SearchModel pSearchData);
-    Task<IEnumerable<ResponseModel>> CheckKeyBindingBeforeDeleting(RequestModel pRequests); // check dữ liệu trước khi xóa 
+    Task<ResponseModel> CheckKeyBindingBeforeDeleting(RequestModel pRequests); // check dữ liệu trước khi xóa 
 }
 
 public class MasterDataService : IMasterDataService
@@ -1259,8 +1259,13 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
-
-
+                    ResponseModel responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if(responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Supplies):
@@ -1309,22 +1314,20 @@ public class MasterDataService : IMasterDataService
     /// </summary>
     /// <param name="isAdmin"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<ResponseModel>> CheckKeyBindingBeforeDeleting(RequestModel request)
+    public async Task<ResponseModel> CheckKeyBindingBeforeDeleting(RequestModel request = null)
     {
-        List<ResponseModel> data = new List<ResponseModel>();
+        ResponseModel data = new ResponseModel();
         try
         {
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[2];
             sqlParameters[0] = new SqlParameter("@Type", request.Type); // tableName
-            sqlParameters[0] = new SqlParameter("@Json", request.Json); // ds các id cần update isdelete = 1
+            sqlParameters[1] = new SqlParameter("@Json", request.Json); // ds các id cần update isdelete = 1
             var results = await _context.GetDataSetAsync(Constants.BM_CHECK_KEY_BINDING_BEFORE_DELETE, sqlParameters, commandType: CommandType.StoredProcedure);
-            if (results.Tables != null && results.Tables.Count > 0)
+            if (results.Tables != null && results.Tables.Count > 0 && results.Tables[0].Rows.Count > 0)
             {
-                foreach (DataRow row in results.Tables[0].Rows)
-                {
-                    data.Add(DataRecordCheckKeyBindingBeforeDeleteToResponseModel(row));
-                }
+                data.StatusCode = int.Parse(results.Tables[0].Rows[0]["StatusCode"].ToString());
+                data.Message = results.Tables[0].Rows[0]["Message"].ToString();
             }
         }
         catch (Exception) { throw; }
