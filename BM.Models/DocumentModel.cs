@@ -58,6 +58,8 @@ public class DocumentDetailModel : Auditable
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public string? JServiceCall { get; set; } // json các phiếu bảo hành 
     public bool IsOutBound { get; set; }
+    public string ListPromotionSupplies { get; set; }
+    public List<string> ListPromotionSuppliess { get; set; }//ds vật tư khuyến mãi
 }
 
 public class CustomerDebtsModel

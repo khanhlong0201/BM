@@ -50,7 +50,8 @@ namespace BM.Web.Features.Controllers
         public bool IsShowOutBound { get; set; } = false;
         public EditContext? _EditOutBoundContext { get; set; }
         public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
-        public List<SuppliesModel>? ListSuppplies { get; set; }
+        public List<SuppliesModel>? ListSuppplies { get; set; } // vật tư để lập phiếu xuất kho
+        public List<SuppliesModel>? ListPromotionSuppplies { get; set; } // vật tư khuyến mãi
         public SearchModel ItemFilter { get; set; } = new SearchModel();
         #endregion
 
@@ -81,6 +82,7 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.StatusName = DATA_CUSTOMER_EMPTY;
                 DocumentUpdate.DateCreate = _dateTimeService!.GetCurrentVietnamTime();
                 ListSuppplies = new List<SuppliesModel>();
+                ListPromotionSuppplies = new List<SuppliesModel>();
             }
             catch (Exception ex)
             {
@@ -151,6 +153,9 @@ namespace BM.Web.Features.Controllers
                     });
                     // khi call mới gọi
                     //ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
+
+                    ItemFilter.Type = nameof(SuppliesKind.Promotion);
+                    ListPromotionSuppplies = await _masterDataService!.GetDataSuppliesOutBoundAsync(ItemFilter);
                 }
                 catch (Exception ex)
                 {
@@ -202,6 +207,7 @@ namespace BM.Web.Features.Controllers
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
                     oLine.StatusOutBound = item.StatusOutBound;
                     oLine.IsOutBound = item.IsOutBound;
+                    oLine.ListPromotionSuppliess = item.ListPromotionSupplies?.Split(",")?.ToList();
                     if (!string.IsNullOrEmpty(item.JServiceCall))
                     {
                         // danh sách phiếu bảo hành
@@ -358,6 +364,25 @@ namespace BM.Web.Features.Controllers
                     oItem.ServiceName = oService.ServiceName + "";
                     oItem.WarrantyPeriod = oService.WarrantyPeriod;
                     oItem.QtyWarranty = oService.QtyWarranty;
+                    oItem.IsOutBound = oService.IsOutBound; //dịch vụ chắc chắn phải lập phiếu xuất kho
+                    oItem.StatusOutBound = "Chưa";
+                     List<string> listPromotionSuppliessTemp =  oService.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
+                    if(ListPromotionSuppplies !=null && ListPromotionSuppplies.Count > 0 && listPromotionSuppliessTemp != null && listPromotionSuppliessTemp.Count > 0)
+                    {
+                        foreach(var item in ListPromotionSuppplies)
+                        {
+                            foreach (string value in listPromotionSuppliessTemp)
+                            {
+                                if(item.SuppliesCode == value)
+                                {
+
+                                    item.SuppliesName = $"{item.SuppliesCode}-{item.SuppliesName}-Giá: {string.Format("{0: #,###.####}", item.Price)} VNĐ -SL trong kho: {item.QtyInv}";
+                                    oItem.ListPromSupplies.Add(item);  
+                                }
+                            }
+                        }
+
+                    }
                     ListSalesOrder.Add(oItem);
                 }
 
@@ -373,6 +398,38 @@ namespace BM.Web.Features.Controllers
             catch (Exception ex)
             {
                 _logger!.LogError(ex, "DocumentController", "AddItemToSOHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        
+        /// <summary>
+        /// change khi chọn nhiều ơ vat tu khuyen mai page chi tiet 
+        /// </summary>
+        /// <param name="value"></param>
+        protected void OnMultiValueChanged(List<string> listValue, SalesOrderModel item)
+        {
+            try
+            {
+                if(item != null)
+                {
+                    foreach(var item1 in item.ListPromSupplies)
+                    {
+                        foreach (var value in listValue)
+                        {
+                            if (item1.SuppliesCode == value && item1.QtyInv <= 0)
+                            {
+                                ShowWarning($"Không thê chọn vật tư khuyến mãi [{item1.SuppliesName}], Vì có không còn số lượng trong kho");
+                                return;
+                            }
+                        }
+                    }
+                    item.ListPromotionSuppliess = listValue;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "OnMultiValueChanged");
                 ShowError(ex.Message);
             }
         }
@@ -466,7 +523,8 @@ namespace BM.Web.Features.Controllers
                     WarrantyPeriod = m.WarrantyPeriod,
                     QtyWarranty = m.QtyWarranty,
                     ConsultUserId = m.ListUserAdvise == null || !m.ListUserAdvise.Any() ? "" : string.Join(",", m.ListUserAdvise),
-                    ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements)
+                    ImplementUserId = m.ListUserImplements == null || !m.ListUserImplements.Any() ? "" : string.Join(",", m.ListUserImplements),
+                    ListPromotionSupplies = m.ListPromotionSuppliess == null || !m.ListPromotionSuppliess.Any() ? "" : string.Join(",", m.ListPromotionSuppliess),
                 }).ToList();
                 bool isSuccess = await _documentService!.UpdateSalesOrder(JsonConvert.SerializeObject(DocumentUpdate)
                     , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);

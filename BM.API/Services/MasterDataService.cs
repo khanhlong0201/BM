@@ -34,7 +34,7 @@ public interface IMasterDataService
     Task<ResponseModel> UpdateInventory(RequestModel pRequest); // nhập kho
     Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
-    Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync();
+    Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync(SearchModel pSearchData);
 }
 
 public class MasterDataService : IMasterDataService
@@ -968,12 +968,14 @@ public class MasterDataService : IMasterDataService
     /// lấy danh sách vật tư
     /// </summary>
     /// <returns></returns>
-    public async Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync()
+    public async Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync(SearchModel pSearchData)
     {
         IEnumerable<SuppliesModel> data;
         try
         {
             await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@Type", pSearchData.Type + "");
             data = await _context.GetDataAsync(@"select t2.[SuppliesCode] ,t2.[SuppliesName],t2.[EnumId],t2.EnumName  ,(isnull(t2.QtyInv,0) - isnull(t3.Qty,0)) as QtyInv, isnull(t2.Price,0) as Price, t2.BranchId 
                                                 from (
 	                                            SELECT t0.[SuppliesCode] ,t0.[SuppliesName],t0.[EnumId],t1.EnumName
@@ -982,7 +984,7 @@ public class MasterDataService : IMasterDataService
 																	, (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price					
 					                                                FROM [dbo].[Supplies] t0 
 					                                                inner join Enums t1 on t0.EnumId = t1.EnumId
-					                                                where t0.IsDelete = 0 and t1.EnumType ='Unit' 
+					                                                where t0.IsDelete = 0 and t1.EnumType ='Unit' and (@TYPE=''  OR CHARINDEX(','+T0.[Type]+',',','+@TYPE+',')>0)
 				                                                ) t2
 	                                            left join (SELECT SuppliesCode as SuppliesCode,SuppliesName as SuppliesName,BranchId,sum(Qty) as Qty
 							                                            ,EnumId as EnumId, EnumName as EnumName
@@ -998,7 +1000,7 @@ public class MasterDataService : IMasterDataService
 							                                            ) 
                                                 where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
 							                                            and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId"
-                    , DataRecordToSuppliesOutBoundModel, commandType: CommandType.Text);
+                    , DataRecordToSuppliesOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally

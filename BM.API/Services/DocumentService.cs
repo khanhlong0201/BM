@@ -313,11 +313,11 @@ public class DocumentService : IDocumentService
                         {
                             int iDrftId = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[DraftDetails] with(nolock)");
                             queryString = @"Insert into [dbo].[DraftDetails] ([Id],[ServiceCode],[Qty], [Price],[LineTotal],[DocEntry], [ActionType],[ConsultUserId]
-                                   ,[ImplementUserId],[ChemicalFormula],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
+                                   ,[ImplementUserId],[ChemicalFormula],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete], ListPromotionSupplies)
                                     values (@Id, @ServiceCode, @Qty, @Price, @LineTotal, @DocEntry, @ActionType, @ConsultUserId
-                                   ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0)";
+                                   ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0, @ListPromotionSupplies)";
 
-                            sqlParameters = new SqlParameter[14];
+                            sqlParameters = new SqlParameter[15];
                             sqlParameters[0] = new SqlParameter("@Id", iDrftId);
                             sqlParameters[1] = new SqlParameter("@ServiceCode", oDraftDetails.ServiceCode);
                             sqlParameters[2] = new SqlParameter("@Qty", oDraftDetails.Qty);
@@ -332,6 +332,7 @@ public class DocumentService : IDocumentService
                             sqlParameters[11] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                             sqlParameters[12] = new SqlParameter("@WarrantyPeriod", oDraftDetails.WarrantyPeriod);
                             sqlParameters[13] = new SqlParameter("@QtyWarranty", oDraftDetails.QtyWarranty);
+                            sqlParameters[14] = new SqlParameter("@ListPromotionSupplies", oDraftDetails.ListPromotionSupplies ?? (object)DBNull.Value);
                             isUpdated = await ExecQuery();
                             if (!isUpdated)
                             {
@@ -372,7 +373,7 @@ public class DocumentService : IDocumentService
                     {
                         foreach (var oDraftDetails in lstDraftDetails)
                         {
-                            sqlParameters = new SqlParameter[14];
+                            sqlParameters = new SqlParameter[15];
                             sqlParameters[0] = new SqlParameter("@ServiceCode", oDraftDetails.ServiceCode);
                             sqlParameters[1] = new SqlParameter("@Qty", oDraftDetails.Qty);
                             sqlParameters[2] = new SqlParameter("@Price", oDraftDetails.Price);
@@ -386,15 +387,16 @@ public class DocumentService : IDocumentService
                             sqlParameters[10] = new SqlParameter("@WarrantyPeriod", oDraftDetails.WarrantyPeriod);
                             sqlParameters[11] = new SqlParameter("@QtyWarranty", oDraftDetails.QtyWarranty);
                             sqlParameters[12] = new SqlParameter("@DocEntry", oDraft.DocEntry);
+                            sqlParameters[13] = new SqlParameter("@ListPromotionSupplies", oDraftDetails.ListPromotionSupplies ?? (object)DBNull.Value);
                             if (oDraftDetails.Id <= 0)
                             {
                                 // thêm mới
                                 oDraftDetails.Id = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[DraftDetails] with(nolock)"); // gán lại Id
                                 queryString = @"Insert into [dbo].[DraftDetails] ([Id],[ServiceCode],[Qty], [Price],[LineTotal],[DocEntry], [ActionType],[ConsultUserId]
-                                   ,[ImplementUserId],[ChemicalFormula],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete])
+                                   ,[ImplementUserId],[ChemicalFormula],[WarrantyPeriod],[QtyWarranty],[DateCreate],[UserCreate],[IsDelete], ListPromotionSupplies)
                                     values (@Id, @ServiceCode, @Qty, @Price, @LineTotal, @DocEntry, @ActionType, @ConsultUserId
-                                   ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0)";
-                                sqlParameters[13] = new SqlParameter("@Id", oDraftDetails.Id);
+                                   ,@ImplementUserId, @ChemicalFormula,@WarrantyPeriod, @QtyWarranty, @DateTimeNow, @UserId, 0, @ListPromotionSupplies)";
+                                sqlParameters[14] = new SqlParameter("@Id", oDraftDetails.Id);
 
                             }
                             else
@@ -403,9 +405,9 @@ public class DocumentService : IDocumentService
                                 queryString = @"Update [dbo].[DraftDetails]
                                                    set [ServiceCode] = @ServiceCode, [Qty] = @Qty, [Price] = @Price, [LineTotal] = @LineTotal, [ActionType] = @ActionType
                                                      , [ConsultUserId] = @ConsultUserId, [ImplementUserId] = @ImplementUserId,[ChemicalFormula] = @ChemicalFormula
-                                                     , [WarrantyPeriod] = @WarrantyPeriod, [QtyWarranty] = @QtyWarranty, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
+                                                     , [WarrantyPeriod] = @WarrantyPeriod, [QtyWarranty] = @QtyWarranty, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId, [ListPromotionSupplies] =  @ListPromotionSupplies
                                                  where [Id] = @Id";
-                                sqlParameters[13] = new SqlParameter("@Id", oDraftDetails.Id);
+                                sqlParameters[14] = new SqlParameter("@Id", oDraftDetails.Id);
                             }
                             isUpdated = await ExecQuery();
                             if (!isUpdated)

@@ -170,7 +170,7 @@
                                 <th class="text-center" style="width: 1%">STT</th>
                                 <th style="min-width: 230px">Dịch vụ</th>
                                 <th class="text-end" style="width: 130px; min-width: 130px">Đơn giá</th>
-                                <th class="text-end" style="width: 90px; min-width: 90px">SL</th>
+                                <th class="text-end" style="min-width: 250px">SL</th>
                                 <th class="text-end" style="width: 1%; min-width: 110px">Tổng tiền</th>
                                 <th class="text-center" style="min-width: 170px">NV tư vấn</th>
                                 <th class="text-center" style="min-width: 170px">NV thực hiện</th>
@@ -190,7 +190,7 @@
                                                 <i class="fa-solid fa-xmark" style="color: red;font-size: 17px;cursor: pointer"
                                                    title="Xóa dịch vụ" @onclick="@(()=> RemoveItemInSOHandler(oItem.LineNum))"></i>
                                             }
-                                            <TelerikCheckBox @bind-Value="@oItem.IsCheck" Title="" />
+                                            <TelerikCheckBox @bind-Value="@oItem.IsCheck" Enabled="@(oItem.IsOutBound)" Title="" />
                                         </td>
                                         <td class="text-center">@oItem.LineNum</td>
                                         <td>
@@ -212,9 +212,23 @@
                                         <td class="text-end">
                                             <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
                                                            @bind-Value="@oItem.Price" Arrows="false" Enabled="@(!pIsLockPage)" />
+                                            <div style="margin-top: 2px">
+                                                <HLabel For="ChargeUser" Value="Vật tư khuyến mãi:" />
+                                            </div>
                                         </td>
                                         <td class="text-center">
                                             <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" Enabled="@(!pIsLockPage)" />
+                                             <div style="margin-top: 2px">
+                                                 <TelerikMultiSelect Data="@oItem.ListPromSupplies"
+                                                               Value="@oItem.ListPromotionSuppliess"
+                                                               Placeholder="@((oItem.ListPromSupplies == null || oItem.ListPromSupplies.Count == 0) ? "DV này hiện chưa có vật tư khuyến mãi" : "Hãy chọn vật tư khuyến mãi")"
+                                                               ValueChanged="@((List<string> newValues) => OnMultiValueChanged(newValues, oItem))"
+                                                               ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                                                               TextField="@nameof(SuppliesModel.SuppliesName)"
+                                                               FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                               AutoClose="false" Width="100%">
+                                                </TelerikMultiSelect>
+                                             </div>
                                         </td>
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
                                         <td class="text-start">
@@ -227,6 +241,7 @@
                                                 AutoClose="false" Width="100%"
                                             >
                                             </TelerikMultiSelect>
+
                                         </td>
                                         <td class="text-start">
                                             <TelerikMultiSelect Data="@ListUsers"

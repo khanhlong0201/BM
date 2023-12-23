@@ -451,13 +451,13 @@ namespace BM.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetSuppliesOutBound")]
-        public async Task<IActionResult> GetSuppliesOutBound()
+        public async Task<IActionResult> GetSuppliesOutBound([FromBody] SearchModel pSearchData)
         {
             try
             {
-                var data = await _masterService.GetSuppliesOutBoundAsync();
+                var data = await _masterService.GetSuppliesOutBoundAsync(pSearchData);
                 return Ok(data);
             }
             catch (Exception ex)
