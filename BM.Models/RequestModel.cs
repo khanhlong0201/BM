@@ -89,7 +89,12 @@ public enum EnumTable
     @TreatmentRegimens,
     @Supplies,
     @Inventory,
-    @ServiceCalls
+    @ServiceCalls,
+    @Service,
+    Branchs
+
+
+
 }
 
 public enum DocStatus

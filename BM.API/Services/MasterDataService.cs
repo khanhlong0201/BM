@@ -1291,6 +1291,50 @@ public class MasterDataService : IMasterDataService
 
                     response = await deleteDataAsync(nameof(EnumTable.Inventory), queryString, sqlParameters);
                     break;
+                case nameof(EnumTable.Service):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[@ServiceCode] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    response = await deleteDataAsync(nameof(EnumTable.Service), queryString, sqlParameters);
+                    break;
+                case nameof(EnumTable.@Customers):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[@CusNo] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    response = await deleteDataAsync(nameof(EnumTable.@Customers), queryString, sqlParameters);
+                    break;
+                case nameof(EnumTable.Enums):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[@EnumId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    response = await deleteDataAsync(nameof(EnumTable.Enums), queryString, sqlParameters);
+                    break;
+                case nameof(EnumTable.Branchs):
+                    // kiểm tra điều kiện trước khi xóa
+                    //
+                    queryString = "[@BranchId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    sqlParameters = new SqlParameter[4];
+                    sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
+                    sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
+                    sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    response = await deleteDataAsync(nameof(EnumTable.Enums), queryString, sqlParameters);
+                    break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     response.Message = "Không xác định được phương thức!";
