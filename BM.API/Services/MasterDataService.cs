@@ -1,4 +1,5 @@
-﻿using BM.API.Infrastructure;
+﻿using BM.API.Commons;
+using BM.API.Infrastructure;
 using BM.Models;
 using BM.Models.Shared;
 using Microsoft.AspNetCore.Components.Routing;
@@ -35,6 +36,7 @@ public interface IMasterDataService
     Task<IEnumerable<TreatmentRegimenModel>> GetTreatmentByServiceAsync(string pServiceCode);
     Task<ResponseModel> UpdateTreatmentRegime(RequestModel pRequest);
     Task<IEnumerable<SuppliesModel>> GetSuppliesOutBoundAsync(SearchModel pSearchData);
+    Task<IEnumerable<ResponseModel>> CheckKeyBindingBeforeDeleting(RequestModel pRequests); // check dữ liệu trước khi xóa 
 }
 
 public class MasterDataService : IMasterDataService
@@ -1257,6 +1259,8 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
+
+
                     response = await deleteDataAsync(nameof(EnumTable.Users), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Supplies):
@@ -1300,9 +1304,55 @@ public class MasterDataService : IMasterDataService
         }
         return response;
     }
+    /// <summary>
+    /// lấy kết quả báo cáo
+    /// </summary>
+    /// <param name="isAdmin"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<ResponseModel>> CheckKeyBindingBeforeDeleting(RequestModel request)
+    {
+        List<ResponseModel> data = new List<ResponseModel>();
+        try
+        {
+            await _context.Connect();
+            SqlParameter[] sqlParameters = new SqlParameter[2];
+            sqlParameters[0] = new SqlParameter("@Type", request.Type); // tableName
+            sqlParameters[0] = new SqlParameter("@Json", request.Json); // ds các id cần update isdelete = 1
+            var results = await _context.GetDataSetAsync(Constants.BM_CHECK_KEY_BINDING_BEFORE_DELETE, sqlParameters, commandType: CommandType.StoredProcedure);
+            if (results.Tables != null && results.Tables.Count > 0)
+            {
+                foreach (DataRow row in results.Tables[0].Rows)
+                {
+                    data.Add(DataRecordCheckKeyBindingBeforeDeleteToResponseModel(row));
+                }
+            }
+        }
+        catch (Exception) { throw; }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return data;
+    }
+
     #endregion Public Functions
 
     #region Private Funtions
+    /// <summary>
+    /// đọc kết quả từ strored chec dữ liệu trước khi xóa
+    /// </summary>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    private ResponseModel DataRecordCheckKeyBindingBeforeDeleteToResponseModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ResponseModel
+        ResponseModel model = new();
+        if (!Convert.IsDBNull(row["StatusCode"])) model.StatusCode = Convert.ToInt32(row["StatusCode"]);
+        if (!Convert.IsDBNull(row["Message"])) model.Message = Convert.ToString(row["Message"]);
+        return model;
+    }
+
+
     /// <summary>
     /// xóa dữ liệu -> cập nhật cột IsDelete
     /// </summary>
