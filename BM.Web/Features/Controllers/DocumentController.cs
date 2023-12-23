@@ -48,6 +48,7 @@ namespace BM.Web.Features.Controllers
         public bool pIsLockPage { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
         public bool IsShowOutBound { get; set; } = false;
+        public bool IsShowService { get; set; } = true; // hiển thị dịch vu
         public EditContext? _EditOutBoundContext { get; set; }
         public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
         public List<SuppliesModel>? ListSuppplies { get; set; } // vật tư để lập phiếu xuất kho
