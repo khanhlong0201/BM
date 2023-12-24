@@ -1,4 +1,5 @@
 ﻿using BM.Models;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -171,6 +172,35 @@ namespace BM.Web.Features.Controllers
         }
         protected void OnRowDoubleClickHandler(GridRowClickEventArgs args) => OnOpenDialogHandler(EnumType.Update, args.Item as BranchModel);
 
+        protected async void DeleteDataHandler()
+        {
+            try
+            {
+                if (SelectedBranchs == null || !SelectedBranchs.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Branchs), "", string.Join(",", SelectedBranchs.Select(m => m.BranchId)), pUserId);
+                if (isSuccess)
+                {
+                    await getDataBranchs();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         #endregion
     }
 }

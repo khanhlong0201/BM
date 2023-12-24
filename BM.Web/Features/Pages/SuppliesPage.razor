@@ -72,7 +72,7 @@
         <TelerikToolBar Class="border-bottom-0">
             <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataInvHandler">Làm mới</ToolBarButton>
             <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> OnOpenIntoInvHandler())">Nhập kho</ToolBarButton>
-            <ToolBarButton ImageUrl="../assets/remove_grid.png"OnClick="@(()=> DeleteDataInvHandler())" >Xóa dòng</ToolBarButton>
+            @*<ToolBarButton ImageUrl="../assets/remove_grid.png"OnClick="@(()=> DeleteDataInvHandler())" >Xóa dòng</ToolBarButton>*@
         </TelerikToolBar>
         <div class="h-table-content" style=" height: calc(100vh - 210px);">
             <TelerikLoaderContainer OverlayThemeColor="light"
@@ -105,7 +105,7 @@
                     <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
                 </GridAggregates>
                 <GridColumns>
-                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
+@*                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>*@
                     <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="170px" MaxResizableWidth="150" Title="Mã vật tư">
                         <Template>
                             @{

@@ -1242,6 +1242,7 @@ public class MasterDataService : IMasterDataService
     public async Task<ResponseModel> DeleteDataAsync(RequestModel pRequest)
     {
         ResponseModel response = new ResponseModel();
+        ResponseModel responseCheck = new ResponseModel();
         try
         {
             await _context.Connect();
@@ -1259,7 +1260,7 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
-                    ResponseModel responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                     responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
                     if(responseCheck != null && responseCheck.StatusCode == -1)
                     {
                         response.StatusCode = -1;
@@ -1277,6 +1278,14 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
+                     responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.Supplies), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Inventory):
@@ -1289,50 +1298,90 @@ public class MasterDataService : IMasterDataService
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
 
+                    responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.Inventory), queryString, sqlParameters);
                     break;
-                case nameof(EnumTable.Service):
+                case nameof(EnumTable.Services):
                     // kiểm tra điều kiện trước khi xóa
                     //
-                    queryString = "[@ServiceCode] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    queryString = "[ServiceCode] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
                     sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                    response = await deleteDataAsync(nameof(EnumTable.Service), queryString, sqlParameters);
+
+                    responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
+                    response = await deleteDataAsync(nameof(EnumTable.Services), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.@Customers):
                     // kiểm tra điều kiện trước khi xóa
                     //
-                    queryString = "[@CusNo] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    queryString = "[CusNo] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
                     sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
+                    responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.@Customers), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Enums):
                     // kiểm tra điều kiện trước khi xóa
                     //
-                    queryString = "[@EnumId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    queryString = "[EnumId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
                     sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
+                    responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.Enums), queryString, sqlParameters);
                     break;
                 case nameof(EnumTable.Branchs):
                     // kiểm tra điều kiện trước khi xóa
                     //
-                    queryString = "[@BranchId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
+                    queryString = "[BranchId] in ( select value from STRING_SPLIT(@ListIds, ',') ) and [IsDelete] = 0";
                     sqlParameters = new SqlParameter[4];
                     sqlParameters[0] = new SqlParameter("@ReasonDelete", pRequest.JsonDetail ?? (object)DBNull.Value);
                     sqlParameters[1] = new SqlParameter("@ListIds", pRequest.Json); // "1,2,3,4"
                     sqlParameters[2] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[3] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+
+
+                    responseCheck = await CheckKeyBindingBeforeDeleting(pRequest);
+                    if (responseCheck != null && responseCheck.StatusCode == -1)
+                    {
+                        response.StatusCode = -1;
+                        response.Message = responseCheck.Message;
+                        return response;
+                    }
                     response = await deleteDataAsync(nameof(EnumTable.Enums), queryString, sqlParameters);
                     break;
                 default:

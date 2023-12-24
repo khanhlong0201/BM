@@ -438,7 +438,37 @@ namespace BM.Web.Features.Controllers
                 await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
             }
-        }    
+        }
+
+        protected async void DeleteDataHandler()
+        {
+            try
+            {
+                if (SelectedServices == null || !SelectedServices.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Services), "", string.Join(",", SelectedServices.Select(m => m.ServiceCode)), pUserId);
+                if (isSuccess)
+                {
+                    await getDataServices();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         #endregion
 
         #endregion

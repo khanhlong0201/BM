@@ -1,5 +1,6 @@
 ﻿using BM.Models;
 using BM.Models.Shared;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -251,7 +252,37 @@ namespace BM.Web.Features.Controllers
                 _logger!.LogError(ex, "CustomerController", "ReviewCustomerInfoHandler");
                 ShowError(ex.Message);
             }
-        }    
+        }
+
+        protected async void DeleteDataHandler()
+        {
+            try
+            {
+                if (SelectedCustomers == null || !SelectedCustomers.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Customers), "", string.Join(",", SelectedCustomers.Select(m => m.CusNo)), pUserId);
+                if (isSuccess)
+                {
+                    await getDataCustomers();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         #endregion
     }
 }

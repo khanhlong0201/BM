@@ -90,8 +90,7 @@ public enum EnumTable
     @Supplies,
     @Inventory,
     @ServiceCalls,
-    @Service,
-    Branchs
+    @Branchs
 
 
 
