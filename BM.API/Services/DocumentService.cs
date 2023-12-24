@@ -267,24 +267,27 @@ public class DocumentService : IDocumentService
                 }
                 return false;
             }
-            async Task saveDebts(int pDocEntry)
+            async Task saveDebts(int pDocEntry, string pType = nameof(EnumType.DebtReminder), int pBaseLine = -1)
             {
                 // lưu vào công nợ khách hàng
-                if (oDraft.StatusId == nameof(DocStatus.Closed) && oDraft.Debt > 0)
-                {
+                if (oDraft.StatusId == nameof(DocStatus.Closed) 
+                    && ((pType == nameof(EnumType.DebtReminder) && oDraft.Debt > 0) || (pType == nameof(EnumType.WarrantyReminder) && pBaseLine > 0)))
+                { 
                     // lấy mã
                     int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
 
-                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo],[GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate],[IsDelay])
-                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, 0)";
-                    sqlParameters = new SqlParameter[7];
+                    queryString = @$"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo],[GuestsPay],[TotalDebtAmount],[DateCreate],[UserCreate],[IsDelay],[Type],[BaseLine])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, 0, @Type, @BaseLine)";
+                    sqlParameters = new SqlParameter[9];
                     sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
                     sqlParameters[1] = new SqlParameter("@DocEntry", pDocEntry);
                     sqlParameters[2] = new SqlParameter("@CusNo", oDraft.CusNo);
-                    sqlParameters[3] = new SqlParameter("@TotalDebtAmount", oDraft.Debt);
+                    sqlParameters[3] = new SqlParameter("@TotalDebtAmount", pType == nameof(EnumType.WarrantyReminder) ? 0 : oDraft.Debt);
                     sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                    sqlParameters[6] = new SqlParameter("@GuestsPay", oDraft.GuestsPay);
+                    sqlParameters[6] = new SqlParameter("@GuestsPay", pType == nameof(EnumType.WarrantyReminder) ? 0 : oDraft.GuestsPay);
+                    sqlParameters[7] = new SqlParameter("@Type", pType);
+                    sqlParameters[8] = new SqlParameter("@BaseLine", pBaseLine);
                     await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 }
             }
@@ -352,9 +355,12 @@ public class DocumentService : IDocumentService
                                 await _context.RollbackAsync();
                                 return response;
                             }
+
+                            // nếu có bảo hành
+                            if(oDraftDetails.WarrantyPeriod > 0 && oDraftDetails.QtyWarranty > 0) await saveDebts(iDocentry, nameof(EnumType.WarrantyReminder), iDrftId);
                         }
                         // lưu vào công nợ khách hàng
-                        await saveDebts(iDocentry);
+                        await saveDebts(iDocentry, nameof(EnumType.DebtReminder));
                         if (isUpdated) await _context.CommitTranAsync();
                         break;
                     }
@@ -428,6 +434,8 @@ public class DocumentService : IDocumentService
                                 await _context.RollbackAsync();
                                 return response;
                             }
+                            // nếu có bảo hành
+                            if (oDraftDetails.WarrantyPeriod > 0 && oDraftDetails.QtyWarranty > 0) await saveDebts(oDraft.DocEntry, nameof(EnumType.WarrantyReminder), oDraftDetails.Id);
                         }
 
                         // xóa các dòng không tồn tại trong danh sách Ids
@@ -438,7 +446,7 @@ public class DocumentService : IDocumentService
                         await _context.DeleteDataAsync(queryString, sqlParameters);
 
                         // lưu vào công nợ khách hàng
-                        await saveDebts(oDraft.DocEntry);
+                        await saveDebts(oDraft.DocEntry, nameof(EnumType.DebtReminder));
                         if (isUpdated) await _context.CommitTranAsync();
                         break;
                     }
@@ -782,15 +790,16 @@ public class DocumentService : IDocumentService
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
-                                                            where T0.DocEntry = T00.DocEntry order by Id desc) as T2
+                                                           where T0.DocEntry = T00.DocEntry and T00.[Type] = '{nameof(EnumType.DebtReminder)}'
+                                                        order by Id desc) as T2
                                                    where 1=1 
                                                      and isnull(T0.Debt, 0) > 0 and T0.StatusId = 'Closed'
                                                      and iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date))) 
                                                          between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                      and T0.BranchId = @BranchId
                                                    union all
-                                                  Select T0.DocEntry, '' as Remark
-	                                                   , T0.DateCreate, DATEADD(DAY, 1 ,cast(T2.DateCreate as Date)) as DateStart
+                                                  Select T0.DocEntry, T4.Remark
+	                                                   , T4.DateCreate, iif(isnull(IsDelay, 0) = 1, T4.DateDelay, DATEADD(DAY, @NumDay ,cast(T4.DateCreate as Date))) as DateStart
 		                                               , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
 		                                               , '{nameof(EnumType.WarrantyReminder)}' as [Type] -- Nhắc bảo hành
                                                        , T2.[ServiceCode], T3.[ServiceName]
@@ -798,10 +807,14 @@ public class DocumentService : IDocumentService
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                               inner join [dbo].[DraftDetails] as T2 with(nolock) on T2.DocEntry = T0.DocEntry
                                               inner join [dbo].[Services] as T3 with(nolock) on T3.ServiceCode = T2.ServiceCode
+											 cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
+                                                           where T2.DocEntry = T00.DocEntry and T2.Id = T00.BaseLine and T00.[Type] = '{nameof(EnumType.WarrantyReminder)}' 
+                                                        order by Id desc) as T4
                                                    where 1=1 
 		                                             and isnull(T2.WarrantyPeriod, 0) > 0 and isnull(T2.QtyWarranty, 0) > 0
 		                                             and T0.StatusId = 'Closed' -- phải đóng
-                                                     and DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date)) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                     and iif(isnull(IsDelay, 0) = 1, T4.DateDelay, DATEADD(DAY, @NumDay ,cast(T4.DateCreate as Date))) 
+                                                         between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                      and T0.BranchId = @BranchId"
                     , DataRecordToSheduleModel, sqlParameters, commandType: CommandType.Text);
         }

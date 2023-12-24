@@ -75,6 +75,8 @@ public class CustomerDebtsModel
     public string? Remark { get; set; }
     public bool IsDelay { get; set; } // trĩ hoãn lại
     public DateTime? DateDelay { get; set; } // ngày delay lại
+    public string? Type { get; set; } // chia loại Nhắc nợ, nhắc bảo hành
+    public int BaseLine { get; set; }
 }
 
 public class ServiceCallModel : Auditable
