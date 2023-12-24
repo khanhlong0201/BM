@@ -6,6 +6,7 @@ using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
@@ -30,6 +31,7 @@ namespace BM.Web.Features.Controllers
         #region Properties
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         private const string TEMPLATE_PRINT_CAM_KET = "HtmlPrints\\CamKetVaDongThuan.html";
+        private const string TEMPLATE_PRINT_PHIEU_XUAT_KHO = "HtmlPrints\\LenhXuatKho.html";
         public bool pIsCreate { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
         public bool pIsLockPage { get; set; } = false;
@@ -38,6 +40,12 @@ namespace BM.Web.Features.Controllers
         public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+        public bool IsShowOutBound { get; set; } = false;
+        public OutBoundModel OutBoundUpdate { get; set; } = new OutBoundModel();
+        public List<SuppliesModel>? ListSuppplies { get; set; } // vật tư để lập phiếu xuất kho
+        public EditContext? _EditOutBoundContext { get; set; }
+        public SearchModel ItemFilter { get; set; } = new SearchModel();
+        public string StatusOutBound { get; set; } = "Chưa";
 
         #endregion Properties
 
@@ -130,6 +138,23 @@ namespace BM.Web.Features.Controllers
                             DocumentUpdate.WarrantyPeriod = oServiceCall.WarrantyPeriod;
                             DocumentUpdate.QtyWarranty = oServiceCall.QtyWarranty;
 
+                            //phiếu xuất kho
+                            OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode;
+                            OutBoundUpdate.ServiceName = oServiceCall.ServiceName;
+                            OutBoundUpdate.ListUserImplements = oServiceCall.ListUserImplements;
+                            OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                            OutBoundUpdate.StartTime = DateTime.Now;
+                            OutBoundUpdate.EndTime = DateTime.Now;
+                            OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
+                            OutBoundUpdate.FullName = DocumentUpdate.FullName;
+                            OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
+                            OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                            OutBoundUpdate.IdDraftDetail = oServiceCall.BaseLine; //id của chi tiết
+                            OutBoundUpdate.BranchId = pBranchId;
+                            OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
+                            OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
+                            OutBoundUpdate.ListChargeUser = oServiceCall.ListUserImplements;
+                            StatusOutBound = oServiceCall.StatusOutBound + "" == "" ? "Chưa" : oServiceCall.StatusOutBound; 
                         }
                     }
                     else
@@ -160,6 +185,106 @@ namespace BM.Web.Features.Controllers
             }
         }
 
+
+        /// <summary>
+        /// in biên phiếu xuất kho
+        /// </summary>
+        protected async Task PrintOutBound()
+        {
+            try
+            {
+                SearchModel itemFilter = new SearchModel();
+                itemFilter.UserId = pUserId;
+                itemFilter.IsAdmin = pIsAdmin;
+                itemFilter.IdDraftDetail = DocumentUpdate.BaseLine; // chi tiết
+                itemFilter.FromDate = new DateTime(2023, 11, 11);
+                itemFilter.ToDate = DateTime.Now;
+                itemFilter.Type = nameof(OutBoundType.ByWarranty);
+                List<OutBoundModel> ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
+                if (ListOutBound != null && ListOutBound.Count > 0)
+                {
+                    OutBoundUpdate = new OutBoundModel();
+                    OutBoundUpdate = ListOutBound.FirstOrDefault();
+                    ListSuppplies = new List<SuppliesModel>();
+                    if (OutBoundUpdate.SuppliesQtyList != null)
+                    {
+                        List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
+                        for (int i = 0; i < lstSuppplies.Count; i++)
+                        {
+                            var item = lstSuppplies[i];
+                            SuppliesModel oLine = new SuppliesModel();
+                            oLine.SuppliesCode = item.SuppliesCode;
+                            oLine.SuppliesName = item.SuppliesName;
+                            oLine.EnumId = item.EnumId;
+                            oLine.EnumName = item.EnumName;
+                            oLine.Qty = item.Qty;
+                            oLine.QtyInv = item.QtyInv;
+                            ListSuppplies.Add(oLine);
+                        }
+                    }
+                    OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
+                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
+                }
+                //=============== xử lý đọc thông tin file html
+                string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";
+                StreamReader streamReader = new StreamReader(sFilePath);
+                string sHtmlExport = streamReader.ReadToEnd();
+                streamReader.Close();
+                streamReader.Dispose();
+
+                //replace html
+                if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
+                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{OutBoundUpdate.VoucherNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{OutBoundUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CusNo}", $"{DocumentUpdate.CusNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-FullName}", $"{DocumentUpdate.FullName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{DocumentUpdate.ServiceName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ColorImplement}", $"{OutBoundUpdate.ColorImplement}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"{OutBoundUpdate.ChemicalFormula}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaType}", $"{OutBoundUpdate.AnesthesiaType}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaQty}", $"{OutBoundUpdate.AnesthesiaQty}");
+                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaCount}", $"{OutBoundUpdate.AnesthesiaCount}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DarkTestColor}", $"{OutBoundUpdate.DarkTestColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CoadingColor}", $"{OutBoundUpdate.CoadingColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-LibColor}", $"{OutBoundUpdate.LibColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
+                sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
+                sHtmlExport = sHtmlExport.Replace("{bm-UserNameCreate}", $"{OutBoundUpdate.UserNameCreate}");
+                if (OutBoundUpdate.ListChargeUser != null)
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", $"{string.Join(", ", OutBoundUpdate.ListChargeUser)}");
+                }
+                else
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", null);
+                }
+                string tblOutbounds = "";
+                for (int i = 0; i < ListSuppplies.Count; i++)
+                {
+                    tblOutbounds += @$" <tr>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSuppplies[i].SuppliesName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSuppplies[i].Qty}</span></td>
+                    </tr> ";
+                }
+                sHtmlExport = sHtmlExport.Replace("{bm-Outbounds}", $"{tblOutbounds}");
+                //in
+                await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
+
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "PrintOutBound");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         #endregion Override Functions
 
         #region Private Functions
@@ -173,7 +298,7 @@ namespace BM.Web.Features.Controllers
             }
             SearchModel ItemFilter = new SearchModel();
             ItemFilter.IdDraftDetail = pDocEntry;
-            var oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
+            hévar oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
             if(oResult != null && oResult.Any())
             {
                 ServiceCallModel oServiceCall = oResult[0];
@@ -208,13 +333,147 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.WarrantyPeriod = oServiceCall.WarrantyPeriod;
                 DocumentUpdate.QtyWarranty = oServiceCall.QtyWarranty;
                 ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+
+                //phiếu xuất kho
+                OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode;
+                OutBoundUpdate.ServiceName = oServiceCall.ServiceName;
+                OutBoundUpdate.ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+                OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                OutBoundUpdate.StartTime = DateTime.Now;
+                OutBoundUpdate.EndTime = DateTime.Now;
+                OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
+                OutBoundUpdate.FullName = DocumentUpdate.FullName;
+                OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
+                OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                OutBoundUpdate.IdDraftDetail = oServiceCall.BaseLine; //id của chi tiết
+                OutBoundUpdate.BranchId = pBranchId;
+                OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
+                OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
+                OutBoundUpdate.ListChargeUser = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+                StatusOutBound = oServiceCall.StatusOutBound +""=="" ? "Chưa": oServiceCall.StatusOutBound;
+                await InvokeAsync(StateHasChanged);
             }    
-        }    
+        }
 
         #endregion
 
         #region Protected Functions
+        protected async void ShowOutBoundHandler(EnumType pAction = EnumType.Add, OutBoundModel? pOutBound = null)
+        {
+            try
+            {
+                if (pAction == EnumType.Add)
+                {
+                    if (pDocEntry <= 0)
+                    {
+                        ShowWarning("Bạn phải lưu phiếu bảo hành trước khi muốn lập phiếu xuất kho");
+                        return;
+                    }
+                    if (StatusOutBound == "Rồi")
+                    {
+                        ShowWarning("Bạn đã lập phiếu xuất kho cho bảo hành dịch vụ này rồi");
+                        return;
+                    }
+                    await ShowLoader();
+                    //OutBoundUpdate.ServiceCode = oItem.ServiceCode;
+                    //OutBoundUpdate.ServiceName = oItem.ServiceName;
+                    //OutBoundUpdate.ListUserImplements = oItem.ListUserImplements;
+                    //OutBoundUpdate.ChemicalFormula = oItem.ChemicalFormula;
+                    //OutBoundUpdate.StartTime = DateTime.Now;
+                    //OutBoundUpdate.EndTime = DateTime.Now;
+                    //OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
+                    //OutBoundUpdate.FullName = DocumentUpdate.FullName;
+                    //OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
+                    //OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                    //OutBoundUpdate.IdDraftDetail = oItem.Id;
+                    //OutBoundUpdate.BranchId = pBranchId;
+                    //OutBoundUpdate.Remark = DocumentUpdate.Remark;// đặc điểm khách hàng
+                    //OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
+                    //OutBoundUpdate.ListChargeUser = oItem.ListUserImplements;
+                }
+                else
+                {
 
+                }
+                ItemFilter.Type = nameof(SuppliesKind.Popular);
+                ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
+                IsShowOutBound = true;
+                _EditOutBoundContext = new EditContext(OutBoundUpdate);
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "ShowOutBound");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        protected async void SaveOutBoundHandler(EnumType pProcess = EnumType.Update)
+        {
+            try
+            {
+                string sAction = nameof(EnumType.Add);
+                bool isConfirm = false;
+                if (pProcess == EnumType.Update)
+                {
+                    isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc muốn lưu phiếu xuất này ?", "Thông báo");
+                }
+                if (!isConfirm) return;
+
+                var listSuppliesCheck = ListSuppplies.Where(d => d.QtyInv > 0 && d.Qty >= 0).ToList(); // bắt nếu chưa nhâp số lượng xuất kho   
+                if(listSuppliesCheck == null || listSuppliesCheck.Count == 0)
+                {
+                    ShowWarning("Bạn phải nhập số lượng xuất kho");
+                    return;
+                }
+                await ShowLoader();
+                if (ListSuppplies != null && ListSuppplies.Any())
+                {
+                    var CheckListSupplies = ListSuppplies.Where(d => d.Qty > d.QtyInv).FirstOrDefault();
+                    if (CheckListSupplies != null)
+                    {
+                        ShowWarning("Số lượng xuất phải <= Tổng số lượng tồn kho");
+                        await ShowLoader(false);
+                        return;
+                    }
+                    var listSuppliesOutBound = ListSuppplies.Select(m => new SuppliesOutBoundModel()
+                    {
+                        SuppliesCode = m.SuppliesCode,
+                        SuppliesName = m.SuppliesName,
+                        EnumId = m.EnumId,
+                        EnumName = m.EnumName,
+                        Qty = m.Qty,
+                        QtyInv = m.QtyInv
+                    });
+                    OutBoundUpdate.Type = nameof(OutBoundType.ByWarranty);//theo bảo hành
+                    OutBoundUpdate.ChargeUser = OutBoundUpdate.ListChargeUser == null || !OutBoundUpdate.ListChargeUser.Any() ? "" : string.Join(",", OutBoundUpdate.ListChargeUser);
+                    OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
+                }
+                bool isSuccess = await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    IsShowOutBound = false;
+                    //DocumentUpdate.BaseLine = OutBoundUpdate.IdDraftDetail.Value;
+                    //pDocEntry = DocumentUpdate.BaseEntry;
+
+                     await showVoucher();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveDocHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         protected async Task SaveDocHandler(EnumType pProcess = EnumType.Update)
         {
             try

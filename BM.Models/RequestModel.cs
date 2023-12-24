@@ -152,4 +152,5 @@ public enum OutBoundType
 {
     @ByService, // xuất kho theo dịch vụ
     @ByRequest, // xuất kho theo yêu cầu
+    @ByWarranty, //xuất kho theo bảo hành
 }

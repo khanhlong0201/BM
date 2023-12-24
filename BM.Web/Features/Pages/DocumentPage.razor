@@ -371,7 +371,7 @@
          IsShowButtonSaveAdnCreate="false"
          Width="65%"
          SaveAndClosed="@(()=> SaveOutBoundHandler())"
-         Title="@($"Lập lệnh và xuất kho cho dịch vụ: {OutBoundUpdate!.ServiceName}")">
+         Title="@($"Lập lệnh và xuất kho cho dịch vụ : {OutBoundUpdate!.ServiceName}")">
     <EditForm EditContext="@_EditOutBoundContext">
         <DataAnnotationsValidator />
         <div class="row row-gap-2">
@@ -437,7 +437,7 @@
             <HLabel For="txtChemicalFormula" Value="Công thức mức (Đơn vị quy ước là giọt): " />
             <strong>@OutBoundUpdate.ChemicalFormula</strong>
             <div class="mt-2 row row-gap-2">
-                <div class="col-md-8 col-sm-6">
+                @*<div class="col-md-8 col-sm-6">
                     <HLabel For="AnesthesiaType" Value="Loại tê:" />
                     <TelerikTextBox @bind-Value="@OutBoundUpdate.AnesthesiaType" Id="AnesthesiaType" />
                 </div>
@@ -448,7 +448,7 @@
                 <div class="col-md-2 col-sm-3">
                     <HLabel Value="Số lần trợ tê:" />
                     <TelerikNumericTextBox Min="0"  Step="1"  @bind-Value="@OutBoundUpdate.AnesthesiaCount" Id="txtQty" /> 
-                </div>
+                </div>*@
 
                 <div class="col-md-4 col-sm-12">
                     <HLabel For="txtDarkTestColor" Value="Màu thử thâm:" />

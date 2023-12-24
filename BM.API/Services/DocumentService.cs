@@ -58,9 +58,22 @@ public class DocumentService : IDocumentService
             sqlParameters[2] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
             sqlParameters[4] = new SqlParameter("@IdDraftDetail", pSearchData.IdDraftDetail);
-            data = await _context.GetDataAsync(@$"s
-"
-                    , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
+            data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, t6.FullName as [ChargeUserName],
+                        t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft,
+						t7.FullName as [UserNameCreate]
+                        from OutBound t0 with(nolock)
+                        inner join DraftDetails t1 with(nolock) on t0.BaseEntry = t1.DocEntry and t0.IdDraftDetail = t1.Id
+                        inner join Drafts t2 with(nolock) on t0.BaseEntry = t2.DocEntry
+                        inner join Branchs t3 with(nolock) on t0.BranchId = t3.BranchId
+                        inner join Customers t4 with(nolock) on t2.CusNo = t4.CusNo
+                        inner join [Services] t5 with(nolock) on t1.ServiceCode = t5.ServiceCode
+                        left join [Users] t6 with(nolock) on t0.ChargeUser = t6.EmpNo
+						inner join [Users] t7 with(nolock) on t0.UserCreate = t7.Id
+                        where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
+                        and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,-1) = -1 or t1.Id = @IdDraftDetail)
+                            order by [DocEntry] desc"
+                     , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -1084,12 +1097,14 @@ public class DocumentService : IDocumentService
             	       when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
                        when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
                        else N'Chờ xử lý' end as StatusName
+                       ,  IIF(isnull(T6.DocEntry,0) <> 0,N'Rồi',N'Chưa') as StatusOutBound
                   from [dbo].[ServiceCalls] as T0 with(nolock)
             inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.BaseEntry = T1.DocEntry and T0.BaseLine = T1.Id
             inner join [dbo].[Drafts] as T2 with(nolock) on T1.DocEntry = T2.DocEntry
             inner join [dbo].[Services] as T3 with(nolock) on T1.ServiceCode = T3.ServiceCode
             inner join [dbo].[Branchs] as T4 with(nolock) on T0.BranchId = T4.BranchId
             inner join [dbo].[Customers] as T5 with(nolock) on T0.CusNo = T5.CusNo
+            left join [dbo].[OutBound] as T6 with(nolock) on T1.Id = t6.IdDraftDetail and T6.IsDelete = 0
                  where 1=1 
                        and (
                                 (@DocEntry > 0 and T0.DocEntry = @DocEntry) 
@@ -1494,6 +1509,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["CINo"])) model.CINo = Convert.ToString(record["CINo"]);
         if (!Convert.IsDBNull(record["Zalo"])) model.Zalo = Convert.ToString(record["Zalo"]);
         if (!Convert.IsDBNull(record["FaceBook"])) model.FaceBook = Convert.ToString(record["FaceBook"]);
+        if (!Convert.IsDBNull(record["StatusOutBound"])) model.StatusOutBound = Convert.ToString(record["StatusOutBound"]);
         return model;
     }
     #endregion

@@ -322,6 +322,7 @@ namespace BM.Web.Features.Controllers
                         Qty = m.Qty,
                         QtyInv = m.QtyInv
                     });
+                    OutBoundUpdate.Type = nameof(OutBoundType.ByService);//theo dịch vụ
                     OutBoundUpdate.ChargeUser = OutBoundUpdate.ListChargeUser == null || !OutBoundUpdate.ListChargeUser.Any() ? "" : string.Join(",", OutBoundUpdate.ListChargeUser);
                     OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listSuppliesOutBound);
                 } 
@@ -909,7 +910,13 @@ namespace BM.Web.Features.Controllers
                     DocumentUpdate.SkinType,
                     oItem.WarrantyPeriod,
                     oItem.QtyWarranty,
-                    BaseLine = oItem.Id
+                    BaseLine = oItem.Id,
+                    DocumentUpdate.Remark,//đặc điểm khách hàng
+                    oItem.ListUserImplements,
+                    oItem.StatusOutBound,
+                    DocumentUpdate.BranchId,
+                    DocumentUpdate.BranchName,
+
                 };
                 if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls));
                 string data = EncryptHelper.Encrypt(JsonConvert.SerializeObject(oHeader)); // mã hóa dữ liệu

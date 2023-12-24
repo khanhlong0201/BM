@@ -111,6 +111,9 @@ public class ServiceCallModel : Auditable
     public string? SkinType { get; set; }
     public int QtyWarranty { get; set; }
     public double Amount { get; set; }
+    public string Remark { get; set; }
+    public List<string> ListUserImplements { get; set; }
+
 
 }
 
