@@ -22,14 +22,14 @@
                 {
                     <span data-bs-toggle="tooltip" data-bs-html="true"
                           title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
-                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
+                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ.")
                     </span>
                 }
                 else if (oItem.Type == nameof(EnumType.WarrantyReminder))
                 {
                     <span data-bs-toggle="tooltip" data-bs-html="true"
                           title="">
-                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}")
+                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}.")
                     </span>
                 }
             </div>
@@ -44,14 +44,14 @@
                 {
                     <span class="@($"DebtReminder-tooltip-{oItem.DocEntry}")"
                           title="@($"{oItem.Start.ToString(DefaultConstants.FORMAT_DATE)}. {oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")">
-                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ")
+                        @($"{oItem.FullName}. Tổng nợ: {oItem.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ. Đơn hàng: {oItem.VoucherNo}")
                     </span>
                 }
                 else if (oItem.Type == nameof(EnumType.WarrantyReminder))
                 {
                     <span data-bs-toggle="tooltip" data-bs-html="true"
                           title="">
-                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}")
+                        @($"{oItem.FullName}. Cần bảo hành dịch vụ {oItem.ServiceCode} - {oItem.ServiceName}. Đơn hàng: {oItem.VoucherNo}")
                     </span>
                 }
             </div>
@@ -72,7 +72,7 @@
 
 <HDialog @bind-IsVisible="@IsShowDetails"
          IsShowButtonSaveAdnCreate="false"
-         TitleBtnSaveAndClosed="Lưu Thanh toán"
+         TitleBtnSaveAndClosed="@(ItemSelected.Type == nameof(EnumType.DebtReminder) ? "Lưu Thanh toán" : "Lưu ngày hẹn bảo hành")"
          SaveAndClosed="@SavePaymentHandler"
          Width="60%"
          Title="Thông tin chi tiết">
@@ -99,53 +99,88 @@
                 <a class="h-link" @onclick="@(()=> ReviewDocInfoHandler(ItemSelected.DocEntry))">@ItemSelected.VoucherNo</a>
             </div>
             <div class="col-md-4 col-sm-12">
-                <HLabel Value="Ngày nhắc nợ: " />
+                <HLabel Value="Ngày nhắc: " />
                 <span>@ItemSelected.Start.ToString(DefaultConstants.FORMAT_DATE)</span>
             </div>
             <div class="col-md-4 col-sm-12">
-                <HLabel Value="Ngày nợ: " />
+                <HLabel Value="Ngày lập: " />
                 <span>@ItemSelected.DateCreate.ToString(DefaultConstants.FORMAT_DATE)</span>
             </div>
         </div>
     </div>
-    <div class="mt-2">
-        <div class="row row-gap-2">
-            <div class="col-md-4 col-sm-12">
-                <HLabel Value="Tổng tiền còn nợ: " />
-                <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
-            </div>
-            <div class="col-md-8 col-sm-12">
-                <HLabel Value="Ghi chú lần trước: " />
-                <span>@ItemSelected.RemarkOld</span>
-            </div>
-        </div>
-        
-    </div>
-    <div class="mt-2">
-        <div class="row row-gap-2">
-            <div class="col-md-4 col-sm-12">
-                <HLabel Value="Số tiền cần thanh toán: " />
-                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0" Max="@ItemSelected.TotalDebtAmount"
-                    @bind-Value="@ItemSelected.GuestsPay" Arrows="false" Enabled="@(!ItemSelected.IsDelay)" />
-            </div>
-            <div class="col-md-4 col-sm-12">
-                <TelerikCheckBox @bind-Value="@ItemSelected.IsDelay" Id="IsDelay" />
-                <HLabel Value="Khách hẹn lại ?" For="IsDelay" />
-                @{
-                    ItemSelected.DateDelay = ItemSelected.IsDelay ? ItemSelected.DateDelay : null;
-                }
-                <TelerikDatePicker @bind-Value="@ItemSelected.DateDelay"
-                    Enabled="@ItemSelected.IsDelay"
-                    Placeholder="Chọn ngày hẹn"
-                    Format="dd/MM/yyyy"
-                    Min="StartTime.AddDays(1)"
-                    Class="btn-noborder-radius-left">
-                </TelerikDatePicker>
+    @if (ItemSelected.Type == nameof(EnumType.DebtReminder))
+    {
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-4 col-sm-12">
+                    <HLabel Value="Tổng tiền còn nợ: " />
+                    <span class="badge bg-purple-lt">@ItemSelected.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    <HLabel Value="Ghi chú lần trước: " />
+                    <span>@ItemSelected.RemarkOld</span>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="mt-2">
-        <HLabel Value="Ghi chú: " />
-        <TelerikTextBox @bind-Value="@ItemSelected.Remark" Id="txtReason" MaxLength="254" />
-    </div>
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-4 col-sm-12">
+                    <HLabel Value="Số tiền cần thanh toán: " />
+                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Min="0" Max="@ItemSelected.TotalDebtAmount"
+                                       @bind-Value="@ItemSelected.GuestsPay" Arrows="false" Enabled="@(!ItemSelected.IsDelay)" />
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <TelerikCheckBox @bind-Value="@ItemSelected.IsDelay" Id="IsDelay" />
+                    <HLabel Value="Khách hẹn lại ?" For="IsDelay" />
+                    @{
+                        ItemSelected.DateDelay = ItemSelected.IsDelay ? ItemSelected.DateDelay : null;
+                    }
+                    <TelerikDatePicker @bind-Value="@ItemSelected.DateDelay"
+                                   Enabled="@ItemSelected.IsDelay"
+                                   Placeholder="Chọn ngày hẹn"
+                                   Format="dd/MM/yyyy"
+                                   Min="StartTime.AddDays(1)"
+                                   Class="btn-noborder-radius-left">
+                    </TelerikDatePicker>
+                </div>
+            </div>
+        </div>
+    }
+    else if (ItemSelected.Type == nameof(EnumType.WarrantyReminder))
+    {
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-12 col-sm-12">
+                    <HLabel Value="Dịch vụ: " />
+                    <span>@($" {ItemSelected.ServiceCode} - {ItemSelected.ServiceName}")</span>
+                </div>
+                <div class="col-md-12 col-sm-12">
+                    <HLabel Value="Ghi chú lần trước: " />
+                    <span>@ItemSelected.RemarkOld</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-2">
+            <div class="row row-gap-2">
+                <div class="col-md-4 col-sm-12">
+                    <TelerikCheckBox @bind-Value="@ItemSelected.IsDelay" Id="IsDelay" />
+                    <HLabel Value="Khách hẹn lại ?" For="IsDelay" />
+                    @{
+                        ItemSelected.DateDelay = ItemSelected.IsDelay ? ItemSelected.DateDelay : null;
+                    }
+                    <TelerikDatePicker @bind-Value="@ItemSelected.DateDelay"
+                                   Enabled="@ItemSelected.IsDelay"
+                                   Placeholder="Chọn ngày hẹn"
+                                   Format="dd/MM/yyyy"
+                                   Min="StartTime.AddDays(1)"
+                                   Class="btn-noborder-radius-left">
+                    </TelerikDatePicker>
+                </div>
+                <div class="col-md-8 col-sm-12">
+                    <HLabel Value="Ghi chú: " />
+                    <TelerikTextBox @bind-Value="@ItemSelected.Remark" Id="txtReason" MaxLength="254" />
+                </div>
+            </div>
+        </div>
+    }
 </HDialog>
