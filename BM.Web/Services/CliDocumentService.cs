@@ -402,7 +402,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _logger.LogError(ex, "GetDataReminderByMonthAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;
@@ -435,7 +435,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _logger.LogError(ex, "GetDataReportAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;
@@ -634,7 +634,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "GetDataDocumentsAsync");
+            _logger.LogError(ex, "GetServiceCallsAsync");
             _toastService.ShowError(ex.Message);
         }
         return default;

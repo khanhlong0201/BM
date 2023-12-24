@@ -85,7 +85,7 @@
                 <Template>
                     @{
                         var model = (context as ServiceCallModel)!;
-                        <span class="h-link" @onclick="@(()=> NavigateHandler(model.DocEntry, pLinkPage: "service-call"))">@model.VoucherNo</span>
+                        <span class="h-link" @onclick="@(()=> NavigateHandler(model.DocEntry,model.BaseLine,model.BaseEntry, pLinkPage: "service-call"))">@model.VoucherNo</span>
                     }
                 </Template>
                 <FooterTemplate>

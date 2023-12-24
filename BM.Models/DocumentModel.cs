@@ -114,6 +114,8 @@ public class ServiceCallModel : Auditable
     public string Remark { get; set; }
     public List<string> ListUserImplements { get; set; }
 
+    public DateTime? DateCreateOutBound { get; set; }
+
 
 }
 

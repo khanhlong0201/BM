@@ -34,6 +34,8 @@ namespace BM.Web.Features.Controllers
         private const string TEMPLATE_PRINT_PHIEU_XUAT_KHO = "HtmlPrints\\LenhXuatKho.html";
         public bool pIsCreate { get; set; } = false;
         public int pDocEntry { get; set; } = 0;
+        public int pBaseLine { get; set; } = 0;
+        public int pBaseEntry { get; set; } = 0;
         public bool pIsLockPage { get; set; } = false;
         public ServiceCallModel DocumentUpdate { get; set; } = new ServiceCallModel();
         public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
@@ -105,6 +107,8 @@ namespace BM.Web.Features.Controllers
                         {
                             if (pParams.ContainsKey("pIsCreate")) pIsCreate = Convert.ToBoolean(pParams["pIsCreate"]);
                             if (pParams.ContainsKey("pDocEntry")) pDocEntry = Convert.ToInt32(pParams["pDocEntry"]);
+                            if (pParams.ContainsKey("pBaseLine")) pBaseLine = Convert.ToInt32(pParams["pBaseLine"]);
+                            if (pParams.ContainsKey("pBaseEntry")) pBaseEntry = Convert.ToInt32(pParams["pBaseEntry"]);
                         }
                     }
                     await _progressService!.SetPercent(0.4);
@@ -116,7 +120,7 @@ namespace BM.Web.Features.Controllers
                             //await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls)); // Đọc xong rồi xóa luôn
                             ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(EncryptHelper.Decrypt(sSvCall));
                             DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNo;
-                            DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
+                            DocumentUpdate.BaseEntry = oServiceCall.BaseEntry;
                             DocumentUpdate.BaseLine = oServiceCall.BaseLine;
                             DocumentUpdate.CusNo = oServiceCall.CusNo;
                             DocumentUpdate.FullName = oServiceCall.FullName;
@@ -148,13 +152,15 @@ namespace BM.Web.Features.Controllers
                             OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
                             OutBoundUpdate.FullName = DocumentUpdate.FullName;
                             OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
-                            OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                            OutBoundUpdate.BaseEntry = DocumentUpdate.BaseEntry;
                             OutBoundUpdate.IdDraftDetail = oServiceCall.BaseLine; //id của chi tiết
                             OutBoundUpdate.BranchId = pBranchId;
                             OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
                             OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                             OutBoundUpdate.ListChargeUser = oServiceCall.ListUserImplements;
-                            StatusOutBound = oServiceCall.StatusOutBound + "" == "" ? "Chưa" : oServiceCall.StatusOutBound; 
+                            StatusOutBound = oServiceCall.StatusOutBound + "" == "" ? "Chưa" : oServiceCall.StatusOutBound;
+                            OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound;
+                            OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
                         }
                     }
                     else
@@ -186,105 +192,7 @@ namespace BM.Web.Features.Controllers
         }
 
 
-        /// <summary>
-        /// in biên phiếu xuất kho
-        /// </summary>
-        protected async Task PrintOutBound()
-        {
-            try
-            {
-                SearchModel itemFilter = new SearchModel();
-                itemFilter.UserId = pUserId;
-                itemFilter.IsAdmin = pIsAdmin;
-                itemFilter.IdDraftDetail = DocumentUpdate.BaseLine; // chi tiết
-                itemFilter.FromDate = new DateTime(2023, 11, 11);
-                itemFilter.ToDate = DateTime.Now;
-                itemFilter.Type = nameof(OutBoundType.ByWarranty);
-                List<OutBoundModel> ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
-                if (ListOutBound != null && ListOutBound.Count > 0)
-                {
-                    OutBoundUpdate = new OutBoundModel();
-                    OutBoundUpdate = ListOutBound.FirstOrDefault();
-                    ListSuppplies = new List<SuppliesModel>();
-                    if (OutBoundUpdate.SuppliesQtyList != null)
-                    {
-                        List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
-                        for (int i = 0; i < lstSuppplies.Count; i++)
-                        {
-                            var item = lstSuppplies[i];
-                            SuppliesModel oLine = new SuppliesModel();
-                            oLine.SuppliesCode = item.SuppliesCode;
-                            oLine.SuppliesName = item.SuppliesName;
-                            oLine.EnumId = item.EnumId;
-                            oLine.EnumName = item.EnumName;
-                            oLine.Qty = item.Qty;
-                            oLine.QtyInv = item.QtyInv;
-                            ListSuppplies.Add(oLine);
-                        }
-                    }
-                    OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
-                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
-                }
-                //=============== xử lý đọc thông tin file html
-                string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";
-                StreamReader streamReader = new StreamReader(sFilePath);
-                string sHtmlExport = streamReader.ReadToEnd();
-                streamReader.Close();
-                streamReader.Dispose();
-
-                //replace html
-                if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
-                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{OutBoundUpdate.VoucherNo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{OutBoundUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
-                sHtmlExport = sHtmlExport.Replace("{bm-CusNo}", $"{DocumentUpdate.CusNo}");
-                sHtmlExport = sHtmlExport.Replace("{bm-FullName}", $"{DocumentUpdate.FullName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{DocumentUpdate.ServiceName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-ColorImplement}", $"{OutBoundUpdate.ColorImplement}");
-                sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"{OutBoundUpdate.ChemicalFormula}");
-                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaType}", $"{OutBoundUpdate.AnesthesiaType}");
-                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaQty}", $"{OutBoundUpdate.AnesthesiaQty}");
-                sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaCount}", $"{OutBoundUpdate.AnesthesiaCount}");
-                sHtmlExport = sHtmlExport.Replace("{bm-DarkTestColor}", $"{OutBoundUpdate.DarkTestColor}");
-                sHtmlExport = sHtmlExport.Replace("{bm-CoadingColor}", $"{OutBoundUpdate.CoadingColor}");
-                sHtmlExport = sHtmlExport.Replace("{bm-LibColor}", $"{OutBoundUpdate.LibColor}");
-                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
-                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
-                sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
-                sHtmlExport = sHtmlExport.Replace("{bm-UserNameCreate}", $"{OutBoundUpdate.UserNameCreate}");
-                if (OutBoundUpdate.ListChargeUser != null)
-                {
-                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", $"{string.Join(", ", OutBoundUpdate.ListChargeUser)}");
-                }
-                else
-                {
-                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", null);
-                }
-                string tblOutbounds = "";
-                for (int i = 0; i < ListSuppplies.Count; i++)
-                {
-                    tblOutbounds += @$" <tr>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSuppplies[i].SuppliesName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSuppplies[i].Qty}</span></td>
-                    </tr> ";
-                }
-                sHtmlExport = sHtmlExport.Replace("{bm-Outbounds}", $"{tblOutbounds}");
-                //in
-                await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
-
-            }
-            catch (Exception ex)
-            {
-                _logger!.LogError(ex, "DocumentController", "PrintOutBound");
-                ShowError(ex.Message);
-            }
-            finally
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-        }
+        
         #endregion Override Functions
 
         #region Private Functions
@@ -344,13 +252,18 @@ namespace BM.Web.Features.Controllers
                 OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
                 OutBoundUpdate.FullName = DocumentUpdate.FullName;
                 OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
-                OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
+                OutBoundUpdate.BaseEntry = DocumentUpdate.BaseEntry;
                 OutBoundUpdate.IdDraftDetail = oServiceCall.BaseLine; //id của chi tiết
                 OutBoundUpdate.BranchId = pBranchId;
                 OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
                 OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                 OutBoundUpdate.ListChargeUser = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+                OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
                 StatusOutBound = oServiceCall.StatusOutBound +""=="" ? "Chưa": oServiceCall.StatusOutBound;
+
+                if(pBaseLine==null) pBaseLine = OutBoundUpdate.IdDraftDetail.Value;
+                if (pDocEntry == null) pDocEntry = DocumentUpdate.DocEntry;
+
                 await InvokeAsync(StateHasChanged);
             }    
         }
@@ -456,9 +369,6 @@ namespace BM.Web.Features.Controllers
                 if (isSuccess)
                 {
                     IsShowOutBound = false;
-                    //DocumentUpdate.BaseLine = OutBoundUpdate.IdDraftDetail.Value;
-                    //pDocEntry = DocumentUpdate.BaseEntry;
-
                      await showVoucher();
                     return;
                 }
@@ -623,7 +533,105 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
+        /// <summary>
+        /// in biên phiếu xuất kho
+        /// </summary>
+        protected async Task PrintOutBound()
+        {
+            try
+            {
+                SearchModel itemFilter = new SearchModel();
+                itemFilter.UserId = pUserId;
+                itemFilter.IsAdmin = pIsAdmin;
+                itemFilter.IdDraftDetail = pBaseLine; // chi tiết
+                itemFilter.FromDate = new DateTime(2023, 11, 11);
+                itemFilter.ToDate = DateTime.Now;
+                itemFilter.Type = nameof(OutBoundType.ByWarranty);
+                List<OutBoundModel> ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
+                if (ListOutBound != null && ListOutBound.Count > 0)
+                {
+                    OutBoundUpdate = new OutBoundModel();
+                    OutBoundUpdate = ListOutBound.FirstOrDefault();
+                    ListSuppplies = new List<SuppliesModel>();
+                    if (OutBoundUpdate.SuppliesQtyList != null)
+                    {
+                        List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);
+                        for (int i = 0; i < lstSuppplies.Count; i++)
+                        {
+                            var item = lstSuppplies[i];
+                            SuppliesModel oLine = new SuppliesModel();
+                            oLine.SuppliesCode = item.SuppliesCode;
+                            oLine.SuppliesName = item.SuppliesName;
+                            oLine.EnumId = item.EnumId;
+                            oLine.EnumName = item.EnumName;
+                            oLine.Qty = item.Qty;
+                            oLine.QtyInv = item.QtyInv;
+                            ListSuppplies.Add(oLine);
+                        }
+                    }
+                    OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
+                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
+                }
+                //=============== xử lý đọc thông tin file html
+                string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";
+                StreamReader streamReader = new StreamReader(sFilePath);
+                string sHtmlExport = streamReader.ReadToEnd();
+                streamReader.Close();
+                streamReader.Dispose();
 
+                //replace html
+                if (string.IsNullOrWhiteSpace(sHtmlExport)) return;
+                sHtmlExport = sHtmlExport.Replace("{bm-VoucherNo}", $"{OutBoundUpdate.VoucherNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DateCreate}", $"{OutBoundUpdate.DateCreate?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CusNo}", $"{DocumentUpdate.CusNo}");
+                sHtmlExport = sHtmlExport.Replace("{bm-FullName}", $"{DocumentUpdate.FullName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-BranchName}", $"{DocumentUpdate.BranchName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{DocumentUpdate.ServiceName}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ColorImplement}", $"{OutBoundUpdate.ColorImplement}");
+                sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"{OutBoundUpdate.ChemicalFormula}");
+                //sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaType}", $"{OutBoundUpdate.AnesthesiaType}");
+                //sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaQty}", $"{OutBoundUpdate.AnesthesiaQty}");
+                //sHtmlExport = sHtmlExport.Replace("{bm-AnesthesiaCount}", $"{OutBoundUpdate.AnesthesiaCount}");
+                sHtmlExport = sHtmlExport.Replace("{bm-DarkTestColor}", $"{OutBoundUpdate.DarkTestColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-CoadingColor}", $"{OutBoundUpdate.CoadingColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-LibColor}", $"{OutBoundUpdate.LibColor}");
+                sHtmlExport = sHtmlExport.Replace("{bm-StartTime}", $"{OutBoundUpdate.StartTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-EndTime}", $"{OutBoundUpdate.EndTime?.ToString(DefaultConstants.FORMAT_DATE_TIME)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Problems}", $"{OutBoundUpdate.Problems}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Remark}", $"{DocumentUpdate.Remark}");
+                sHtmlExport = sHtmlExport.Replace("{bm-HealthStatus}", $"{DocumentUpdate.HealthStatus}");
+                sHtmlExport = sHtmlExport.Replace("{bm-UserNameCreate}", $"{OutBoundUpdate.UserNameCreate}");
+                if (OutBoundUpdate.ListChargeUser != null)
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", $"{string.Join(", ", OutBoundUpdate.ListChargeUser)}");
+                }
+                else
+                {
+                    sHtmlExport = sHtmlExport.Replace("{bm-ListChargeUser}", null);
+                }
+                string tblOutbounds = "";
+                for (int i = 0; i < ListSuppplies.Count; i++)
+                {
+                    tblOutbounds += @$" <tr>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSuppplies[i].SuppliesName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSuppplies[i].Qty}</span></td>
+                    </tr> ";
+                }
+                sHtmlExport = sHtmlExport.Replace("{bm-Outbounds}", $"{tblOutbounds}");
+                //in
+                await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);
+
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "PrintOutBound");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
         #endregion
     }
 }

@@ -1098,6 +1098,7 @@ public class DocumentService : IDocumentService
                        when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
                        else N'Chờ xử lý' end as StatusName
                        ,  IIF(isnull(T6.DocEntry,0) <> 0,N'Rồi',N'Chưa') as StatusOutBound
+                       , t6.DateCreate as DateCreateOutBound
                   from [dbo].[ServiceCalls] as T0 with(nolock)
             inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.BaseEntry = T1.DocEntry and T0.BaseLine = T1.Id
             inner join [dbo].[Drafts] as T2 with(nolock) on T1.DocEntry = T2.DocEntry
@@ -1510,6 +1511,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["Zalo"])) model.Zalo = Convert.ToString(record["Zalo"]);
         if (!Convert.IsDBNull(record["FaceBook"])) model.FaceBook = Convert.ToString(record["FaceBook"]);
         if (!Convert.IsDBNull(record["StatusOutBound"])) model.StatusOutBound = Convert.ToString(record["StatusOutBound"]);
+        if (!Convert.IsDBNull(record["DateCreateOutBound"])) model.DateCreateOutBound = Convert.ToDateTime(record["DateCreateOutBound"]);
         return model;
     }
     #endregion

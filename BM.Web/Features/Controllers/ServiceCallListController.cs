@@ -145,6 +145,8 @@ namespace BM.Web.Features.Controllers
                 {
                     { "pDocEntry", $"{oItem.DocEntry}"},
                     { "pIsCreate", $"{false}" },
+                    { "pBaseLine", $"{oItem.BaseLine}"},
+                    { "pBaseEntry", $"{oItem.BaseEntry}"},
                 };
                 string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
                 _navManager!.NavigateTo($"/service-call?key={key}");
@@ -220,7 +222,7 @@ namespace BM.Web.Features.Controllers
             }
         }
 
-        protected void NavigateHandler(int pDocEntry, string pLinkPage = "service-call")
+        protected void NavigateHandler(int pDocEntry, int pBaseLine = -1, int pBaseEntry = -1, string pLinkPage = "service-call")
         {
             try
             {
@@ -229,6 +231,8 @@ namespace BM.Web.Features.Controllers
                     {
                         { "pDocEntry", $"{pDocEntry}"},
                         { "pIsCreate", $"{false}" },
+                        { "pBaseLine", $"{pBaseLine}"},
+                        { "pBaseEntry", $"{pBaseEntry}"},
                     };
                 string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
                 _navManager!.NavigateTo($"/{pLinkPage}?key={key}");
