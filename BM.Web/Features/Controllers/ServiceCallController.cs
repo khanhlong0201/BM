@@ -298,7 +298,7 @@ namespace BM.Web.Features.Controllers
             }
             SearchModel ItemFilter = new SearchModel();
             ItemFilter.IdDraftDetail = pDocEntry;
-            hévar oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
+            var oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
             if(oResult != null && oResult.Any())
             {
                 ServiceCallModel oServiceCall = oResult[0];
