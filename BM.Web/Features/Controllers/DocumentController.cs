@@ -250,11 +250,17 @@ namespace BM.Web.Features.Controllers
                     }
                     await ShowLoader();
                     var oItem = lstItem[0];
+                    if (!oItem.IsOutBound)
+                    {
+                        ShowWarning("Dịch vụ này không cần phải lập phiếu xuất kho");
+                        return;
+                    }
                     if (oItem.StatusOutBound + "" == "Rồi")
                     {
                         ShowWarning("Bạn đã lập phiếu xuất kho cho dịch vụ này rồi");
                         return;
                     }
+
 
                     OutBoundUpdate.ServiceCode = oItem.ServiceCode;
                     OutBoundUpdate.ServiceName = oItem.ServiceName;
@@ -786,7 +792,7 @@ namespace BM.Web.Features.Controllers
                         }
                     }
                     OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
-                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
+                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUserName?.Split(",")?.ToList(); // nhân viên phục trách
                 }
                 //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";

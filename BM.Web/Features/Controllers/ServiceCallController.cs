@@ -570,7 +570,7 @@ namespace BM.Web.Features.Controllers
                         }
                     }
                     OutBoundUpdate.ListUserImplements = OutBoundUpdate.ImplementUserId?.Split(",")?.ToList(); // nhân viên thực hiện
-                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUser?.Split(",")?.ToList(); // nhân viên phục trách
+                    OutBoundUpdate.ListChargeUser = OutBoundUpdate.ChargeUserName?.Split(",")?.ToList(); // nhân viên phục trách
                 }
                 //=============== xử lý đọc thông tin file html
                 string sFilePath = $"{this._webHostEnvironment!.WebRootPath}\\{TEMPLATE_PRINT_PHIEU_XUAT_KHO}";

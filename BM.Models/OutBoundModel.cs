@@ -37,4 +37,5 @@ public class OutBoundModel : Auditable
     public string? UserNameCreate { get; set; }
     public string? Type { get; set; } // kiểu xuất kho ( theo dịch vụ, xuất kho bất kỳ thời điểm nào)
     public string? TypeName { get; set; } //Tên kiểu xuất kho ( theo dịch vụ, xuất kho bất kỳ thời điểm nào)
+    public string? ImplementUserName { get; set; } // ds tên nv thực hiện 
 }
