@@ -65,19 +65,8 @@
             </GridColumn>
             <GridColumn Field=@nameof(ServiceModel.EnumName) Width="160px" Title="Loại dịch vụ"></GridColumn>
             <GridColumn Field=@nameof(ServiceModel.PackageName) Width="190px" Title="Gói dịch vụ"></GridColumn>
-             <GridColumn Field=@nameof(ServiceModel.ListPromotionSupplies) Width="270px" Title="Danh sách vật tư khuyến mãi">
-                <Template>
-                     <TelerikMultiSelect Data="@ListSupplies"
-                        @bind-Value="@((context as ServiceModel).ListPromotionSuppliess)"
-                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
-                        TextField="@nameof(SuppliesModel.SuppliesName)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        Enabled="false"
-                        AutoClose="false" Width="100%">
-                        </TelerikMultiSelect>
-                </Template>
-            </GridColumn>
-            <GridColumn Field=@nameof(ServiceModel.IsOutBound) Width="170px" Title="Cần lập phiếu xuất kho  ?">
+            <GridColumn Field=@nameof(ServiceModel.ListPromotionSupplies) Width="180px" Title="Vật tư khuyến mãi"></GridColumn>
+            <GridColumn Field=@nameof(ServiceModel.IsOutBound) Width="160px" Title="Cần xuất kho?">
                 <Template>
                     @{
                         var model = (context as ServiceModel);
@@ -98,18 +87,20 @@
     Title="@(IsCreate ? "Thêm mới dịch vụ" : $"Cập nhật dịch vụ {ServiceUpdate!.ServiceCode}")">
     <EditForm EditContext="@_EditContext" >
         <DataAnnotationsValidator />
-        <div>
-            <HLabel Value="Mã dịch vụ:" />
-            <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceCode" Class="h-link" Enabled="false" />
+        <div class="row row-gap-2 align-items-end mt-1">
+            <div class="col-md-6 col-sm-12">
+                <HLabel Value="Mã dịch vụ:" />
+                <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceCode" Class="h-link" Enabled="false" />
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <TelerikCheckBox @bind-Value="@ServiceUpdate.IsOutBound" Id="ckbIsOutBound" />
+                <HLabel Value="Cần xuất kho ?" For="ckbIsOutBound" />
+            </div>
         </div>
         <div class="mt-2">
             <HLabel For="txtBranchName" Value="Tên dịch vụ:" IsRequired="true" />
             <TelerikTextBox @bind-Value="@ServiceUpdate!.ServiceName" Id="txtBranchName" />
             <HValidationTooltip ValidationFor="@(()=> ServiceUpdate!.ServiceName)" Id="txtBranchName" />
-        </div>
-       <div class="mt-2">
-            <TelerikCheckBox @bind-Value="@ServiceUpdate.IsOutBound" Id="ckbIsOutBound" />
-            <HLabel Value="Cần lập phiếu xuất kho ?" For="ckbIsOutBound" />
         </div>
         <div class="mt-2">
             <HLabel Value="Đơn giá:" IsRequired="true" />
@@ -157,17 +148,6 @@
                 </div>
             </div>
         </div>
-         <div class="mt-2">
-            <HLabel For="txtBranchName" Value="Danh sách vật tư khuyến mãi:" />
-            <TelerikMultiSelect Data="@ListSupplies"
-                        @bind-Value="@ServiceUpdate.ListPromotionSuppliess"
-                        ValueField="@nameof(SuppliesModel.SuppliesCode)"
-                        TextField="@nameof(SuppliesModel.SuppliesName)"
-                        FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                        AutoClose="false" Width="100%">
-
-            </TelerikMultiSelect>
-        </div>
         <div class="mt-2">
             <div class="row row-gap-2">
                 <div class="col-md-6 col-sm-12">
@@ -187,6 +167,17 @@
                         Id="numQtyWarranty" />
                 </div>
             </div>
+        </div>
+        <div class="mt-2">
+            <HLabel For="txtBranchName" Value="Vật tư khuyến mãi:" />
+            <TelerikMultiSelect Data="@ListSupplies"
+                @bind-Value="@ServiceUpdate.ListPromotionSuppliess"
+                ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                TextField="@nameof(SuppliesModel.SuppliesName)"
+                Placeholder="Chọn vật tư khuyến mãi"
+                FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                AutoClose="false" Width="100%">
+            </TelerikMultiSelect>
         </div>
         <div class="mt-2">
             <HLabel For="txtDescription" Value="Mô tả:" />
