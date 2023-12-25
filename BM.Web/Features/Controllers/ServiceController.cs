@@ -42,7 +42,7 @@ namespace BM.Web.Features.Controllers
         public DialogFactory? _rDialogs { get; set; }
 
         public List<SuppliesModel>? ListSupplies { get; set; } = new List<SuppliesModel>();
-        public SearchModel? ItemFilter { get; set; } = new SearchModel();
+        public SearchModel ItemFilter { get; set; } = new SearchModel();
         #endregion
 
         #region Override Functions
@@ -205,6 +205,7 @@ namespace BM.Web.Features.Controllers
                     {
                         ServiceUpdate = new ServiceModel();
                         _EditContext = new EditContext(ServiceUpdate);
+                        IsCreate = true;
                         return;
                     }
                     IsShowDialog = false;

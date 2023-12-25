@@ -905,7 +905,8 @@ public class DocumentService : IDocumentService
                 if(oItemCusDebts == null)
                 {
                     response.StatusCode = -1;
-                    response.Message = "Không tìm thấy thông tin Công nợ trước đó. Vui lòng thử lại!";
+                    string mess = oCusDebts.Type == nameof(EnumType.DebtReminder) ? "Công nợ" : "Bảo hành";
+                    response.Message = $"Không tìm thấy thông tin {mess} trước đó. Vui lòng thử lại!";
                     return response;
                 }
                 // gán lại thông tin

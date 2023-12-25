@@ -376,7 +376,7 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],T0.[Address],[DateOfBirth],[SkinType]
                       ,T0.[BranchId], T1.BranchName as [BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
-					  ,(select isnull(sum(TotalDebtAmount), 0) from [dbo].[CustomerDebts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo]) as [TotalDebtAmount]
+					  ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo]) as [TotalDebtAmount]
 			     from [dbo].[Customers] as T0 with(nolock) 
 		    left join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
 					where [IsDelete] = 0 order by [CusNo] desc"
@@ -492,7 +492,7 @@ public class MasterDataService : IMasterDataService
 										      where T00.EnumType = 'SkinType' and T0.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
                                            ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo] and T01.StatusId = 'Closed') as [TotalDebtAmount]
 					                  from [dbo].[Customers] as T0 with(nolock)
-                                inner join [dbo].[Branchs] as T2 with(nolock) on T0.[BranchId] = T2.[BranchId]
+                                 left join [dbo].[Branchs] as T2 with(nolock) on T0.[BranchId] = T2.[BranchId]
 								where T0.[IsDelete] = 0 and [CusNo] = @CusNo";
             oCustomer = await _context.GetDataByIdAsync(queryString, DataRecordToCustomerModel, sqlParameters, commandType: CommandType.Text);
         }
