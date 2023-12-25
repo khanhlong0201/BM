@@ -143,10 +143,10 @@ namespace BM.Web.Features.Controllers
                             DocumentUpdate.QtyWarranty = oServiceCall.QtyWarranty;
 
                             //phiếu xuất kho
-                            OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode;
-                            OutBoundUpdate.ServiceName = oServiceCall.ServiceName;
+                            OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode + "";
+                            OutBoundUpdate.ServiceName = oServiceCall.ServiceName + "";
                             OutBoundUpdate.ListUserImplements = oServiceCall.ListUserImplements;
-                            OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                            OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula + "";
                             OutBoundUpdate.StartTime = DateTime.Now;
                             OutBoundUpdate.EndTime = DateTime.Now;
                             OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
@@ -158,7 +158,7 @@ namespace BM.Web.Features.Controllers
                             OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
                             OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                             OutBoundUpdate.ListChargeUser = oServiceCall.ListUserImplements;
-                            StatusOutBound = oServiceCall.StatusOutBound + "" == "" ? "Chưa" : oServiceCall.StatusOutBound;
+                            StatusOutBound = string.IsNullOrEmpty(oServiceCall.StatusOutBound) ? "Chưa" : oServiceCall.StatusOutBound;
                             OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound;
                             OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
                         }
@@ -244,10 +244,10 @@ namespace BM.Web.Features.Controllers
                 ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
 
                 //phiếu xuất kho
-                OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode;
-                OutBoundUpdate.ServiceName = oServiceCall.ServiceName;
-                OutBoundUpdate.ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
-                OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
+                OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode + "";
+                OutBoundUpdate.ServiceName = oServiceCall.ServiceName + "";
+                OutBoundUpdate.ListUserImplements = ListUserImplements;
+                OutBoundUpdate.ChemicalFormula = oServiceCall.ChemicalFormula + "";
                 OutBoundUpdate.StartTime = DateTime.Now;
                 OutBoundUpdate.EndTime = DateTime.Now;
                 OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
@@ -260,12 +260,12 @@ namespace BM.Web.Features.Controllers
                 OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                 OutBoundUpdate.ListChargeUser = oServiceCall.ImplementUserId?.Split(",")?.ToList();
                 OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
-                StatusOutBound = oServiceCall.StatusOutBound +""=="" ? "Chưa": oServiceCall.StatusOutBound;
+                StatusOutBound = string.IsNullOrEmpty(oServiceCall.StatusOutBound) ? "Chưa": oServiceCall.StatusOutBound;
 
-                if(pBaseLine==null) pBaseLine = OutBoundUpdate.IdDraftDetail.Value;
-                if (pDocEntry == null) pDocEntry = DocumentUpdate.DocEntry;
+                if(pBaseLine == 0) pBaseLine = OutBoundUpdate.IdDraftDetail.Value;
+                if (pDocEntry == 0) pDocEntry = DocumentUpdate.DocEntry;
 
-                await InvokeAsync(StateHasChanged);
+                //await InvokeAsync(StateHasChanged);
             }    
         }
 
@@ -289,21 +289,6 @@ namespace BM.Web.Features.Controllers
                         return;
                     }
                     await ShowLoader();
-                    //OutBoundUpdate.ServiceCode = oItem.ServiceCode;
-                    //OutBoundUpdate.ServiceName = oItem.ServiceName;
-                    //OutBoundUpdate.ListUserImplements = oItem.ListUserImplements;
-                    //OutBoundUpdate.ChemicalFormula = oItem.ChemicalFormula;
-                    //OutBoundUpdate.StartTime = DateTime.Now;
-                    //OutBoundUpdate.EndTime = DateTime.Now;
-                    //OutBoundUpdate.BranchName = DocumentUpdate.BranchName;
-                    //OutBoundUpdate.FullName = DocumentUpdate.FullName;
-                    //OutBoundUpdate.CusNo = DocumentUpdate.CusNo;
-                    //OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
-                    //OutBoundUpdate.IdDraftDetail = oItem.Id;
-                    //OutBoundUpdate.BranchId = pBranchId;
-                    //OutBoundUpdate.Remark = DocumentUpdate.Remark;// đặc điểm khách hàng
-                    //OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
-                    //OutBoundUpdate.ListChargeUser = oItem.ListUserImplements;
                 }
                 else
                 {
@@ -391,7 +376,7 @@ namespace BM.Web.Features.Controllers
             {
                 if (pIsLockPage)
                 {
-                    ShowWarning("Đơn hàng này đã được thanh toán!");
+                    ShowWarning("Đơn hàng này đã được đóng!");
                     return;
                 }
                 if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
