@@ -56,6 +56,7 @@ public class SearchModel
     public int IdDraftDetail { get; set; }
     public string? BranchId { get; set; }
     public string? Type { get; set; }
+    public string? CusNo { get; set; }
 }
 
 public enum EnumType

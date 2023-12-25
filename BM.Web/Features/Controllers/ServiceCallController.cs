@@ -206,6 +206,7 @@ namespace BM.Web.Features.Controllers
             }
             SearchModel ItemFilter = new SearchModel();
             ItemFilter.IdDraftDetail = pDocEntry;
+            ItemFilter.Type = nameof(EnumTable.ServiceCalls);
             var oResult = await _documentService!.GetServiceCallsAsync(ItemFilter);
             if(oResult != null && oResult.Any())
             {

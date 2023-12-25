@@ -103,6 +103,7 @@ namespace BM.Web.Features.Controllers
             SelectedDocuments = new List<ServiceCallModel>();
             ItemFilter.UserId = pUserId;
             ItemFilter.IsAdmin = pIsAdmin;
+            ItemFilter.Type = "ALL";
             ListDocuments = await _documentService!.GetServiceCallsAsync(ItemFilter);
         }
 

@@ -1105,15 +1105,35 @@ public class DocumentService : IDocumentService
         try
         {
             await _context.Connect();
+            string sCondition = string.Empty;
+            // VIẾT VẬY CHO ĐỠ RỐI
+            if (pSearchData.Type?.ToUpper() == "ALL")
+            {
+                // Load tất cả
+                sCondition = @"and cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                               and (@StatusId = 'All' or (@StatusId <> 'All' and T0.[StatusId] = @StatusId))
+                               and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))";
+            }    
+            else if (pSearchData.Type?.ToUpper() == nameof(EnumTable.ServiceCalls).ToUpper())
+            {
+                // load chi tiết
+                sCondition = "and T0.DocEntry = @DocEntry";
+            }    
+            else if (pSearchData.Type?.ToUpper() == nameof(EnumTable.Customers).ToUpper())
+            {
+                sCondition = "and T0.[CusNo] = @CusNo";
+            }    
+
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
             if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
-            SqlParameter[] sqlParameters = new SqlParameter[6];
+            SqlParameter[] sqlParameters = new SqlParameter[7];
             sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId + "");
             sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
             sqlParameters[5] = new SqlParameter("@DocEntry", pSearchData.IdDraftDetail);
+            sqlParameters[6] = new SqlParameter("@CusNo", pSearchData.CusNo ?? (object)DBNull.Value);
             data = await _context.GetDataAsync(@$"select T0.DocEntry, T0.VoucherNo, T0.BaseEntry, T0.BaseLine, T0.ImplementUserId, T0.ChemicalFormula, T0.StatusId, T2.DateCreate as DateCreateBase
                      , T0.StatusBefore, T0.HealthStatus, T0.NoteForAll, T0.BranchId, T0.UserCreate, T0.DateCreate, T0.DateUpdate
             	     , T0.UserUpdate, T0.ReasonDelete, T2.VoucherNo as VoucherNoBase, T1.ServiceCode, T3.ServiceName, T4.BranchName
@@ -1131,13 +1151,7 @@ public class DocumentService : IDocumentService
             inner join [dbo].[Branchs] as T4 with(nolock) on T0.BranchId = T4.BranchId
             inner join [dbo].[Customers] as T5 with(nolock) on T0.CusNo = T5.CusNo
             left join [dbo].[OutBound] as T6 with(nolock) on T1.Id = t6.IdDraftDetail and T6.IsDelete = 0
-                 where 1=1 
-                       and (
-                                (@DocEntry > 0 and T0.DocEntry = @DocEntry) 
-                                or (@DocEntry <= 0 and cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
-                                              and (@StatusId = 'All' or (@StatusId <> 'All' and T0.[StatusId] = @StatusId))
-                                              and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId)))
-                           )
+                 where 1=1 {sCondition}
             order by T0.DocEntry desc"
                     , DataRecordToServiceCallModel, sqlParameters, commandType: CommandType.Text);
         }
