@@ -1121,7 +1121,7 @@ public class DocumentService : IDocumentService
             }    
             else if (pSearchData.Type?.ToUpper() == nameof(EnumTable.Customers).ToUpper())
             {
-                sCondition = "and T0.[CusNo] = @CusNo";
+                sCondition = $"and T0.[CusNo] = @CusNo and T0.[StatusId] <> '{nameof(DocStatus.Cancled)}'";
             }    
 
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);

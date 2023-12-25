@@ -3,12 +3,12 @@
 
 <div class="h-content-filter">
     <div class="row row-gap-2">
-        <div class="col-lg-3 col-md-4 col-sm-12">
+        <div class="col-lg-4 col-md-5 col-sm-12">
             <div class="card">
-                <div class="card-header" style="padding: 10px 20px">
+                <div class="card-header" style="padding: 10px">
                     <h4 class="mb-0">Thông tin khách hàng</h4>
                 </div>
-                <div class="card-body" style="padding: 10px 20px">
+                <div class="card-body" style="padding: 10px">
                     <div class="mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2 text-secondary"
                              width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
@@ -117,18 +117,53 @@
                         </svg>
                         Công nợ: <span class="badge bg-purple-lt">@CustomerUpdate.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ</span>
                     </div>
-
-                    
-                    
+                </div>
+            </div>
+            <div class="card mt-2">
+                <div class="card-header" style="padding: 10px">
+                    <h4 class="mb-0">Lịch sử bảo hành</h4>
+                </div>
+                <div class="card-body" style="padding: 10px">
+                    @if (ListServiceCalls != null && ListServiceCalls.Any())
+                    {
+                        <ul class="timeline timeline-simple">
+                            @foreach (var oItem in ListServiceCalls)
+                            {
+                                <li class="timeline-event">
+                                    <div class="timeline-event-icon bg-twitter-lt" style="border-radius: 50%">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M5 12l5 5l10 -10"></path></svg>
+                                    </div>
+                                    <div class="card timeline-event-card">
+                                        <div class="card-body" style="padding: 10px">
+                                            <div class="text-secondary float-end">@(oItem.DateCreate == null ? DATA_CUSTOMER_EMPTY : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_DATE))</div>
+                                            <h4 class="mb-1 h-link">@(oItem.VoucherNo)</h4>
+                                            <p class="text-secondary mb-1">Dịch vụ: @($"{oItem.ServiceCode} - {oItem.ServiceName}")</p>
+                                            <p class="text-secondary mb-1">Số hóa đơn: <a class="h-link">@($"{oItem.VoucherNoBase}")</a></p>
+                                            <p class="text-secondary">
+                                                Tình trạng bảo hành: @{
+                                                    string color = "badge bg-cyan-lt";
+                                                    if (oItem!.StatusId == nameof(DocStatus.Closed)) color = "badge bg-green-lt";
+                                                    else if (oItem!.StatusId == nameof(DocStatus.Cancled)) color = "badge bg-red-lt";
+                                                    <strong class="@(color)">
+                                                        @($" {oItem.StatusName}")
+                                                    </strong>
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
                 </div>
             </div>
         </div>
-        <div class="col-lg-9 col-md-8 col-sm-12">
+        <div class="col-lg-8 col-md-7 col-sm-12">
             <div class="card">
-                <div class="card-header" style="padding: 10px 20px">
-                    <h4 class="mb-0">Thông tin chi tiết</h4>
+                <div class="card-header" style="padding: 10px">
+                    <h4 class="mb-0">Lịch sử đơn hàng</h4>
                 </div>
-                <div class="card-body" style="padding: 10px 20px">
+                <div class="card-body" style="padding: 10px">
                     @if(ListDocHis != null && ListDocHis.Any())
                     {
                         
@@ -140,7 +175,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M5 12l5 5l10 -10"></path></svg>
                                     </div>
                                     <div class="card timeline-event-card">
-                                        <div class="card-body">
+                                        <div class="card-body" style="padding: 10px">
                                             <div class="text-secondary float-end">@(oItem.DateCreate == null ? DATA_CUSTOMER_EMPTY : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_DATE))</div>
                                             <h4 class="mb-1 h-link" @onclick="@(()=> OnViewDerailsHandler(oItem))">@(oItem.VoucherNo)</h4>
                                             <p class="text-secondary mb-1">
@@ -158,7 +193,7 @@
                                                 </div>
                                             </div>
                                             <p class="text-secondary mb-1">Dịch vụ: @oItem.Service</p>
-                                            <p class="text-secondary mb-1">Ghi chú: @oItem.NoteForAll</p>
+                                            <p class="text-secondary">Ghi chú: @oItem.NoteForAll</p>
                                         </div>
                                     </div>
                                 </li>

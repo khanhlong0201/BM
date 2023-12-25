@@ -21,6 +21,7 @@ namespace BM.Web.Features.Controllers
         public CustomerModel CustomerUpdate { get; set; } = new CustomerModel();
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         public List<DocumentModel>? ListDocHis { get; set; }
+        public List<ServiceCallModel>? ListServiceCalls { get; set; } // danh sách lịch sử dặm
         #endregion
         #endregion
 
@@ -89,6 +90,10 @@ namespace BM.Web.Features.Controllers
 
                     // call lấy danh sách chi tiết
                     ListDocHis = await _documentService!.GetDocByCusNoAsync(CustomerUpdate.CusNo + "");
+                    SearchModel ItemFilter = new SearchModel();
+                    ItemFilter.Type = nameof(EnumTable.Customers);
+                    ItemFilter.CusNo = CustomerUpdate.CusNo;
+                    ListServiceCalls = await _documentService!.GetServiceCallsAsync(ItemFilter);
                 }
                 catch (Exception ex)
                 {
