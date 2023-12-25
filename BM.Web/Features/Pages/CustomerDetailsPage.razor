@@ -136,9 +136,9 @@
                                     <div class="card timeline-event-card">
                                         <div class="card-body" style="padding: 10px">
                                             <div class="text-secondary float-end">@(oItem.DateCreate == null ? DATA_CUSTOMER_EMPTY : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_DATE))</div>
-                                            <h4 class="mb-1 h-link">@(oItem.VoucherNo)</h4>
+                                            <h4 class="mb-1 h-link" @onclick="@(()=> OnViewDerailsHandler(oItem.DocEntry, pLinkPage: "service-call"))">@(oItem.VoucherNo)</h4>
                                             <p class="text-secondary mb-1">Dịch vụ: @($"{oItem.ServiceCode} - {oItem.ServiceName}")</p>
-                                            <p class="text-secondary mb-1">Số hóa đơn: <a class="h-link">@($"{oItem.VoucherNoBase}")</a></p>
+                                            <p class="text-secondary mb-1">Số hóa đơn: <a class="h-link" @onclick="@(()=> OnViewDerailsHandler(oItem.BaseEntry, pLinkPage: "create-ticket"))">@($"{oItem.VoucherNoBase}")</a></p>
                                             <p class="text-secondary">
                                                 Tình trạng bảo hành: @{
                                                     string color = "badge bg-cyan-lt";
@@ -177,7 +177,7 @@
                                     <div class="card timeline-event-card">
                                         <div class="card-body" style="padding: 10px">
                                             <div class="text-secondary float-end">@(oItem.DateCreate == null ? DATA_CUSTOMER_EMPTY : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_DATE))</div>
-                                            <h4 class="mb-1 h-link" @onclick="@(()=> OnViewDerailsHandler(oItem))">@(oItem.VoucherNo)</h4>
+                                            <h4 class="mb-1 h-link" @onclick="@(()=> OnViewDerailsHandler(oItem.DocEntry, pLinkPage: "create-ticket"))">@(oItem.VoucherNo)</h4>
                                             <p class="text-secondary mb-1">
                                                 @(oItem.DateCreate == null ? "" : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_TIME)) - @oItem.UserNameCreate
                                             </p>

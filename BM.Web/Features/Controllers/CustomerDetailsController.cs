@@ -110,18 +110,17 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
-        protected void OnViewDerailsHandler(DocumentModel oItem)
+        protected void OnViewDerailsHandler(int pDocEntry, string pLinkPage = "create-ticket")
         {
             try
             {
-                if (oItem == null) return;
                 Dictionary<string, string> pParams = new Dictionary<string, string>
                 {
-                    { "pDocEntry", $"{oItem.DocEntry}"},
+                    { "pDocEntry", $"{pDocEntry}"},
                     { "pIsCreate", $"{false}" },
                 };
                 string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
-                _navigationManager!.NavigateTo($"/create-ticket?key={key}");
+                _navigationManager!.NavigateTo($"/{pLinkPage}?key={key}");
             }
             catch (Exception ex)
             {
