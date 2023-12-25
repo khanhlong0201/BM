@@ -223,26 +223,24 @@
                                                 }
                                             </div>
                                         </td>
-                                        <td class="text-end">
+                                        <td class="text-start">
                                             <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
                                                            @bind-Value="@oItem.Price" Arrows="false" Enabled="@(!pIsLockPage)" />
                                             <div style="margin-top: 2px">
-                                                <HLabel For="ChargeUser" Value="Vật tư khuyến mãi:" />
+                                                <div class="text-secondary">Khuyến mãi:</div>
+                                                <TelerikMultiSelect Data="@oItem.ListPromSupplies"
+                                                            Value="@oItem.ListPromotionSuppliess"
+                                                            Placeholder="@((oItem.ListPromSupplies == null || oItem.ListPromSupplies.Count == 0) ? "DV này hiện chưa có vật tư khuyến mãi" : "Hãy chọn vật tư khuyến mãi")"
+                                                            ValueChanged="@((List<string> newValues) => OnMultiValueChanged(newValues, oItem))"
+                                                            ValueField="@nameof(SuppliesModel.SuppliesCode)"
+                                                            TextField="@nameof(SuppliesModel.SuppliesName)"
+                                                            FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
+                                                            AutoClose="false" Width="100%">
+                                                </TelerikMultiSelect>
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             <TelerikNumericTextBox Step="1" @bind-Value="@oItem.Qty" Min="1" Enabled="@(!pIsLockPage)" />
-                                             <div style="margin-top: 2px">
-                                                 <TelerikMultiSelect Data="@oItem.ListPromSupplies"
-                                                               Value="@oItem.ListPromotionSuppliess"
-                                                               Placeholder="@((oItem.ListPromSupplies == null || oItem.ListPromSupplies.Count == 0) ? "DV này hiện chưa có vật tư khuyến mãi" : "Hãy chọn vật tư khuyến mãi")"
-                                                               ValueChanged="@((List<string> newValues) => OnMultiValueChanged(newValues, oItem))"
-                                                               ValueField="@nameof(SuppliesModel.SuppliesCode)"
-                                                               TextField="@nameof(SuppliesModel.SuppliesName)"
-                                                               FilterOperator="@Telerik.Blazor.StringFilterOperator.Contains"
-                                                               AutoClose="false" Width="100%">
-                                                </TelerikMultiSelect>
-                                             </div>
                                         </td>
                                         <td class="text-end">@(oItem.Amount.ToString(DefaultConstants.FORMAT_CURRENCY))đ</td>
                                         <td class="text-start">
