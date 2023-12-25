@@ -250,8 +250,9 @@ namespace BM.Web.Features.Controllers
                 oItem.IsDelay = ItemSelected.IsDelay;
                 oItem.DateDelay = ItemSelected.DateDelay;
                 oItem.Type = ItemSelected.Type;
+                oItem.BaseLine = ItemSelected.BaseLine;
                 // call api 
-                bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
+                bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId, $"{oItem.Type}");
                 if (isSuccess)
                 {
                     await getDataRemiderByMonth();

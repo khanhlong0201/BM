@@ -787,7 +787,7 @@ public class DocumentService : IDocumentService
                                                        , T2.DateCreate, iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date))) as DateStart
                                                        , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
                                                        , '{nameof(EnumType.DebtReminder)}' as [Type] -- Nhắc nhợ
-                                                       , '' as [ServiceCode], '' as [ServiceName]
+                                                       , '' as [ServiceCode], '' as [ServiceName], -1 as [BaseLine]
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
@@ -803,7 +803,7 @@ public class DocumentService : IDocumentService
 	                                                   , T4.DateCreate, iif(isnull(IsDelay, 0) = 1, T4.DateDelay, DATEADD(DAY, @NumDay ,cast(T4.DateCreate as Date))) as DateStart
 		                                               , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
 		                                               , '{nameof(EnumType.WarrantyReminder)}' as [Type] -- Nhắc bảo hành
-                                                       , T2.[ServiceCode], T3.[ServiceName]
+                                                       , T2.[ServiceCode], T3.[ServiceName], T2.[Id] as [BaseLine]
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                               inner join [dbo].[DraftDetails] as T2 with(nolock) on T2.DocEntry = T0.DocEntry
@@ -844,7 +844,7 @@ public class DocumentService : IDocumentService
                                                 , T0.GuestsPay, T1.FullName, T0.[Remark], T0.[IsDelay], T0.[DateDelay]
                                              from [dbo].[CustomerDebts] as T0 with(nolock)
                                        inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
-                                            where T0.[DocEntry] = @DocEntry
+                                            where T0.[DocEntry] = @DocEntry and T0.[Type] = '{nameof(EnumType.DebtReminder)}'
                                             order by T0.Id desc"
                     , DataRecordToCustomerDebtsModel, sqlParameters, commandType: CommandType.Text);
         }
@@ -883,16 +883,24 @@ public class DocumentService : IDocumentService
             }
             if(oCusDebts.IsDelay)
             {
+                string scondition = string.Empty;
+                if(oCusDebts.Type == nameof(EnumType.WarrantyReminder))
+                {
+                    // nếu nhắc bảo hành -> where thêm line
+                    scondition = "and T0.[BaseLine] = @BaseLine";
+                }    
                 // nếu mà là khách hẹn khi khác
                 // lấy lên thông tin đơn hàng kế bên
-                queryString = @"Select Top 1 T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
+                queryString = @$"Select Top 1 T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
                                      , T0.GuestsPay, T1.FullName, T0.[Remark], T0.[IsDelay], T0.[DateDelay]
                                   from [dbo].[CustomerDebts] as T0 with(nolock)
                             inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
-                                 where T0.[DocEntry] = @DocEntry
+                                 where T0.[DocEntry] = @DocEntry and T0.[Type] = @Type {scondition}
                                  order by T0.Id desc";
-                sqlParameters = new SqlParameter[1];
+                sqlParameters = new SqlParameter[3];
                 sqlParameters[0] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+                sqlParameters[1] = new SqlParameter("@Type", oCusDebts.Type);
+                sqlParameters[2] = new SqlParameter("@BaseLine", oCusDebts.BaseLine);
                 var oItemCusDebts = await _context.GetDataByIdAsync(queryString, DataRecordToCustomerDebtsModel, sqlParameters, CommandType.Text);
                 if(oItemCusDebts == null)
                 {
@@ -908,9 +916,9 @@ public class DocumentService : IDocumentService
             // lấy mã
             int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
             queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate]
-                                                ,[UserCreate],[Remark],[IsDelay],[DateDelay])
-                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark, @IsDelay, @DateDelay)";
-            sqlParameters = new SqlParameter[10];
+                                                ,[UserCreate],[Remark],[IsDelay],[DateDelay],[Type],[BaseLine])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark, @IsDelay, @DateDelay, @Type, @BaseLine)";
+            sqlParameters = new SqlParameter[12];
             sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
             sqlParameters[1] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
             sqlParameters[2] = new SqlParameter("@CusNo", oCusDebts.CusNo);
@@ -921,9 +929,11 @@ public class DocumentService : IDocumentService
             sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark ?? (object)DBNull.Value);
             sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
             sqlParameters[9] = new SqlParameter("@DateDelay", oCusDebts.DateDelay ?? (object)DBNull.Value);
+            sqlParameters[10] = new SqlParameter("@Type", oCusDebts.Type);
+            sqlParameters[11] = new SqlParameter("@BaseLine", oCusDebts.BaseLine);
             await _context.BeginTranAsync();
             bool isUpdated = await ExecQuery();
-            if (isUpdated && !oCusDebts.IsDelay)
+            if (isUpdated && !oCusDebts.IsDelay && oCusDebts.Type == nameof(EnumType.DebtReminder))
             {
                 // Nếu k phải delay và Tran ok
                 sqlParameters = new SqlParameter[1];
@@ -1460,6 +1470,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
         if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
         if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
+        if (!Convert.IsDBNull(record["BaseLine"])) model.BaseLine = Convert.ToInt32(record["BaseLine"]);
         model.End = model.Start;
         model.Title = $"Nhắc nợ - {model.FullName}";
         model.IsAllDay = true;

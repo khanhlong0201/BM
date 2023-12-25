@@ -17,7 +17,7 @@ public interface ICliDocumentService
     Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch);
     Task<List<ReportModel>?> GetDataReportAsync(RequestReportModel pSearch);
     Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
-    Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId);
+    Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId, string pType = nameof(EnumType.DebtReminder));
     Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
     Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
     Task<bool> CancleOutBoundList(string pJsonIds, string pReasonDelete, int pUserId);
@@ -483,7 +483,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
     /// <param name="pJson"></param>
     /// <param name="pUserId"></param>
     /// <returns></returns>
-    public async Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId)
+    public async Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId, string pType)
     {
         try
         {
@@ -508,7 +508,8 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
                 ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
                 if (httpResponse.IsSuccessStatusCode)
                 {
-                    _toastService.ShowSuccess($"Đã lưu thông tin thanh toán!");
+                    string mess = pType == nameof(EnumType.DebtReminder) ? "thanh toán" : "bảo hành";
+                    _toastService.ShowSuccess($"Đã lưu thông tin nhắc {mess}!");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");

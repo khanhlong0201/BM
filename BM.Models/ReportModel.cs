@@ -73,6 +73,7 @@ public class SheduleModel
     public DateTime? DateDelay { get; set; } // ngày delay lại
     public string? ServiceCode { get; set; }
     public string? ServiceName { get; set; }
+    public int BaseLine { get; set; }
 }
 
 public class ReportChartModel
