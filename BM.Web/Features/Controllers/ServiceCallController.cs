@@ -533,11 +533,11 @@ namespace BM.Web.Features.Controllers
                 itemFilter.FromDate = new DateTime(2023, 11, 11);
                 itemFilter.ToDate = DateTime.Now;
                 itemFilter.Type = nameof(OutBoundType.ByWarranty);
-                List<OutBoundModel> ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
+                List<OutBoundModel>? ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
                 if (ListOutBound != null && ListOutBound.Count > 0)
                 {
                     OutBoundUpdate = new OutBoundModel();
-                    OutBoundUpdate = ListOutBound.FirstOrDefault();
+                    OutBoundUpdate = ListOutBound.First();
                     ListSuppplies = new List<SuppliesModel>();
                     if (OutBoundUpdate.SuppliesQtyList != null)
                     {

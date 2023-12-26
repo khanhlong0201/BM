@@ -175,6 +175,7 @@ namespace BM.Web.Features.Controllers
                     ServiceUpdate.WarrantyPeriod = pItemDetails!.WarrantyPeriod;
                     ServiceUpdate.QtyWarranty = pItemDetails!.QtyWarranty;
                     ServiceUpdate.Description = pItemDetails!.Description;
+                    ServiceUpdate.IsOutBound = pItemDetails!.IsOutBound;
                     ServiceUpdate.ListPromotionSuppliess = pItemDetails.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
                     IsCreate = false;
                 }
