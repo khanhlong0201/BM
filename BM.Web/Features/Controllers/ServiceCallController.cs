@@ -120,7 +120,7 @@ namespace BM.Web.Features.Controllers
                             //await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls)); // Đọc xong rồi xóa luôn
                             ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(EncryptHelper.Decrypt(sSvCall));
                             DocumentUpdate.VoucherNoBase = oServiceCall.VoucherNo;
-                            DocumentUpdate.BaseEntry = oServiceCall.BaseEntry;
+                            DocumentUpdate.BaseEntry = oServiceCall.DocEntry;
                             DocumentUpdate.BaseLine = oServiceCall.BaseLine;
                             DocumentUpdate.CusNo = oServiceCall.CusNo;
                             DocumentUpdate.FullName = oServiceCall.FullName;
