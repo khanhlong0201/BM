@@ -82,6 +82,7 @@
         </GridSettings>
         <GridColumns>
             <GridCheckboxColumn Width="30px" SelectAll="@true" MaxResizableWidth="30"></GridCheckboxColumn>
+            <GridColumn Field=@nameof(OutBoundModel.TypeName) Width="170px" Title="Loại xuất kho"></GridColumn>
              <GridColumn Field=@nameof(OutBoundModel.BranchName) Width="170px" Title="Chi nhánh "></GridColumn>
              <GridColumn Field=@nameof(OutBoundModel.VoucherNoDraft) Width="150px" MaxResizableWidth="100" Title="Số lệnh đơn hàng">
                 <Template>

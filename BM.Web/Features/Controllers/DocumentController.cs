@@ -112,8 +112,10 @@ namespace BM.Web.Features.Controllers
                         }
                     }
                     await _progressService!.SetPercent(0.4);
+                    ItemFilter.Type = nameof(SuppliesKind.Promotion);
+                    ListPromotionSuppplies = await _masterDataService!.GetDataSuppliesOutBoundAsync(ItemFilter);
                     // lấy thông tin khách hàng
-                    if(pIsCreate)
+                    if (pIsCreate)
                     {
                         var oCustomer = await _masterDataService!.GetCustomerByIdAsync(DocumentUpdate.CusNo + "");
                         if (oCustomer == null) return;
@@ -155,8 +157,7 @@ namespace BM.Web.Features.Controllers
                     // khi call mới gọi
                     //ListSuppplies = await _masterDataService!.GetDataSuppliesAsync(ItemFilter);
 
-                    ItemFilter.Type = nameof(SuppliesKind.Promotion);
-                    ListPromotionSuppplies = await _masterDataService!.GetDataSuppliesOutBoundAsync(ItemFilter);
+                  
                 }
                 catch (Exception ex)
                 {
@@ -209,6 +210,23 @@ namespace BM.Web.Features.Controllers
                     oLine.StatusOutBound = item.StatusOutBound;
                     oLine.IsOutBound = item.IsOutBound;
                     oLine.ListPromotionSuppliess = item.ListPromotionSupplies?.Split(",")?.ToList();
+                    List<string> listPromotionSuppliessTemp = item.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
+                    if (ListPromotionSuppplies != null && ListPromotionSuppplies.Count > 0 && listPromotionSuppliessTemp != null && listPromotionSuppliessTemp.Count > 0)
+                    {
+                        foreach (var item1 in ListPromotionSuppplies)
+                        {
+                            foreach (string value in listPromotionSuppliessTemp)
+                            {
+                                if (item1.SuppliesCode == value)
+                                {
+
+                                    item1.SuppliesName = $"{item1.SuppliesCode}-{item1.SuppliesName}-Giá: {string.Format("{0: #,###.####}", item1.Price)} VNĐ -SL trong kho: {item1.QtyInv}";
+                                    oLine.ListPromSupplies.Add(item1);
+                                }
+                            }
+                        }
+
+                    }
                     if (!string.IsNullOrEmpty(item.JServiceCall))
                     {
                         // danh sách phiếu bảo hành
@@ -216,7 +234,8 @@ namespace BM.Web.Features.Controllers
                     }    
                     ListSalesOrder.Add(oLine);
                 }       
-            }    
+            }
+            await InvokeAsync(StateHasChanged);
         }
         #endregion
 

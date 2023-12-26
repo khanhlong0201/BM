@@ -176,6 +176,7 @@ public class DocumentService : IDocumentService
 			       where T00.BaseEntry = T0.DocEntry and T00.IsDelete = 0 and T00.StatusId <> 'Cancled'
                 order by T00.DocEntry desc for json path) as JServiceCall
 				,   isnull(T4.IsOutBound,cast(0 as bit)) as IsOutBound
+                ,T1.ListPromotionSupplies
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -240,6 +241,8 @@ public class DocumentService : IDocumentService
                     oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
                     oLine.JServiceCall = Convert.ToString(item["JServiceCall"]);
                     oLine.IsOutBound = Convert.ToBoolean(item["IsOutBound"]);
+                    oLine.ListPromotionSupplies = Convert.ToString(item["ListPromotionSupplies"]);
+                    oLine.ListPromotionSuppliess = Convert.ToString(item["ListPromotionSupplies"]).Split(",")?.ToList();
                     lstDetails.Add(oLine);
                 }
                 data = new Dictionary<string, string>()
@@ -1458,6 +1461,22 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["UserNameCreate"])) model.UserNameCreate = Convert.ToString(record["UserNameCreate"]);
         if (!Convert.IsDBNull(record["ImplementUserName"])) model.ImplementUserName = Convert.ToString(record["UserNameCreate"]);
         if (!Convert.IsDBNull(record["ChargeUserName"])) model.ChargeUserName = Convert.ToString(record["ChargeUserName"]);
+        if (!Convert.IsDBNull(record["Type"]))
+        {
+            model.Type = Convert.ToString(record["Type"]);
+            switch (model.Type)
+            {
+                case nameof(OutBoundType.ByRequest):
+                    model.TypeName = "Theo yêu cầu";
+                    break;
+                case nameof(OutBoundType.ByService):
+                    model.TypeName = "Theo dịch vụ";
+                    break;
+                case nameof(OutBoundType.ByWarranty):
+                    model.TypeName = "Theo khuyến mãi";
+                    break;
+            }
+        }
         return model;
     }
 

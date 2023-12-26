@@ -132,7 +132,7 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "UpdateSalesOrder");
+            _logger.LogError(ex, "UpdateOutBound");
             _toastService.ShowError(ex.Message);
         }
         return false;
