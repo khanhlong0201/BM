@@ -52,13 +52,14 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
             if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
-            SqlParameter[] sqlParameters = new SqlParameter[5];
+            SqlParameter[] sqlParameters = new SqlParameter[6];
             sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[2] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[3] = new SqlParameter("@UserId", pSearchData.UserId);
             sqlParameters[4] = new SqlParameter("@IdDraftDetail", pSearchData.IdDraftDetail);
-            data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, --t6.FullName as [ChargeUserName],
+            sqlParameters[5] = new SqlParameter("@Type", pSearchData.Type ?? (object)DBNull.Value);
+            data = await _context.GetDataAsync(@$"select t0.*,t3.BranchName,t5.ServiceName,t4.CusNo,t4.FullName, t4.Remark,t2.HealthStatus, 
                         t1.ServiceCode, t1.ImplementUserId, t2.VoucherNo as VoucherNoDraft,
 						t7.FullName as [UserNameCreate]
 						,(select STRING_AGG(FullName, ', ') from [Users] as T00 with(nolock) where CHARINDEX(',' + T00.EmpNo + ',', ',' + T1.ImplementUserId + ',', 0) > 0) as ImplementUserName
@@ -72,8 +73,23 @@ public class DocumentService : IDocumentService
 						inner join [Users] t7 with(nolock) on t0.UserCreate = t7.Id
                         where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                 and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
-                        and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,-1) = -1 or t1.Id = @IdDraftDetail)
-                            order by [DocEntry] desc"
+                        and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,0) = 0 or t1.Id = @IdDraftDetail)
+                        and (ISNULL(@Type,'')='' or  @Type = 'ByService' or @Type = 'ByWarranty' )   
+
+						UNION ALL 
+
+						select t0.*,t3.BranchName,'' as ServiceName,'' as CusNo,'' as FullName,'' as Remark,'' as HealthStatus, 
+                        '' as ServiceCode, '' as ImplementUserId, '' as VoucherNoDraft,
+						t7.FullName as [UserNameCreate]
+						,'' as ImplementUserName
+						,(select STRING_AGG(FullName, ', ') from [Users] as T00 with(nolock) where CHARINDEX(',' + T00.EmpNo + ',', ',' + T0.ChargeUser + ',', 0) > 0) as ChargeUserName
+                        from OutBound t0 with(nolock)
+                        inner join Branchs t3 with(nolock) on t0.BranchId = t3.BranchId
+						inner join [Users] t7 with(nolock) on t0.UserCreate = t7.Id
+                        where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
+                                                and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
+                        and  t0.IsDelete = 0 
+                        and (ISNULL(@Type,'')='' or @Type = 'ByRequest')"
                      , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }

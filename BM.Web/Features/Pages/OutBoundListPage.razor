@@ -25,6 +25,28 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-5 col-md-6 col-sm-12">
+            <div class="d-flex mt-1">
+                <HLabel Value="Loại xuất kho:" Style="width: 130px" />
+                <div style="width: calc(100% - 130px)">
+                    <div class="d-flex justify-content-between">
+                        <div style="width: 50%;">
+                           <TelerikComboBox @bind-Value="@pType"
+                            Data="@ListType"
+                            Placeholder="Chọn loại phiếu xuất..."
+                            ClearButton="false"
+                            TextField="@nameof(ComboboxModel.Name)"
+                            ValueField="@nameof(ComboboxModel.Code)"
+                            Filterable="true"
+                            Class="btn-noborder-radius-left"
+                            Id="txtTypeTimeId" Width="100%">
+                        </TelerikComboBox>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <TelerikToolBar Class="border-bottom-0">
