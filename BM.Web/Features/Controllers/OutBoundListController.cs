@@ -41,6 +41,9 @@ namespace BM.Web.Features.Controllers
 
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+
+        public List<ComboboxModel>? ListType { get; set; } // kiểu của phiếu xuất kho
+        public string pType= "";
         #endregion
 
         #region Override Functions
@@ -49,6 +52,17 @@ namespace BM.Web.Features.Controllers
             try
             {
                 await base.OnInitializedAsync();
+
+                ListType = new List<ComboboxModel>()
+                {
+                    new ComboboxModel() {Code = nameof(OutBoundType.ByRequest), Name = "Theo yêu cầu"},
+                    new ComboboxModel() {Code = nameof(OutBoundType.ByService), Name = "Theo dịch vụ"},
+                    new ComboboxModel() {Code = nameof(OutBoundType.ByWarranty), Name = "Theo Khuyến mãi"},
+                    new ComboboxModel() {Code = "", Name = "Tất cả"},
+
+                };
+
+                pType = nameof(OutBoundType.ByRequest);
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
@@ -111,6 +125,7 @@ namespace BM.Web.Features.Controllers
             SelectedOutBounds = new List<OutBoundModel>();
             ItemFilter.UserId = pUserId;
             ItemFilter.IsAdmin = pIsAdmin;
+            ItemFilter.Type = pType;
             ListOutBounds = await _documentService!.GetDataOutBoundsAsync(ItemFilter);
         }
 

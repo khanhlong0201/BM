@@ -1036,12 +1036,16 @@ public class MasterDataService : IMasterDataService
 	                                        ,t2.EnumName
 	                                        ,t3.FullName as 'UserNameCreate'
 	                                        ,t4.FullName as 'UserNameUpdate'
+                                            ,t1.Type
+											,t1.SuppliesType as SuppliesTypeCode
+											,t5.EnumName as SuppliesTypeName
                                         FROM [dbo].[Inventory] t0 
                                         inner join Supplies t1 on t0.SuppliesCode = t1.SuppliesCode
-                                        inner join Enums t2 on t0.EnumId = t2.EnumId
+                                        inner join Enums t2 on t0.EnumId = t2.EnumId and t2.EnumType ='Unit'
                                         inner join Users t3 on t0.UserCreate = t3.Id
                                         left join Users t4 on t0.UserUpdate = t4.Id
-                                        where t0.IsDelete = 0 and t2.EnumType ='Unit' order by t0.[DateCreate] desc"
+										left join Enums t5 on t1.SuppliesType = t5.EnumId and t5.EnumType = 'SuppliesType'
+                                        where t0.IsDelete = 0  order by t0.[DateCreate] desc"
                     , DataRecordToInvetoryModel, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -1736,6 +1740,24 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["BranchId"])) inv.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["QtyInv"])) inv.QtyInv = Convert.ToDecimal(record["QtyInv"]);
         if (!Convert.IsDBNull(record["Price"])) inv.Price = Convert.ToDecimal(record["Price"]);
+        if (!Convert.IsDBNull(record["Type"]))
+        {
+            inv.Type = Convert.ToString(record["Type"]);
+            switch (inv.Type)
+            {
+                case nameof(SuppliesKind.Popular):
+                    inv.TypeName = "Phổ thông";
+                    break;
+                case nameof(SuppliesKind.Promotion):
+                    inv.TypeName = "Khuyến mãi";
+                    break;
+                case nameof(SuppliesKind.Ink):
+                    inv.TypeName = "Mực - Loại tê";
+                    break;
+            }
+        }
+        if (!Convert.IsDBNull(record["SuppliesTypeCode"])) inv.SuppliesTypeCode = Convert.ToString(record["SuppliesTypeCode"]);
+        if (!Convert.IsDBNull(record["SuppliesTypeName"])) inv.SuppliesTypeName = Convert.ToString(record["SuppliesTypeName"]);
         return inv;
     }
 
