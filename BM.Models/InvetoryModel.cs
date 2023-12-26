@@ -13,6 +13,9 @@ namespace BM.Models
         public decimal? Price { get; set; }
         public string? BranchId { get; set; }
         public string? BranchName { get; set; }
+        public string? SuppliesTypeCode { get; set; } //Mã nhóm vật tư
+        public string? SuppliesTypeName { get; set; } //Tên nhóm vật tư
+        public string? TypeName { get; set; } //tên loại vật tư (vật tư bình thường, vật tư khuyến mãi, vật tư loại tê-mực )
 
     }
 }

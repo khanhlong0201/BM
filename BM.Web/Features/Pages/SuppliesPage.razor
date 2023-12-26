@@ -40,6 +40,8 @@
                     <GridAggregate Field=@nameof(SuppliesModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
                 </GridAggregates>
                 <GridColumns>
+                    <GridColumn Field=@nameof(SuppliesModel.TypeName) Width="170px" Title="Kiểu vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.SuppliesTypeName) Width="170px" Title="Tên loại vật tư"></GridColumn>
                     <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>
                     <GridColumn Field=@nameof(SuppliesModel.SuppliesCode) Width="140px" MaxResizableWidth="150" Title="Mã vật tư">
                         <Template>
@@ -106,6 +108,8 @@
                 </GridAggregates>
                 <GridColumns>
 @*                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>*@
+                    <GridColumn Field=@nameof(InvetoryModel.TypeName) Width="170px" Title="Kiểu vật tư"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.SuppliesTypeName) Width="170px" Title="Tên loại vật tư"></GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.SuppliesCode) Width="170px" MaxResizableWidth="150" Title="Mã vật tư">
                         <Template>
                             @{
