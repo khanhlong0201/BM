@@ -5,6 +5,7 @@
 @page "/report-service" 
 @page "/report-user"  
 @inherits ReportController
+@attribute [Authorize(Roles = "administrator, manager")]
 <div class="h-content-filter">
     <div class="row">
         <div class="col-lg-4 col-md-6 col-sm-12">

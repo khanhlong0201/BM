@@ -28,14 +28,13 @@ namespace BM.Web.Features.Pages
                 IsLoading = true;
                 var response = await _masterDataService!.LoginAsync(LoginRequest);
                 if (!string.IsNullOrWhiteSpace(response)) { ErrorMessage = response; return; }
-                _navigationManager!.NavigateTo("/");
+                _navigationManager!.NavigateTo("/", forceLoad: true); // để nó Authror 
                 await Task.Delay(1000);
                 await Task.Yield();
             }
             catch (Exception ex) { ErrorMessage = ex.Message; }
             finally
             {
-                await Task.Delay(200);
                 IsLoading = false;
             }
         }

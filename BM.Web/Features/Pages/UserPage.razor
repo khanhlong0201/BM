@@ -1,5 +1,6 @@
 ﻿@page "/user"
 @inherits UserController;
+@attribute [Authorize(Roles = "administrator, manager")]
 
 <TelerikToolBar Class="border-bottom-0">
     <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@ReLoadDataHandler">Làm mới</ToolBarButton>

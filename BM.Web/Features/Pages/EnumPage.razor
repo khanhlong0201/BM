@@ -5,6 +5,7 @@
 @page "/state-of-health"
 @page "/supplies-type"
 @inherits EnumController
+@attribute [Authorize(Roles = "administrator, manager")]
 
 
 <TelerikToolBar Class="border-bottom-0">

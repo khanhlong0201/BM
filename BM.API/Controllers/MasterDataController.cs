@@ -377,6 +377,7 @@ namespace BM.API.Controllers
                     new Claim("IsAdmin", oUser.IsAdmin + ""),
                     new Claim("BranchId", loginRequest.BranchId + ""),
                     new Claim("BranchName", oUser.BranchName + ""),
+                    new Claim(nameof(ClaimTypes.Role), oUser.IsAdmin ?  "administrator" : "staff"),
                 }; // thông tin mã hóa (payload)
                 // JWT: json web token: Header - Payload - SIGNATURE (base64UrlEncode(header) + "." + base64UrlEncode(payload), your - 256 - bit - secret)
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:JwtSecurityKey").Value + "")); // key mã hóa

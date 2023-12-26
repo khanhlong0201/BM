@@ -141,7 +141,7 @@ public partial class MainLayout
                 UserName = oUser.User.Claims.FirstOrDefault(m => m.Type == "UserName")?.Value + "";
                 UserId  = int.Parse(oUser.User.Claims.FirstOrDefault(m => m.Type == "UserId")?.Value + "");
                 RoleName = isAdmin ? $"{EmpNo} - Admin" : $"{EmpNo} - Nhân viên";
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
             }
         }
         catch (Exception) { }

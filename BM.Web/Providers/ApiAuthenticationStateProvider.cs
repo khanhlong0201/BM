@@ -57,6 +57,12 @@ namespace BM.Web.Providers
             var payload = jwt.Split('.')[1];
             var jsonBytes = ParseBase64WithoutPadding(payload);
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+            keyValuePairs!.TryGetValue(nameof(ClaimTypes.Role), out object? roles);
+            if (roles != null)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, roles.ToString() + ""));
+                keyValuePairs.Remove(ClaimTypes.Role);
+            }
             claims.AddRange(keyValuePairs!.Select(kvp => new Claim(kvp.Key, $"{kvp.Value}")));
             return claims;
         }

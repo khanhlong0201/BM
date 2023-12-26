@@ -3,6 +3,7 @@
 @using System.Globalization;
 @page "/revenue-report"
 @inherits RevenueReportController;
+@attribute [Authorize(Roles = "administrator, manager")]
 
 <div class="h-content-filter">
     <div class="row">

@@ -29,6 +29,7 @@ namespace BM.Web.Commons
         public static IServiceCollection AddClientAuthorization(this IServiceCollection services)
         {
             services.AddAuthorizationCore();
+            services.AddAuthentication();
             services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
             return services;
         }
