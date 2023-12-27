@@ -220,7 +220,7 @@ namespace BM.Web.Features.Controllers
                                 if (item1.SuppliesCode == value)
                                 {
 
-                                    item1.SuppliesName = $"{item1.SuppliesCode}-{item1.SuppliesName}-Giá: {string.Format("{0: #,###.####}", item1.Price)} VNĐ -SL trong kho: {item1.QtyInv}";
+                                    item1.SuppliesName = $"{item1.SuppliesCode}-{item1.SuppliesName}-ĐVT: {item1.EnumName}-Giá: {string.Format("{0: #,###.####}", item1.Price)} VNĐ -SL trong kho: {item1.QtyInv}";
                                     oLine.ListPromSupplies.Add(item1);
                                 }
                             }
@@ -403,7 +403,7 @@ namespace BM.Web.Features.Controllers
                                 if(item.SuppliesCode == value)
                                 {
 
-                                    item.SuppliesName = $"{item.SuppliesCode}-{item.SuppliesName}-Giá: {string.Format("{0: #,###.####}", item.Price)} VNĐ -SL trong kho: {item.QtyInv}";
+                                    item.SuppliesName = $"{item.SuppliesCode}-{item.SuppliesName}-ĐVT: {item.EnumName}-Giá: {string.Format("{0: #,###.####}", item.Price)} VNĐ -SL trong kho: {item.QtyInv}";
                                     oItem.ListPromSupplies.Add(item);  
                                 }
                             }
