@@ -237,6 +237,80 @@ namespace BM.Web.Features.Controllers
             }
             await InvokeAsync(StateHasChanged);
         }
+
+        //lưu phiếu xuất kho cho vật tư khuyến mãi
+        protected async void SaveOutBoundPromotionHandler()
+        {
+            try
+            {
+                string sAction = nameof(EnumType.Add);
+                bool isConfirm = false;
+
+                await ShowLoader();
+                List<SuppliesOutBoundModel> listsuppliesProOut = new List<SuppliesOutBoundModel>();
+                if (ListSalesOrder !=null && ListSalesOrder.Count > 0)
+                {
+                    foreach (var item in ListSalesOrder)
+                    {
+                        if (item.ListPromotionSuppliess != null)
+                        {
+                            foreach (string value in item.ListPromotionSuppliess)
+                            {
+                                var checkDuplicate = listsuppliesProOut.Where(d => d.SuppliesCode == value).FirstOrDefault();
+                                if (checkDuplicate != null)
+                                {
+                                    checkDuplicate.Qty += 1;
+                                }
+                                else
+                                {
+                                    listsuppliesProOut.Add(new SuppliesOutBoundModel()
+                                    {
+                                        SuppliesCode = value,
+                                        Qty = 1
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                if (ListPromotionSuppplies != null && ListPromotionSuppplies.Any() && listsuppliesProOut !=null && listsuppliesProOut.Count > 0)
+                {
+                    foreach(var item in ListPromotionSuppplies)
+                    {
+                        foreach (var item1 in listsuppliesProOut)
+                        {
+                            if(item.SuppliesCode == item1.SuppliesCode)
+                            {
+                                item1.SuppliesName = item.SuppliesName;
+                                item1.EnumId = item.EnumId;
+                                item1.EnumName = item.EnumName;
+                                item1.QtyInv = item.QtyInv;
+                            }
+                        }
+                    }
+                    OutBoundUpdate.Type = nameof(OutBoundType.ByWarranty);//theo khuyến mãi
+                    OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listsuppliesProOut);
+                }
+                bool isSuccess = await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
+                if (isSuccess)
+                {
+                    IsShowOutBound = false;
+                    await showVoucher();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveOutBoundPromotionHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         #endregion
 
         #region Protected Functions
