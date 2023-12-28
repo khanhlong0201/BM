@@ -49,7 +49,7 @@
                 <Template>
                     @{
                         var model = (context as EnumModel);
-                        <span class="h-link">@model!.EnumId</span>
+                        <span class="h-link" @onclick="@(() => OnOpenDialogHandler(EnumType.Update, model))" title="Xem chi tiết">@model!.EnumId</span>
                     }
                 </Template>
                 <FooterTemplate>

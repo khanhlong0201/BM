@@ -22,7 +22,7 @@
                     <div class="accordion-body pt-0 px-2 pb-2">
                         <div class="row row-gap-1 mb-1">
                             <div class="col-lg-4 col-md-4 col-sm-12">
-                                Số hóa đơn: <strong class="h-link">@($"{DocumentUpdate.VoucherNoBase}")</strong>
+                                Số hóa đơn: <strong class="h-link" @onclick="@(()=> ReviewDocInfoHandler(DocumentUpdate.BaseEntry))">@($"{DocumentUpdate.VoucherNoBase}")</strong>
                             </div>
                             <div class="col-lg-8 col-md-8 col-sm-12">
                                 Ngày chứng từ gốc: <strong>@DocumentUpdate.DateCreateBase.ToString(DefaultConstants.FORMAT_DATE)</strong>
@@ -49,7 +49,7 @@
                         </div>
                         <div class="row row-gap-1 mb-1">
                             <div class="col-lg-4 col-md-4 col-sm-12">
-                                Mã K/H: <strong class="h-link">@DocumentUpdate.CusNo</strong>
+                                Mã K/H: <strong class="h-link" @onclick="@(()=> ReviewCustomerInfoHandler(DocumentUpdate.CusNo))">@DocumentUpdate.CusNo</strong>
                             </div>
                             <div class="col-lg-8 col-md-8 col-sm-12">
                                 Cơ sở: <strong>@DocumentUpdate.BranchName</strong>

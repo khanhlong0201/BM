@@ -618,6 +618,52 @@ namespace BM.Web.Features.Controllers
                 await InvokeAsync(StateHasChanged);
             }
         }
+
+
+        /// <summary>
+        /// xem chi tiết khách hàng
+        /// </summary>
+        /// <param name="pCusNo"></param>
+        protected void ReviewCustomerInfoHandler(string? pCusNo)
+        {
+            try
+            {
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pCusNo", $"{pCusNo}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navigationManager!.NavigateTo($"/customer-details?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "IndexController", "ReviewCustomerInfoHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// xem chi tiết Đơn hàng
+        /// </summary>
+        /// <param name="pCusNo"></param>
+        protected void ReviewDocInfoHandler(int pDocEntry)
+        {
+            try
+            {
+                Dictionary<string, string> pParams = new Dictionary<string, string>
+                {
+                    { "pDocEntry", $"{pDocEntry}"},
+                    { "pIsCreate", $"{false}" },
+                };
+                string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
+                _navigationManager!.NavigateTo($"/create-ticket?key={key}");
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "IndexController", "ReviewCustomerInfoHandler");
+                ShowError(ex.Message);
+            }
+        }
         #endregion
     }
 }

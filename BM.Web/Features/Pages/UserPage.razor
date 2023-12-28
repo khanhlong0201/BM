@@ -43,7 +43,7 @@
                 <Template>
                     @{
                         var model = (context as UserModel);
-                        <span class="h-link">@model!.EmpNo</span>
+                        <span class="h-link" @onclick="@(() => OnOpenDialogHandler(EnumType.Update, model))" title="Xem chi tiết">@model!.EmpNo</span>
                     }
                 </Template>
                 <FooterTemplate>
