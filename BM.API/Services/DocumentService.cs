@@ -74,7 +74,7 @@ public class DocumentService : IDocumentService
                         where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                 and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
                         and  t0.IsDelete = 0  and (isnull(@IdDraftDetail,0) = 0 or t1.Id = @IdDraftDetail)
-                        and (ISNULL(@Type,'')='' or  @Type = 'ByService' or @Type = 'ByWarranty' )   
+                        and (ISNULL(@Type,'')='' or  (t0.[Type] = @Type and @Type in ('ByWarranty','ByService')) )   
 
 						UNION ALL 
 
@@ -89,7 +89,7 @@ public class DocumentService : IDocumentService
                         where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                                                 and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
                         and  t0.IsDelete = 0 
-                        and (ISNULL(@Type,'')='' or @Type = 'ByRequest')"
+                        and (ISNULL(@Type,'')='' or (t0.[Type] = @Type and @Type in ('ByRequest')))"
                      , DataRecordToOutBoundModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -155,7 +155,7 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
-            string queryString = @$"select T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],t0.[BaseEntry],t0.[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
+            string queryString = @$"select distinct T0.[DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],t0.[BaseEntry],t0.[VoucherNo],T0.[StatusBefore],T0.[HealthStatus]
             , T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate], T0.[ReasonDelete]
                , case [StatusId] when '{nameof(DocStatus.Closed)}' then N'Hoàn thành' when '{nameof(DocStatus.Cancled)}' then N'Đã hủy đơn' else N'Chờ xử lý' end as [StatusName]
                , T1.[Id],T1.[Price],T1.[Qty],T1.[LineTotal],T1.[ActionType],T1.[ConsultUserId],T1.[ImplementUserId],T1.[ChemicalFormula],T1.[WarrantyPeriod],T1.[QtyWarranty]

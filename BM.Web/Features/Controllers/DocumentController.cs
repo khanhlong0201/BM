@@ -219,9 +219,16 @@ namespace BM.Web.Features.Controllers
                             {
                                 if (item1.SuppliesCode == value)
                                 {
-
-                                    item1.SuppliesName = $"{item1.SuppliesCode}-{item1.SuppliesName}-ĐVT: {item1.EnumName}-Giá: {string.Format("{0: #,###.####}", item1.Price)} VNĐ -SL trong kho: {item1.QtyInv}";
-                                    oLine.ListPromSupplies.Add(item1);
+                                    oLine.ListPromSupplies.Add(new SuppliesModel
+                                    {
+                                        SuppliesCode = item1.SuppliesCode,
+                                        SuppliesName = $"{item1.SuppliesCode}-{item1.SuppliesName}-ĐVT: {item1.EnumName}-Giá: {string.Format("{0: #,###.####}", item1.Price)} VNĐ -SL trong kho: {item1.QtyInv}",
+                                        EnumId = item1.EnumId,
+                                        EnumName = item1.EnumName,
+                                        Price = item1.Price,
+                                        Qty = item1.Qty,
+                                        QtyIntoInv = item1.QtyInv,
+                                    });
                                 }
                             }
                         }
@@ -239,7 +246,7 @@ namespace BM.Web.Features.Controllers
         }
 
         //lưu phiếu xuất kho cho vật tư khuyến mãi
-        protected async void SaveOutBoundPromotionHandler()
+        private async Task SaveOutBoundPromotionHandler()
         {
             try
             {
@@ -256,18 +263,14 @@ namespace BM.Web.Features.Controllers
                         {
                             foreach (string value in item.ListPromotionSuppliess)
                             {
-                                var checkDuplicate = listsuppliesProOut.Where(d => d.SuppliesCode == value).FirstOrDefault();
-                                if (checkDuplicate != null)
-                                {
-                                    checkDuplicate.Qty += 1;
-                                }
-                                else
+                                if (value + "" != "")
                                 {
                                     listsuppliesProOut.Add(new SuppliesOutBoundModel()
                                     {
                                         SuppliesCode = value,
-                                        Qty = 1
-                                    });
+                                        Qty = 1,
+                                        BaseLine = item.Id
+                                    }); 
                                 }
                             }
                         }
@@ -288,16 +291,25 @@ namespace BM.Web.Features.Controllers
                             }
                         }
                     }
+                    OutBoundUpdate.BaseEntry = DocumentUpdate.DocEntry;
                     OutBoundUpdate.Type = nameof(OutBoundType.ByWarranty);//theo khuyến mãi
-                    OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listsuppliesProOut);
+                    OutBoundUpdate.BranchId = DocumentUpdate.BranchId;
+
+                    var listsuppliesProOutGroupByBaseLine = from suppliesProOut in listsuppliesProOut
+                                        group suppliesProOut by suppliesProOut.BaseLine;
+                    if(listsuppliesProOutGroupByBaseLine !=null)
+                    {
+                        foreach(var supplies in listsuppliesProOutGroupByBaseLine)
+                        {
+                            var listInsertOutBound = listsuppliesProOut.Where(d => d.BaseLine == supplies.Key).ToList();
+                            OutBoundUpdate.SuppliesQtyList = JsonConvert.SerializeObject(listInsertOutBound);
+                            OutBoundUpdate.IdDraftDetail = supplies.Key;
+                            await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
+                        }
+                    }
                 }
-                bool isSuccess = await _documentService!.UpdateOutBound(JsonConvert.SerializeObject(OutBoundUpdate), sAction, pUserId);
-                if (isSuccess)
-                {
-                    IsShowOutBound = false;
-                    await showVoucher();
-                    return;
-                }
+                IsShowOutBound = false;
+                return;
             }
             catch (Exception ex)
             {
@@ -476,9 +488,16 @@ namespace BM.Web.Features.Controllers
                             {
                                 if(item.SuppliesCode == value)
                                 {
-
-                                    item.SuppliesName = $"{item.SuppliesCode}-{item.SuppliesName}-ĐVT: {item.EnumName}-Giá: {string.Format("{0: #,###.####}", item.Price)} VNĐ -SL trong kho: {item.QtyInv}";
-                                    oItem.ListPromSupplies.Add(item);  
+                                    oItem.ListPromSupplies.Add(new SuppliesModel
+                                    {
+                                        SuppliesCode = item.SuppliesCode,
+                                        SuppliesName = $"{item.SuppliesCode}-{item.SuppliesName}-ĐVT: {item.EnumName}-Giá: {string.Format("{0: #,###.####}", item.Price)} VNĐ -SL trong kho: {item.QtyInv}",
+                                        EnumId = item.EnumId,
+                                        EnumName = item.EnumName,
+                                        Price = item.Price,
+                                        Qty = item.Qty,
+                                        QtyIntoInv = item.QtyInv,
+                                    });  
                                 }
                             }
                         }
@@ -631,6 +650,8 @@ namespace BM.Web.Features.Controllers
                     , JsonConvert.SerializeObject(lstDraftDetails), sAction, pUserId);
                 if (isSuccess)
                 {
+                    if(pProcess == EnumType.SaveAndClose)
+                    await SaveOutBoundPromotionHandler();
                     if (pIsCreate)
                     {
                         // back sang link theo dõi đơn hàng

@@ -42,6 +42,7 @@ public class SuppliesOutBoundModel
     public decimal? QtyInv { get; set; }
     public string? EnumId { get; set; }
     public string? EnumName { get; set; }
+    public int? BaseLine { get; set; }
 
 }
 
