@@ -37,6 +37,7 @@ namespace BM.Web.Features.Controllers
         public int pBaseLine { get; set; } = 0;
         public int pBaseEntry { get; set; } = 0;
         public bool pIsLockPage { get; set; } = false;
+        public bool pIsDoc { get; set; } = false; //longtran 2023-12-29 có phải link từ doccument
         public ServiceCallModel DocumentUpdate { get; set; } = new ServiceCallModel();
         public IEnumerable<ComboboxModel>? ListUsers { get; set; } // danh sách nhân viên
         public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
@@ -158,7 +159,7 @@ namespace BM.Web.Features.Controllers
                             OutBoundUpdate.Remark = oServiceCall.Remark;// đặc điểm khách hàng
                             OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                             OutBoundUpdate.ListChargeUser = oServiceCall.ListUserImplements;
-                            StatusOutBound = string.IsNullOrEmpty(oServiceCall.StatusOutBound) ? "Chưa" : oServiceCall.StatusOutBound;
+                            StatusOutBound = (pIsCreate || string.IsNullOrEmpty(oServiceCall.StatusOutBound)) ? "Chưa" : oServiceCall.StatusOutBound;
                             OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound;
                             OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
                         }
@@ -260,7 +261,7 @@ namespace BM.Web.Features.Controllers
                 OutBoundUpdate.HealthStatus = DocumentUpdate.HealthStatus;// tình trạng sức khỏe
                 OutBoundUpdate.ListChargeUser = oServiceCall.ImplementUserId?.Split(",")?.ToList();
                 OutBoundUpdate.DateCreate = oServiceCall.DateCreateOutBound == null ? DateTime.Now : oServiceCall.DateCreateOutBound;
-                StatusOutBound = string.IsNullOrEmpty(oServiceCall.StatusOutBound) ? "Chưa": oServiceCall.StatusOutBound;
+                StatusOutBound = (pIsCreate || string.IsNullOrEmpty(oServiceCall.StatusOutBound)) ? "Chưa": oServiceCall.StatusOutBound;
 
                 if(pBaseLine == 0) pBaseLine = OutBoundUpdate.IdDraftDetail.Value;
                 if (pDocEntry == 0) pDocEntry = DocumentUpdate.DocEntry;
