@@ -1184,6 +1184,7 @@ namespace BM.Web.Features.Controllers
                 {
                     ListPointByCusNo = await _documentService!.GetCustomerDebtsByDocAsync(-1, nameof(EnumType.PointCustomer), DocumentUpdate.CusNo + "");
                     await showVoucher();
+                    IsShowPoint = false;
                 }
             }
             catch (Exception ex)

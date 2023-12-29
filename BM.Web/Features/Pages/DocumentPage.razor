@@ -552,8 +552,7 @@
 </HDialog>
 
 <HDialog @bind-IsVisible="@IsShowPoint"
-    IsShowButtonSaveAdnCreate="false"
-    SaveAndClosed="@(()=>SaveNumberOfPointUsedHandler())"
+    IsShowButtons="false"
     Width="65%"
     Title="Sử dụng điểm quy đổi quà đính kèm">
     <div class="h-content-filter">
@@ -586,8 +585,8 @@
             </GridSettings>
             <GridColumns>
                 <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="140px" Title="Ngày giờ tạo"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="150px" Title="Số điểm quy đổi"></GridColumn>
-                <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="270px" Title="Ghi chú"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="140px" Title="Điểm quy đổi"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="290px" Title="Ghi chú"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
                 <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
             </GridColumns>
