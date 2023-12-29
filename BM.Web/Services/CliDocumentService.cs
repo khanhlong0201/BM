@@ -16,7 +16,7 @@ public interface ICliDocumentService
     Task<bool> CancleDocList(string pJsonIds, string pReasonDelete, int pUserId, string pTableName);
     Task<List<SheduleModel>?> GetDataReminderByMonthAsync(SearchModel pSearch);
     Task<List<ReportModel>?> GetDataReportAsync(RequestReportModel pSearch);
-    Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry);
+    Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry, string pType, string pCusNo);
     Task<bool> UpdateCustomerDebtsAsync(string pJson, int pUserId, string pType = nameof(EnumType.DebtReminder));
     Task<bool> UpdateOutBound(string pJson, string pAction, int pUserId);
     Task<List<OutBoundModel>?> GetDataOutBoundsAsync(SearchModel pSearch);
@@ -446,13 +446,15 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
     /// Call API danh sách lịch sử đơn hàng
     /// </summary>
     /// <returns></returns>
-    public async Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry)
+    public async Task<List<CustomerDebtsModel>?> GetCustomerDebtsByDocAsync(int pDocEntry, string pType, string pCusNo)
     {
         try
         {
             Dictionary<string, object?> pParams = new Dictionary<string, object?>()
             {
-                {"pDocEntry", $"{pDocEntry}"}
+                {"pDocEntry", $"{pDocEntry}"},
+                {"pType", $"{pType}"},
+                {"pCusNo", $"{pCusNo}"},
             };
             HttpResponseMessage httpResponse = await GetAsync(EndpointConstants.URL_DOCUMENT_CUSTOMER_DEBTS_BY_DOC, pParams);
             var checkContent = ValidateJsonContent(httpResponse.Content);

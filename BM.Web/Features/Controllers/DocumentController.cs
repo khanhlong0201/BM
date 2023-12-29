@@ -1110,12 +1110,20 @@ namespace BM.Web.Features.Controllers
         /// hiển thị popup
         /// </summary>
         /// <param name="pType"></param>
-        protected void ShowPopupHandler(string pType = nameof(DocumentUpdate.Point))
+        protected async Task ShowPopupHandler(string pType = nameof(DocumentUpdate.Point))
         {
             try
             {
-                if(pType == nameof(DocumentUpdate.Point))
+                if (pType == nameof(DocumentUpdate.Point))
                 {
+                    if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
+                    {
+                        ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
+                        return;
+                    }
+                    await ShowLoader();
+                    ListPointByCusNo = await _documentService!.GetCustomerDebtsByDocAsync(-1, nameof(EnumType.PointCustomer), DocumentUpdate.CusNo + "");
+                    await Task.Delay(70);
                     NumberOfPointUsed = 0;
                     IsShowPoint = true;
                 }
@@ -1125,6 +1133,11 @@ namespace BM.Web.Features.Controllers
             {
                 _logger!.LogError(ex, "DocumentController", "ShowPopupHandler");
                 ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
             }
         }
 
@@ -1169,9 +1182,8 @@ namespace BM.Web.Features.Controllers
                 bool isSuccess = await _documentService!.UpdatePointByCusNoAsync(JsonConvert.SerializeObject(oItem), pUserId);
                 if (isSuccess)
                 {
-                    //await ReloadDataDebtsByDocHandler();
+                    ListPointByCusNo = await _documentService!.GetCustomerDebtsByDocAsync(-1, nameof(EnumType.PointCustomer), DocumentUpdate.CusNo + "");
                     await showVoucher();
-                    IsShowPoint = false;
                 }
             }
             catch (Exception ex)
@@ -1181,7 +1193,6 @@ namespace BM.Web.Features.Controllers
             }
             finally
             {
-                await Task.Delay(70);
                 await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
             }

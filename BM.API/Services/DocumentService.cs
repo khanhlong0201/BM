@@ -17,7 +17,7 @@ public interface IDocumentService
     Task<ResponseModel> CancleDocList(RequestModel pRequest);
     Task<IEnumerable<ReportModel>> GetReportAsync(RequestReportModel pSearchData);
     Task<IEnumerable<SheduleModel>> ReminderByMonthAsync(SearchModel pSearchData);
-    Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry);
+    Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry, string pType, string pCusNo);
     Task<ResponseModel> UpdateCustomerDebtsAsync(RequestModel pRequest);
     Task<ResponseModel> UpdateOutBound(RequestModel pRequest); // xuất kho
     Task<IEnumerable<OutBoundModel>> GetOutBoundAsync(SearchModel pSearchData);
@@ -870,19 +870,29 @@ public class DocumentService : IDocumentService
     /// </summary>
     /// <param name="pDocEntry"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry)
+    public async Task<IEnumerable<CustomerDebtsModel>> GetCustomerDebtsByDocAsync(int pDocEntry, string pType, string pCusNo)
     {
         IEnumerable<CustomerDebtsModel> data;
         try
         {
             await _context.Connect();
+            string sCondition = string.Empty;
             SqlParameter[] sqlParameters = new SqlParameter[1];
-            sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
+            if(pType == nameof(EnumType.DebtReminder))
+            {
+                sqlParameters[0] = new SqlParameter("@DocEntry", pDocEntry);
+                sCondition = $" and T0.[DocEntry] = @DocEntry";
+            } 
+            else if (pType == nameof(EnumType.PointCustomer))
+            {
+                sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
+                sCondition = $" and T0.[CusNo] = @CusNo";
+            }     
             data = await _context.GetDataAsync(@$"Select T0.DocEntry, T0.Id, T0.CusNo, T0.TotalDebtAmount, T0.DateCreate, T0.UserCreate
                                                 , T0.GuestsPay, T1.FullName, T0.[Remark], T0.[IsDelay], T0.[DateDelay]
                                              from [dbo].[CustomerDebts] as T0 with(nolock)
                                        inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
-                                            where T0.[DocEntry] = @DocEntry and T0.[Type] = '{nameof(EnumType.DebtReminder)}'
+                                            where T0.[Type] = '{pType}' {sCondition}
                                             order by T0.Id desc"
                     , DataRecordToCustomerDebtsModel, sqlParameters, commandType: CommandType.Text);
         }

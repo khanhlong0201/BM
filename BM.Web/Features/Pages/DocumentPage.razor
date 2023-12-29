@@ -83,7 +83,7 @@
                                             @if(DocumentUpdate.TotalPoint > 0)
                                             {
                                                 <i class="fa-regular fa-pen-to-square h-link" title="Sử dụng điểm"
-                                                   style="font-size: 14px; margin-left: 5px" @onclick="@(()=> ShowPopupHandler(nameof(DocumentUpdate.Point)))"></i>
+                                                   style="font-size: 14px; margin-left: 5px" @onclick="@(async()=>await ShowPopupHandler(nameof(DocumentUpdate.Point)))"></i>
                                             }
                                         </strong>
                                     </div>

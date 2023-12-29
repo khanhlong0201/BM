@@ -213,11 +213,11 @@ namespace BM.API.Controllers
 
         [HttpGet]
         [Route("GetCustomerDebtsByDoc")]
-        public async Task<IActionResult> GetCustomerDebtsByDoc(int pDocEntry)
+        public async Task<IActionResult> GetCustomerDebtsByDoc(int pDocEntry, string pType, string pCusNo)
         {
             try
             {
-                var response = await _documentervice.GetCustomerDebtsByDocAsync(pDocEntry);
+                var response = await _documentervice.GetCustomerDebtsByDocAsync(pDocEntry, pType,  pCusNo);
                 return Ok(response);
             }
             catch (Exception ex)

@@ -257,7 +257,7 @@ namespace BM.Web.Features.Controllers
                 DebtsGuestPay = 0;
                 VoucherNo = pDocument.VoucherNo;
                 pDocEntry = pDocument.DocEntry;
-                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocument.DocEntry);
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocument.DocEntry, nameof(EnumType.DebtReminder), "");
                 if(ListCusDebts != null && ListCusDebts.Any())
                 {
                     TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;
@@ -341,7 +341,7 @@ namespace BM.Web.Features.Controllers
                 DebtRemark = string.Empty;
                 TotalDebtAmount = 0;
                 DebtsGuestPay = 0;
-                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry);
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry, nameof(EnumType.DebtReminder), "");
                 if (ListCusDebts != null && ListCusDebts.Any())
                 {
                     TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;
