@@ -77,6 +77,7 @@ public enum EnumType
     @DebtReminder,
     @WarrantyReminder,
     @SuppliesType,
+    @PointCustomer
 }
 
 public enum EnumTable

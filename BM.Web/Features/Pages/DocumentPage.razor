@@ -2,7 +2,7 @@
 @inherits DocumentController
 
 <TelerikToolBar Class="border-bottom-0">
-    <ToolBarButton ImageUrl="../assets/copywriter.png" Visible="@pIsLockPage" OnClick="@(async()=> await CreateServiceCallHandler())">Lập phiếu bảo hành</ToolBarButton>
+    <ToolBarButton ImageUrl="../assets/copywriter.png" Visible="@(DocumentUpdate.StatusId == nameof(DocStatus.Closed))" OnClick="@(async()=> await CreateServiceCallHandler())">Lập phiếu bảo hành</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/copywriter.png" OnClick="@(()=> ShowOutBoundHandler())">Lập phiếu xuất kho</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/save-folder.png" Visible="@(!pIsLockPage)" OnClick="@(()=> SaveDocHandler())">Lưu thông tin</ToolBarButton>
     <ToolBarButton ImageUrl="../assets/bill.png" Visible="@(!pIsLockPage)" OnClick="@(()=> SaveDocHandler(EnumType.SaveAndClose))">Thanh toán</ToolBarButton>
@@ -78,7 +78,14 @@
                                         </strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        Tổng điểm tích lũy: <strong><span class="badge bg-red-lt">@DocumentUpdate.TotalPoint điểm</span></strong>
+                                        Tổng điểm tích lũy: <strong>
+                                            <span class="badge bg-red-lt">@DocumentUpdate.TotalPoint điểm</span>
+                                            @if(DocumentUpdate.TotalPoint > 0)
+                                            {
+                                                <i class="fa-regular fa-pen-to-square h-link" title="Sử dụng điểm"
+                                                   style="font-size: 14px; margin-left: 5px" @onclick="@(()=> ShowPopupHandler(nameof(DocumentUpdate.Point)))"></i>
+                                            }
+                                        </strong>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                     </div>
@@ -544,3 +551,46 @@
     </EditForm>
 </HDialog>
 
+<HDialog @bind-IsVisible="@IsShowPoint"
+    IsShowButtonSaveAdnCreate="false"
+    SaveAndClosed="@(()=>SaveNumberOfPointUsedHandler())"
+    Width="65%"
+    Title="Sử dụng điểm quy đổi quà đính kèm">
+    <div class="h-content-filter">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <HLabel Value="Nhập số điểm sử dụng: " IsRequired="true" />
+                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1.0"
+                                       @bind-Value="@NumberOfPointUsed" Arrows="false" Min="0" Max="DocumentUpdate.TotalPoint" />
+            </div>
+        </div>
+    </div>
+    <TelerikToolBar Class="border-bottom-0">
+        <ToolBarButton ImageUrl="../assets/refresh.png">Làm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@SaveNumberOfPointUsedHandler">Lưu & đóng</ToolBarButton>
+    </TelerikToolBar>
+    <div class="h-table-content" style="height: 300px;">
+        <TelerikGrid Data="@ListPointByCusNo"
+                     Height="100%"
+                     Width="100%"
+                     RowHeight="25"
+                     Pageable="true"
+                     PageSize="@DefaultConstants.PAGE_SIZE"
+                     Sortable="true"
+                     Resizable="true"
+                     FilterMode="@GridFilterMode.None"
+                     SelectionMode="@GridSelectionMode.Single"
+                     ScrollMode="@GridScrollMode.Scrollable">
+            <GridSettings>
+                <GridPagerSettings InputType="PagerInputType.Input" />
+            </GridSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="140px" Title="Ngày giờ tạo"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="150px" Title="Số điểm quy đổi"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="270px" Title="Ghi chú"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </div>
+</HDialog>

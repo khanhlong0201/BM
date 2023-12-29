@@ -25,6 +25,7 @@ public interface ICliDocumentService
     Task<bool> UpdateServiceCallAsync(string pJson, string pAction, int pUserId);
     Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch);
     Task<bool> CheckDataExistsAsync(RequestModel pRequest);
+    Task<bool> UpdatePointByCusNoAsync(string pJson, int pUserId);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -681,6 +682,51 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "CheckDataExistsAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// call api cập nhật điểm cho khách hàng
+    /// </summary>
+    /// <param name="pJson"></param>
+    /// <param name="pUserId"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdatePointByCusNoAsync(string pJson, int pUserId)
+    {
+        try
+        {
+            RequestModel request = new RequestModel
+            {
+                Json = pJson,
+                UserId = pUserId
+            };
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_UPDATE_CUSTOMER_POINT, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _toastService.ShowSuccess($"Quy đổi điểm của khách hàng thành công!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdatePointByCusNoAsync");
             _toastService.ShowError(ex.Message);
         }
         return false;

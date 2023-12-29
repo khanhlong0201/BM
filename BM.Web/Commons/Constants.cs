@@ -66,6 +66,7 @@ public static class EndpointConstants
     public const string URL_DOCUMENT_REMINDER_BY_MONTH = "Document/ReminderByMonth";
     public const string URL_DOCUMENT_CUSTOMER_DEBTS_BY_DOC = "Document/GetCustomerDebtsByDoc";
     public const string URL_DOCUMENT_UPDATE_CUSTOMER_DEBTS = "Document/UpdateCustomerDebts";
+    public const string URL_DOCUMENT_UPDATE_CUSTOMER_POINT = "Document/UpdatePointByCusNo";
     public const string URL_DOCUMENT_REVENUE_REPORT = "Document/GetRevenueReport";
 
     public const string URL_DOCUMENT_REPORT = "Document/GetReport";

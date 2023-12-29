@@ -26,6 +26,7 @@ public interface IDocumentService
     Task<ResponseModel> UpdateServiceCallAsync(RequestModel pRequest);
     Task<IEnumerable<ServiceCallModel>> GetServiceCallsAsync(SearchModel pSearchData);
     Task<ResponseModel> CheckExistsDataAsync(RequestModel pRequest);
+    Task<ResponseModel> UpdatePointByCusNo(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -1254,6 +1255,96 @@ public class DocumentService : IDocumentService
         }
         return response;
     }    
+    
+    /// <summary>
+    /// cập nhật điểm sô
+    /// </summary>
+    /// <param name="pRequest"></param>
+    /// <returns></returns>
+    public async Task<ResponseModel> UpdatePointByCusNo(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            CustomerDebtsModel oCusDebts = JsonConvert.DeserializeObject<CustomerDebtsModel>(pRequest.Json + "")!;
+            string queryString = string.Empty;
+            SqlParameter[] sqlParameters;
+            async Task<bool> ExecQuery()
+            {
+                var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                if (data != null && data.Rows.Count > 0)
+                {
+                    response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                    response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
+                }
+                return false;
+            }
+            sqlParameters = new SqlParameter[1];
+            sqlParameters[0] = new SqlParameter("@CusNo", $"{oCusDebts.CusNo}");
+            double dbPoint = double.Parse(await _context.ExecuteScalarObjectAsync(@"select isnull(Point, 0) from [dbo].[Customers] as T0 with(nolock) 
+                                where T0.[IsDelete] = 0 and [CusNo] = @CusNo", sqlParameters) + "");
+            if(dbPoint <= 0)
+            {
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Message = "Không thể quy đổi điểm. Điểm số hiện tại là 0";
+                return response;
+            }
+            if (dbPoint < oCusDebts.TotalDebtAmount)
+            {
+                // chỗ này lấy cột TotalDebtAmount = Số điểm cần qui đổi
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Message = "Số điểm hiện tại không đủ để Quy đổi. Vui lòng làm mới lại dữ liệu!";
+                return response;
+            }
+            // lấy mã
+            int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
+            queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate]
+                                                ,[UserCreate],[Remark],[IsDelay],[DateDelay],[Type],[BaseLine])
+                                                values (@Id, @DocEntry, @CusNo, @GuestsPay, @TotalDebtAmount, @DateTimeNow, @UserId, @Remark, @IsDelay, @DateDelay, @Type, @BaseLine)";
+
+            sqlParameters = new SqlParameter[12];
+            sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
+            sqlParameters[1] = new SqlParameter("@DocEntry", oCusDebts.DocEntry);
+            sqlParameters[2] = new SqlParameter("@CusNo", oCusDebts.CusNo);
+            sqlParameters[3] = new SqlParameter("@TotalDebtAmount", oCusDebts.TotalDebtAmount);
+            sqlParameters[4] = new SqlParameter("@UserId", pRequest.UserId);
+            sqlParameters[5] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+            sqlParameters[6] = new SqlParameter("@GuestsPay", -1);
+            sqlParameters[7] = new SqlParameter("@Remark", oCusDebts.Remark ?? (object)DBNull.Value);
+            sqlParameters[8] = new SqlParameter("@IsDelay", oCusDebts.IsDelay);
+            sqlParameters[9] = new SqlParameter("@DateDelay", (object)DBNull.Value);
+            sqlParameters[10] = new SqlParameter("@Type", nameof(EnumType.PointCustomer));
+            sqlParameters[11] = new SqlParameter("@BaseLine", -1);
+            await _context.BeginTranAsync(); // thêm vào lịch sử
+            bool isUpdated = await ExecQuery();
+            if(isUpdated)
+            {
+                queryString = @"Update [dbo].[Customers]
+                                   set [Point] = @Point
+                                 where [CusNo] = @CusNo";
+                sqlParameters = new SqlParameter[2];
+                sqlParameters[0] = new SqlParameter("@Point", dbPoint - oCusDebts.TotalDebtAmount);
+                sqlParameters[1] = new SqlParameter("@CusNo", oCusDebts.CusNo);
+                isUpdated = await ExecQuery();
+            }    
+            
+            if (isUpdated) await _context.CommitTranAsync();
+            else await _context.RollbackAsync();
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ

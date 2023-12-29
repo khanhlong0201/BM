@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System;
 using System.Data;
@@ -56,6 +57,9 @@ namespace BM.Web.Features.Controllers
         public List<SuppliesModel>? ListPromotionSuppplies { get; set; } // vật tư khuyến mãi
         public SearchModel ItemFilter { get; set; } = new SearchModel();
         public double NumberOfConvertedPoints { get; set; } // Số điểm quy đổi
+        public double NumberOfPointUsed { get; set; } // Số điểm sử dụng
+        public bool IsShowPoint { get; set; }
+        public List<CustomerDebtsModel>? ListPointByCusNo { get; set; }
         #endregion
 
         #region Override Functions
@@ -1099,6 +1103,87 @@ namespace BM.Web.Features.Controllers
             {
                 _logger!.LogError(ex, "DocumentController", "NavigateHandler");
                 ShowError(ex.Message);
+            }
+        }
+        
+        /// <summary>
+        /// hiển thị popup
+        /// </summary>
+        /// <param name="pType"></param>
+        protected void ShowPopupHandler(string pType = nameof(DocumentUpdate.Point))
+        {
+            try
+            {
+                if(pType == nameof(DocumentUpdate.Point))
+                {
+                    NumberOfPointUsed = 0;
+                    IsShowPoint = true;
+                }
+                StateHasChanged();
+            }
+            catch(Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "ShowPopupHandler");
+                ShowError(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Lưu thông tin qui đổi điểm để lấy quà.
+        /// </summary>
+        /// <returns></returns>
+        protected async Task SaveNumberOfPointUsedHandler()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(DocumentUpdate.CusNo))
+                {
+                    ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
+                    return;
+                }
+                if (DocumentUpdate.StatusId == nameof(DocStatus.Cancled))
+                {
+                    ShowInfo("Đơn hàng đã được hủy. Không thể qui đổi điểm!");
+                    return;
+                }    
+                if (DocumentUpdate.StatusId != nameof(DocStatus.Closed))
+                {
+                    ShowInfo("Vui lòng [Thanh toán] đơn hàng trước khi đổi điểm!");
+                    return;
+                }    
+                if(NumberOfPointUsed <= 0)
+                {
+                    ShowWarning("Vui lòng nhập số điểm cần quy đổi");
+                    return;
+                }
+                bool isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc Quy đổi [{NumberOfPointUsed}] điểm của khách hàng [{DocumentUpdate.CusNo}] không ?", "Thông báo");
+                if (!isConfirm) return;
+                await ShowLoader();
+                CustomerDebtsModel oItem = new CustomerDebtsModel();
+                oItem.CusNo = DocumentUpdate.CusNo;
+                oItem.DocEntry = pDocEntry;
+                oItem.TotalDebtAmount = NumberOfPointUsed;
+                oItem.GuestsPay = -1;
+                oItem.Remark = $"Quy đổi {NumberOfPointUsed} điểm tại Thông tin đơn hàng số: {DocumentUpdate.VoucherNo}";
+                // call api 
+                bool isSuccess = await _documentService!.UpdatePointByCusNoAsync(JsonConvert.SerializeObject(oItem), pUserId);
+                if (isSuccess)
+                {
+                    //await ReloadDataDebtsByDocHandler();
+                    await showVoucher();
+                    IsShowPoint = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveNumberOfPointUsedHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await Task.Delay(70);
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
             }
         }
         #endregion
