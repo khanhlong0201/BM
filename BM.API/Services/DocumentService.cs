@@ -177,6 +177,8 @@ public class DocumentService : IDocumentService
                 order by T00.DocEntry desc for json path) as JServiceCall
 				,   isnull(T4.IsOutBound,cast(0 as bit)) as IsOutBound
                 ,T1.ListPromotionSupplies
+                ,isnull(T3.Point, 0) as TotalPoint, isnull(T0.Point, 0) as Point
+                ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo]) as [TotalDebtAmount]
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -216,6 +218,9 @@ public class DocumentService : IDocumentService
                 oHeader.VoucherNo = Convert.ToString(dr["VoucherNo"]);
                 oHeader.StatusBefore = Convert.ToString(dr["StatusBefore"]);
                 oHeader.HealthStatus = Convert.ToString(dr["HealthStatus"]);
+                oHeader.TotalPoint = Convert.ToDouble(dr["TotalPoint"]);
+                oHeader.Point = Convert.ToDouble(dr["Point"]);
+                oHeader.TotalDebtAmount = Convert.ToDouble(dr["TotalDebtAmount"]);
                 if (!Convert.IsDBNull(dr["DateCreate"])) oHeader.DateCreate = Convert.ToDateTime(dr["DateCreate"]);
                 if (!Convert.IsDBNull(dr["UserCreate"])) oHeader.UserCreate = Convert.ToInt32(dr["UserCreate"]);
                 if (!Convert.IsDBNull(dr["DateUpdate"])) oHeader.DateUpdate = Convert.ToDateTime(dr["DateUpdate"]);
@@ -418,7 +423,7 @@ public class DocumentService : IDocumentService
                     sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                    sqlParameters[11] = new SqlParameter("@Point", oDraft.Debt);
+                    sqlParameters[11] = new SqlParameter("@Point", oDraft.Point);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
                     if (isUpdated)

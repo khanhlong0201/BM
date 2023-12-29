@@ -37,6 +37,8 @@ public class DocumentModel : Auditable
     public string? BranchName { get; set; }
     public string? Service { get; set; }
     public double Point { get; set; } // SỐ điểm
+    public double TotalPoint { get; set; } // tổng số điểm
+    public double TotalDebtAmount { get; set; } // tổng công nợ
     #endregion
 }
 

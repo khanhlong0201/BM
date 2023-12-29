@@ -131,6 +131,8 @@ namespace BM.Web.Features.Controllers
                         DocumentUpdate.Address = oCustomer.Address ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.TotalDebtAmount = oCustomer.TotalDebtAmount;
+                        DocumentUpdate.TotalPoint = oCustomer.Point;
                     }    
                     else
                     {
@@ -212,10 +214,11 @@ namespace BM.Web.Features.Controllers
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
                     oLine.StatusOutBound = item.StatusOutBound;
                     oLine.IsOutBound = item.IsOutBound;
-                    oLine.ListPromotionSuppliess = item.ListPromotionSupplies?.Split(",")?.ToList();
-                    List<string> listPromotionSuppliessTemp = item.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
+                    oLine.ListPromotionSuppliess = item.ListPromotionSupplies?.Split(",")?.ToList() ?? new List<string>();
+                    List<string>? listPromotionSuppliessTemp = item.ListPromotionSupplies?.Split(",")?.ToList(); // ldv
                     if (ListPromotionSuppplies != null && ListPromotionSuppplies.Count > 0 && listPromotionSuppliessTemp != null && listPromotionSuppliessTemp.Count > 0)
                     {
+                        if (oLine.ListPromSupplies == null) oLine.ListPromSupplies = new List<SuppliesModel>();
                         foreach (var item1 in ListPromotionSuppplies)
                         {
                             foreach (string value in listPromotionSuppliessTemp)
@@ -1064,22 +1067,37 @@ namespace BM.Web.Features.Controllers
             }
         }
 
-        protected void NavigateHandler(int pDocEntry, string pLinkPage = "service-call")
+        protected void NavigateHandler(int pDocEntry, string pLinkPage = "service-call", string? pCusNo = "")
         {
             try
             {
-                if (pDocEntry <= 0) return;
-                Dictionary<string, string> pParams = new Dictionary<string, string>
+                Dictionary<string, string> pParams;
+                switch (pLinkPage)
                 {
-                    { "pDocEntry", $"{pDocEntry}"},
-                    { "pIsCreate", $"{false}" },
-                };
+                    case "service-call":
+                        if (pDocEntry <= 0) return;
+                        pParams = new Dictionary<string, string>
+                        {
+                            { "pDocEntry", $"{pDocEntry}"},
+                            { "pIsCreate", $"{false}" },
+                        };
+                        break;
+                    case "customer-details":
+                        if (string.IsNullOrEmpty(pCusNo) || DocumentUpdate.CusNo == DATA_CUSTOMER_EMPTY) return;
+                        pParams = new Dictionary<string, string>
+                        {
+                            { "pCusNo", $"{pCusNo}" },
+                        };
+                        break;
+                    default:
+                        return;
+                }
                 string key = EncryptHelper.Encrypt(JsonConvert.SerializeObject(pParams)); // mã hóa key
                 _navigationManager!.NavigateTo($"/{pLinkPage}?key={key}");
             }
             catch (Exception ex)
             {
-                _logger!.LogError(ex, "SalesDocListController", "NavigateHandler");
+                _logger!.LogError(ex, "DocumentController", "NavigateHandler");
                 ShowError(ex.Message);
             }
         }

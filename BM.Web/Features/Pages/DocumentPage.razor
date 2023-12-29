@@ -47,7 +47,7 @@
                             <div class="mb-1">
                                 <div class="row row-gap-1">
                                     <div class="col-lg-4 col-md-4 col-sm-12">
-                                        Mã K/H: <strong>@DocumentUpdate.CusNo</strong>
+                                        Mã K/H: <strong class="h-link" @onclick="@(()=> NavigateHandler(-1, "customer-details", DocumentUpdate.CusNo))">@DocumentUpdate.CusNo</strong>
                                     </div>
                                     <div class="col-lg-8 col-md-8 col-sm-12">
                                         Cơ sở: <strong>@DocumentUpdate.BranchName</strong>
@@ -65,6 +65,22 @@
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         CCCD: <strong>@DocumentUpdate.CINo</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-1">
+                                <div class="row row-gap-1">
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Tổng công nợ: <strong>
+                                            <span class="badge bg-purple-lt">
+                                                @DocumentUpdate.TotalDebtAmount.ToString(DefaultConstants.FORMAT_CURRENCY)đ
+                                            </span>
+                                        </strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
+                                        Tổng điểm tích lũy: <strong><span class="badge bg-red-lt">@DocumentUpdate.TotalPoint điểm</span></strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-12">
                                     </div>
                                 </div>
                             </div>
@@ -356,7 +372,7 @@
                                     </tr>
                                     <tr>
                                         <td class="text-center"></td>
-                                        <td colspan="3" class="strong text-end">Điểm tích lũy:</td>
+                                        <td colspan="3" class="strong text-end">Điểm tích lũy của đơn:</td>
                                         <td colspan="2" class="text-red font-weight-bold text-end">
                                             @if(!pIsLockPage && NumberOfConvertedPoints > 0 && pSumTotal > 0)
                                             {
