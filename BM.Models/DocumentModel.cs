@@ -36,6 +36,7 @@ public class DocumentModel : Auditable
     public DateTime? DateOfBirth { get; set; }
     public string? BranchName { get; set; }
     public string? Service { get; set; }
+    public double Point { get; set; } // SỐ điểm
     #endregion
 }
 

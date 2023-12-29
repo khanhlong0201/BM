@@ -22,5 +22,6 @@ namespace BM.Models
         public DateTime? DateOfBirth { get; set; }
         public string? BranchName { get; set; }
         public double TotalDebtAmount { get; set; }
+        public double Point { get; set; } // tích điểm cho KH
     }
 }

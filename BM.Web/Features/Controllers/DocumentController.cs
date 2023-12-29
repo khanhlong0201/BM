@@ -29,6 +29,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private IWebHostEnvironment? _webHostEnvironment { get; init; }
         [Inject] public IJSRuntime? _jsRuntime { get; init; }
         [Inject] private ILocalStorageService? _localStorage { get; init; }
+        [Inject] private IConfiguration? _configuration { get; init; }
         #endregion
 
         #region Properties
@@ -54,6 +55,7 @@ namespace BM.Web.Features.Controllers
         public List<SuppliesModel>? ListSuppplies { get; set; } // vật tư để lập phiếu xuất kho
         public List<SuppliesModel>? ListPromotionSuppplies { get; set; } // vật tư khuyến mãi
         public SearchModel ItemFilter { get; set; } = new SearchModel();
+        public double NumberOfConvertedPoints { get; set; } // Số điểm quy đổi
         #endregion
 
         #region Override Functions
@@ -98,6 +100,7 @@ namespace BM.Web.Features.Controllers
             {
                 try
                 {
+                    NumberOfConvertedPoints = double.Parse(_configuration!.GetSection("appSettings:NumberOfConvertedPoints").Value);
                     // đọc giá tri câu query
                     var uri = _navigationManager?.ToAbsoluteUri(_navigationManager.Uri);
                     if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)

@@ -31,9 +31,9 @@
                                     <div class="col-lg-4 col-md-4 col-sm-12">
                                         Tình trạng phiếu:
                                         @{
-                                            string color = "text-cyan";
-                                            if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "text-green";
-                                            else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "text-red";
+                                            string color = "badge bg-cyan-lt";
+                                            if (DocumentUpdate!.StatusId == nameof(DocStatus.Closed)) color = "badge bg-green-lt";
+                                            else if (DocumentUpdate!.StatusId == nameof(DocStatus.Cancled)) color = "badge bg-red-lt";
                                                             <strong class="@(color)">
                                                                 @($"{DocumentUpdate.StatusName}")
                                                             </strong>
@@ -328,7 +328,7 @@
                                         <td class="text-center"></td>
                                         <td colspan="3" class="strong text-end">Khách trả:</td>
                                         <td colspan="2" class="text-end">
-                                            @if(!pIsLockPage)
+                                        @if(!pIsLockPage)
                                         {
                                                 <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1000.0"
                                                                 @bind-Value="@DocumentUpdate.GuestsPay" Enabled="@(pSumTotal > 0)" Arrows="false" Min="0" Max="pSumTotal" />
@@ -351,6 +351,18 @@
                                             : pSumTotal - DocumentUpdate.GuestsPay;
                                             }
                                             @(DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY))đ
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td colspan="3" class="strong text-end">Điểm tích lũy:</td>
+                                        <td colspan="2" class="text-red font-weight-bold text-end">
+                                            @if(!pIsLockPage && NumberOfConvertedPoints > 0 && pSumTotal > 0)
+                                            {
+                                                DocumentUpdate.Point = Math.Round(pSumTotal/NumberOfConvertedPoints, 1);
+                                            }
+                                             <span class="badge bg-red-lt">@DocumentUpdate.Point điểm</span>
                                         </td>
                                         <td colspan="3"></td>
                                     </tr>

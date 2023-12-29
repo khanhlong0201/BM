@@ -310,6 +310,17 @@ public class DocumentService : IDocumentService
                     sqlParameters[8] = new SqlParameter("@BaseLine", pBaseLine);
                     await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 }
+                if (oDraft.StatusId == nameof(DocStatus.Closed) && oDraft.Point > 0 && pType != nameof(EnumType.WarrantyReminder))
+                {
+                    // Cộng dồn điểm tích lũy cho Khách hàng
+                    queryString = @"Update [dbo].[Customers]
+                                   set [Point] = isnull(Point, 0) + @Point
+                                 where [CusNo] = @CusNo";
+                    sqlParameters = new SqlParameter[2];
+                    sqlParameters[0] = new SqlParameter("@Point", oDraft.Point);
+                    sqlParameters[1] = new SqlParameter("@CusNo", oDraft.CusNo);
+                    await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
+                }    
             }
             switch (pRequest.Type)
             {
@@ -320,11 +331,11 @@ public class DocumentService : IDocumentService
                     sqlParameters[0] = new SqlParameter("@Type", "Drafts");
                     oDraft.VoucherNo = (string?)await _context.ExcecFuntionAsync("dbo.BM_GET_VOUCHERNO", sqlParameters); // lấy lấy số phiếu
                     queryString = @"Insert into [dbo].[Drafts] ([DocEntry],[CusNo],[DiscountCode],[Total],[GuestsPay], [Debt],[StatusBefore], [VoucherNo]
-                                   ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[DateUpdate],[IsDelete])
+                                   ,[BranchId], [BaseEntry],[HealthStatus],[NoteForAll],[StatusId],[DateCreate],[UserCreate],[DateUpdate],[IsDelete],[Point])
                                     values (@DocEntry, @CusNo, @DiscountCode, @Total, @GuestsPay, @Debt, @StatusBefore, @VoucherNo
-                                   ,@BranchId,@BaseEntry,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, @DateTimeNow, 0)";
+                                   ,@BranchId,@BaseEntry,@HealthStatus, @NoteForAll, @StatusId, @DateTimeNow, @UserId, @DateTimeNow, 0, @Point)";
 
-                    sqlParameters = new SqlParameter[15];
+                    sqlParameters = new SqlParameter[16];
                     sqlParameters[0] = new SqlParameter("@DocEntry", iDocentry);
                     sqlParameters[1] = new SqlParameter("@CusNo", oDraft.CusNo);
                     sqlParameters[2] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
@@ -340,6 +351,7 @@ public class DocumentService : IDocumentService
                     sqlParameters[12] = new SqlParameter("@BranchId", oDraft.BranchId);
                     sqlParameters[13] = new SqlParameter("@BaseEntry", oDraft.BaseEntry);
                     sqlParameters[14] = new SqlParameter("@VoucherNo", oDraft.VoucherNo);
+                    sqlParameters[15] = new SqlParameter("@Point", oDraft.Point);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
                     if (isUpdated)
@@ -392,9 +404,9 @@ public class DocumentService : IDocumentService
                                        set [DiscountCode] = @DiscountCode, [Total] = @Total, [GuestsPay] = @GuestsPay
                                          , [StatusBefore] = @StatusBefore, [HealthStatus] = @HealthStatus, [NoteForAll] = @NoteForAll
                                          , [StatusId] = @StatusId, [DateUpdate] = @DateTimeNow, [UserUpdate] = @UserId
-                                         , [Debt] = @Debt
+                                         , [Debt] = @Debt, [Point] = @Point
                                      where [DocEntry] = @DocEntry";
-                    sqlParameters = new SqlParameter[11];
+                    sqlParameters = new SqlParameter[12];
                     sqlParameters[0] = new SqlParameter("@DocEntry", oDraft.DocEntry);
                     sqlParameters[1] = new SqlParameter("@DiscountCode", oDraft.DiscountCode ?? (object)DBNull.Value);
                     sqlParameters[2] = new SqlParameter("@Total", oDraft.Total);
@@ -406,6 +418,7 @@ public class DocumentService : IDocumentService
                     sqlParameters[8] = new SqlParameter("@StatusId", oDraft.StatusId ?? (object)DBNull.Value);
                     sqlParameters[9] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[10] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[11] = new SqlParameter("@Point", oDraft.Debt);
                     await _context.BeginTranAsync();
                     isUpdated = await ExecQuery();
                     if (isUpdated)
@@ -1210,7 +1223,14 @@ public class DocumentService : IDocumentService
                     {
                         response.StatusCode = (int)HttpStatusCode.Conflict;
                         response.Message = $"Tồn tại phiếu bảo hành [{Convert.ToString(oServiceCall)}] đang chờ xử lý!";
+                        break;
                     }
+
+                    // kiểm tra còn hạn bảo hành không?
+                    // lấy max ngày so với ngày lập phiếu
+                    DateTime dateWarranty = _dateTimeService.GetCurrentVietnamTime();
+                    sqlParameters = new SqlParameter[2];
+
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
