@@ -87,6 +87,7 @@ namespace BM.Web.Features.Controllers
                     CustomerUpdate.Remark = oCustomer.Remark ?? DATA_CUSTOMER_EMPTY;
                     CustomerUpdate.SkinType = oCustomer.SkinType ?? DATA_CUSTOMER_EMPTY;
                     CustomerUpdate.TotalDebtAmount = oCustomer.TotalDebtAmount;
+                    CustomerUpdate.Point = oCustomer.Point;
 
                     // call lấy danh sách chi tiết
                     ListDocHis = await _documentService!.GetDocByCusNoAsync(CustomerUpdate.CusNo + "");
