@@ -60,6 +60,7 @@
                     Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                 </FooterTemplate>
             </GridColumn>
+            <GridColumn Field=@nameof(CustomerModel.Point) Width="130px" Title="Điểm tích lũy" Filterable="false"></GridColumn>
             <GridColumn Field=@nameof(CustomerModel.Phone1) Width="140px" Title="SĐT 1" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
             <GridColumn Field=@nameof(CustomerModel.Phone2) Width="140px" Title="SĐT 2" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>
             <GridColumn Field=@nameof(CustomerModel.CINo) Width="140px" Title="CCCD" ShowFilterCellButtons="false" DefaultFilterOperator="@FilterOperator.Contains"></GridColumn>

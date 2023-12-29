@@ -375,7 +375,7 @@ public class MasterDataService : IMasterDataService
         {
             await _context.Connect();
             data = await _context.GetDataAsync(@"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],T0.[Address],[DateOfBirth],[SkinType]
-                      ,T0.[BranchId], T1.BranchName as [BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate] 
+                      ,T0.[BranchId], T1.BranchName as [BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate],T0.[Point]
 					  ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo]) as [TotalDebtAmount]
 			     from [dbo].[Customers] as T0 with(nolock) 
 		    left join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
@@ -487,7 +487,7 @@ public class MasterDataService : IMasterDataService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@CusNo", pCusNo);
             string queryString = @"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],T0.[Address],[DateOfBirth]
-                                           ,T0.[BranchId],T2.[BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate]
+                                           ,T0.[BranchId],T2.[BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate],T0.[Point]
 										   ,(select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) 
 										      where T00.EnumType = 'SkinType' and T0.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
                                            ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo] and T01.StatusId = 'Closed') as [TotalDebtAmount]
@@ -1583,6 +1583,7 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["BranchId"])) model.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
         if (!Convert.IsDBNull(record["TotalDebtAmount"])) model.TotalDebtAmount = Convert.ToDouble(record["TotalDebtAmount"]);
+        if (!Convert.IsDBNull(record["Point"])) model.Point = Convert.ToDouble(record["Point"]);
         if (!Convert.IsDBNull(record["DateCreate"])) model.DateCreate = Convert.ToDateTime(record["DateCreate"]);
         if (!Convert.IsDBNull(record["UserCreate"])) model.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) model.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
