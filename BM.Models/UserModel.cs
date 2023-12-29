@@ -36,6 +36,7 @@ public class UserModel : Auditable
     public string? ListServiceType { get; set; } // loại dịch vụ
     [Required(ErrorMessage = "Vui lòng chọn dịch vụ chỉ định cho nhân viên")]
     public List<string>? ListServiceTypes { get; set; } // ds dịch vụ trên UI
+    public string? ListServiceTypeName { get; set; } // loại dịch vụ
 }
 
 /// <summary>

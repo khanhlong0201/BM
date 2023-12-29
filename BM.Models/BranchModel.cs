@@ -22,6 +22,7 @@ namespace BM.Models
         public DateTime? DateUpdate { get; set; }
         public int? UserUpdate { get; set; }
         public string? ListServiceType { get; set; } // loại dịch vụ
+        public string? ListServiceTypeName { get; set; } // loại dịch vụ
         [Required(ErrorMessage = "Vui lòng chọn dịch vụ triển khai theo chi nhánh")]
         public List<string>? ListServiceTypes { get; set; } // danh sách nhân dịch vụ trên UI
     }

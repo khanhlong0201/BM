@@ -63,8 +63,10 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@pIsPageLogin", pIsPageLogin);
-            data = await _context.GetDataAsync(@"Select * from dbo.[Branchs] with(nolock)
-                   where @pIsPageLogin = 0 or (@pIsPageLogin = 1 and [IsActive] = 1)", DataRecordToBranchModel, sqlParameters, commandType: CommandType.Text);
+            data = await _context.GetDataAsync(@$"Select *, (select STRING_AGG(EnumName, ', ') from [Enums] as T00 with(nolock) 
+					                                          where EnumType = '{nameof(EnumType.ServiceType)}' and CHARINDEX(',' + T00.EnumId + ',', ',' + [ListServiceType] + ',', 0) > 0) as [ListServiceTypeName]
+                                                    from dbo.[Branchs] with(nolock)
+                                                   where @pIsPageLogin = 0 or (@pIsPageLogin = 1 and [IsActive] = 1)", DataRecordToBranchModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
         finally
@@ -141,9 +143,12 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@UserId", pUserid);
-            data = await _context.GetDataAsync(@"Select [Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber]
-                    , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] , [ListServiceType]
-                    from [dbo].[Users] where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId) and EmpNo not like 'SP0%'" // không lấy lên tk Support
+            data = await _context.GetDataAsync(@$"Select [Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber]
+                                                      , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] , [ListServiceType]
+                                                      , (select STRING_AGG(EnumName, ', ') from [Enums] as T00 with(nolock) 
+					                                      where EnumType = '{nameof(EnumType.ServiceType)}' and CHARINDEX(',' + T00.EnumId + ',', ',' + [ListServiceType] + ',', 0) > 0) as [ListServiceTypeName]
+                                                   from [dbo].[Users] 
+                                                  where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId) and EmpNo not like 'SP0%'" // không lấy lên tk Support
                     , DataRecordToUserModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }
@@ -1504,8 +1509,12 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) branch.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) branch.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) branch.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
-        if (!Convert.IsDBNull(record["ListServiceType"])) branch.ListServiceType = Convert.ToString(record["ListServiceType"]);
-        if (!Convert.IsDBNull(record["ListServiceType"])) branch.ListServiceTypes = branch.ListServiceType?.Split(",")?.ToList();
+        if (!Convert.IsDBNull(record["ListServiceType"]))
+        {
+            branch.ListServiceType = Convert.ToString(record["ListServiceType"]);
+            branch.ListServiceTypes = branch.ListServiceType?.Split(",")?.ToList();
+        } 
+        if (!Convert.IsDBNull(record["ListServiceTypeName"])) branch.ListServiceTypeName = Convert.ToString(record["ListServiceTypeName"]);
         return branch;
     }
 
@@ -1534,8 +1543,13 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["UserCreate"])) user.UserCreate = Convert.ToInt32(record["UserCreate"]);
         if (!Convert.IsDBNull(record["DateUpdate"])) user.DateUpdate = Convert.ToDateTime(record["DateUpdate"]);
         if (!Convert.IsDBNull(record["UserUpdate"])) user.UserUpdate = Convert.ToInt32(record["UserUpdate"]);
-        if (!Convert.IsDBNull(record["ListServiceType"])) user.ListServiceType = Convert.ToString(record["ListServiceType"]);
-        if (!Convert.IsDBNull(record["ListServiceType"])) user.ListServiceTypes = user.ListServiceType?.Split(",")?.ToList();
+        if (!Convert.IsDBNull(record["ListServiceType"]))
+        {
+            user.ListServiceType = Convert.ToString(record["ListServiceType"]);
+            user.ListServiceTypes = user.ListServiceType?.Split(",")?.ToList();
+        } 
+            
+        if (!Convert.IsDBNull(record["ListServiceTypeName"])) user.ListServiceTypeName = Convert.ToString(record["ListServiceTypeName"]);
         return user;
     }
 
