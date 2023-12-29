@@ -247,8 +247,8 @@ public class DocumentService : IDocumentService
                     oLine.StatusOutBound = Convert.ToString(item["StatusOutBound"]);
                     oLine.JServiceCall = Convert.ToString(item["JServiceCall"]);
                     oLine.IsOutBound = Convert.ToBoolean(item["IsOutBound"]);
-                    oLine.ListPromotionSupplies = Convert.ToString(item["ListPromotionSupplies"]);
-                    oLine.ListPromotionSuppliess = Convert.ToString(item["ListPromotionSupplies"]).Split(",")?.ToList();
+                    oLine.ListPromotionSupplies = Convert.ToString(item["ListPromotionSupplies"]) +"";
+                    oLine.ListPromotionSuppliess = Convert.ToString(item["ListPromotionSupplies"])?.Split(",")?.ToList() ?? new List<string>();
                     lstDetails.Add(oLine);
                 }
                 data = new Dictionary<string, string>()
@@ -645,6 +645,7 @@ public class DocumentService : IDocumentService
 						  inner join [dbo].[DraftDetails] as T01 with(nolock) on T00.ServiceCode = T01.ServiceCode 
 						   left join [dbo].[Enums] as T02 with(nolock) on T00.PackageId = T02.EnumId
 							where T01.DocEntry = T0.DocEntry) as [Service]
+                           ,isnull(T0.Point, 0) as Point
                       from [dbo].[Drafts] as T0 with(nolock) 
                 inner join [dbo].[Branchs] as T1 with(nolock) on T0.BranchId = T1.BranchId
                  left join [dbo].[Users] as T2 with(nolock) on T0.UserCreate = T2.Id
@@ -1623,6 +1624,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["BranchName"])) model.BranchName = Convert.ToString(record["BranchName"]);
         if (!Convert.IsDBNull(record["VoucherNo"])) model.VoucherNo = Convert.ToString(record["VoucherNo"]);
         if (!Convert.IsDBNull(record["Service"])) model.Service = Convert.ToString(record["Service"]);
+        if (!Convert.IsDBNull(record["Point"])) model.Point = Convert.ToDouble(record["Point"]);
         return model;
     }
 

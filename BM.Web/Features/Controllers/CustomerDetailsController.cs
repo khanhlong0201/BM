@@ -6,6 +6,7 @@ using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using Telerik.Blazor;
 using Telerik.Blazor.Components;
 
 namespace BM.Web.Features.Controllers
@@ -22,6 +23,13 @@ namespace BM.Web.Features.Controllers
         public const string DATA_CUSTOMER_EMPTY = "Chưa cập nhật";
         public List<DocumentModel>? ListDocHis { get; set; }
         public List<ServiceCallModel>? ListServiceCalls { get; set; } // danh sách lịch sử dặm
+
+        public double NumberOfConvertedPoints { get; set; } // Số điểm quy đổi
+        public double NumberOfPointUsed { get; set; } // Số điểm sử dụng
+        public bool IsShowPoint { get; set; }
+        public List<CustomerDebtsModel>? ListPointByCusNo { get; set; }
+        [CascadingParameter]
+        public DialogFactory? _rDialogs { get; set; }
         #endregion
         #endregion
 
@@ -127,6 +135,90 @@ namespace BM.Web.Features.Controllers
             {
                 _logger!.LogError(ex, "CustomerDetailsController", "OnViewDerailsHandler");
                 ShowError(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// hiển thị popup
+        /// </summary>
+        /// <param name="pType"></param>
+        protected async Task ShowPopupHandler(string pType = nameof(DocumentModel.Point))
+        {
+            try
+            {
+                if (pType == nameof(DocumentModel.Point))
+                {
+                    if (string.IsNullOrEmpty(CustomerUpdate.CusNo))
+                    {
+                        ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
+                        return;
+                    }
+                    await ShowLoader();
+                    ListPointByCusNo = await _documentService!.GetCustomerDebtsByDocAsync(-1, nameof(EnumType.PointCustomer), CustomerUpdate.CusNo + "");
+                    await Task.Delay(70);
+                    NumberOfPointUsed = 0;
+                    IsShowPoint = true;
+                }
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "ShowPopupHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        /// <summary>
+        /// Lưu thông tin qui đổi điểm để lấy quà.
+        /// </summary>
+        /// <returns></returns>
+        protected async Task SaveNumberOfPointUsedHandler()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(CustomerUpdate.CusNo))
+                {
+                    ShowWarning("Không tìm thấy thông tin khách hàng. Vui lòng tải lại trang!");
+                    return;
+                }
+                if (NumberOfPointUsed <= 0)
+                {
+                    ShowWarning("Vui lòng nhập số điểm cần quy đổi");
+                    return;
+                }
+                bool isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc Quy đổi [{NumberOfPointUsed}] điểm của khách hàng [{CustomerUpdate.CusNo}] không ?", "Thông báo");
+                if (!isConfirm) return;
+                await ShowLoader();
+                CustomerDebtsModel oItem = new CustomerDebtsModel();
+                oItem.CusNo = CustomerUpdate.CusNo;
+                oItem.DocEntry = -1;
+                oItem.TotalDebtAmount = NumberOfPointUsed;
+                oItem.GuestsPay = -1;
+                oItem.Remark = $"Quy đổi {NumberOfPointUsed} điểm tại trang Thông tin chi tiết khách hàng";
+                // call api 
+                bool isSuccess = await _documentService!.UpdatePointByCusNoAsync(JsonConvert.SerializeObject(oItem), pUserId);
+                if (isSuccess)
+                {
+                    IsShowPoint = false;
+                    var oCustomer = await _masterDataService!.GetCustomerByIdAsync(CustomerUpdate.CusNo);
+                    if (oCustomer == null) return;
+                    CustomerUpdate.Point = oCustomer.Point;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "DocumentController", "SaveNumberOfPointUsedHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
             }
         }
         #endregion

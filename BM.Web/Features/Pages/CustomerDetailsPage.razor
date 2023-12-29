@@ -124,7 +124,14 @@
                             <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                             <path d="M9 6l6 6l-6 6"></path>
                         </svg>
-                        Điểm tích lũy: <span class="badge bg-red-lt">@CustomerUpdate.Point điểm</span>
+                        Điểm tích lũy: <span class="badge bg-red-lt">
+                            @CustomerUpdate.Point điểm
+                            @if (CustomerUpdate.Point > 0)
+                            {
+                                <i class="fa-regular fa-pen-to-square h-link" title="Sử dụng điểm"
+                                   style="font-size: 14px; margin-left: 5px" @onclick="@(async()=>await ShowPopupHandler(nameof(DocumentModel.Point)))"></i>
+                            }
+                        </span>
                     </div>
                 </div>
             </div>
@@ -191,14 +198,17 @@
                                                 @(oItem.DateCreate == null ? "" : oItem.DateCreate.Value.ToString(DefaultConstants.FORMAT_TIME)) - @oItem.UserNameCreate
                                             </p>
                                             <div class="row row-gap-1">
-                                                <div class="col-md-4 col-sm-12">
+                                                <div class="col-md-3 col-sm-6">
                                                     <p class="text-secondary mb-0">Tổng tiền: <span>@oItem.Total.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
                                                 </div>
-                                                <div class="col-md-4 col-sm-12">
+                                                <div class="col-md-3 col-sm-6">
                                                     <p class="text-secondary mb-0">Khách trả: <span>@oItem.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
                                                 </div>
-                                                <div class="col-md-4 col-sm-12">
+                                                <div class="col-md-3 col-sm-6">
                                                     <p class="text-secondary mb-0">Còn nợ: <span style="color: red">@oItem.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)</span>đ</p>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <p class="text-secondary mb-0">Điểm tích lũy: <span class="badge bg-red-lt">@oItem.Point điểm</span></p>
                                                 </div>
                                             </div>
                                             <p class="text-secondary mb-1">Dịch vụ: @oItem.Service</p>
@@ -214,3 +224,46 @@
         </div>
     </div>
 </div>
+
+<HDialog @bind-IsVisible="@IsShowPoint"
+    IsShowButtons="false"
+    Width="65%"
+    Title="Sử dụng điểm quy đổi quà đính kèm">
+    <div class="h-content-filter">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <HLabel Value="Nhập số điểm sử dụng: " IsRequired="true" />
+                <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1.0"
+                                       @bind-Value="@NumberOfPointUsed" Arrows="false" Min="0" Max="CustomerUpdate.Point" />
+            </div>
+        </div>
+    </div>
+    <TelerikToolBar Class="border-bottom-0">
+        <ToolBarButton ImageUrl="../assets/refresh.png">Làm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@SaveNumberOfPointUsedHandler">Lưu & đóng</ToolBarButton>
+    </TelerikToolBar>
+    <div class="h-table-content" style="height: 300px;">
+        <TelerikGrid Data="@ListPointByCusNo"
+                     Height="100%"
+                     Width="100%"
+                     RowHeight="25"
+                     Pageable="true"
+                     PageSize="@DefaultConstants.PAGE_SIZE"
+                     Sortable="true"
+                     Resizable="true"
+                     FilterMode="@GridFilterMode.None"
+                     SelectionMode="@GridSelectionMode.Single"
+                     ScrollMode="@GridScrollMode.Scrollable">
+            <GridSettings>
+                <GridPagerSettings InputType="PagerInputType.Input" />
+            </GridSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(CustomerDebtsModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="140px" Title="Ngày giờ tạo"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.TotalDebtAmount) DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" Width="140px" Title="Điểm quy đổi"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.Remark) Width="290px" Title="Ghi chú"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.CusNo) Width="130px" Title="Mã khách hàng"></GridColumn>
+                <GridColumn Field=@nameof(CustomerDebtsModel.FullName) Width="170px" Title="Tên khách hàng"></GridColumn>
+            </GridColumns>
+        </TelerikGrid>
+    </div>
+</HDialog>
