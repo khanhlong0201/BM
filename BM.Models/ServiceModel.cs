@@ -68,14 +68,15 @@ public class SalesOrderModel
         private set { }
     }
 
+    public DateTime? DateEndWarranty { get; set; } // ngày cuối bảo hành
     public List<string>? ListUserAdvise { get; set; } // nhân viên tư vấn
     public List<string>? ListUserImplements { get; set; } // nhân viên thực hiện
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public List<ServiceCallModel>? ListServiceCalls { get; set; }
     public bool IsOutBound { get; set; } //bắt buộc xuất kho
-    public List<string> ListPromotionSuppliess { get; set; } // ds vật tư khuyến mãi theo dịch vụ ( dùng đê chọn multi)
-    public string ListPromotionSupplies { get; set; } // vật tư khuyến mãi theo dịch vụ ( lấy dưới db lên)
-    public List<SuppliesModel>? ListPromSupplies { get; set; } = new List<SuppliesModel>(); //ds vat tư chuyến mãi data theo dịch vụ
+    public List<string> ListPromotionSuppliess { get; set; } = new List<string>(); // ds vật tư khuyến mãi theo dịch vụ ( dùng đê chọn multi)
+    public string ListPromotionSupplies { get; set; } = ""; // vật tư khuyến mãi theo dịch vụ ( lấy dưới db lên)
+    public List<SuppliesModel> ListPromSupplies { get; set; } = new List<SuppliesModel>(); //ds vat tư chuyến mãi data theo dịch vụ
 }
 
 public class TreatmentRegimenModel : Auditable

@@ -61,8 +61,9 @@ public class DocumentDetailModel : Auditable
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public string? JServiceCall { get; set; } // json các phiếu bảo hành 
     public bool IsOutBound { get; set; }
-    public string ListPromotionSupplies { get; set; }
-    public List<string> ListPromotionSuppliess { get; set; }//ds vật tư khuyến mãi
+    public string ListPromotionSupplies { get; set; } = "";
+    public List<string> ListPromotionSuppliess { get; set; } = new List<string>();//ds vật tư khuyến mãi
+    public DateTime? DateEndWarranty { get; set; } // ngày cuối bảo hành
 }
 
 public class CustomerDebtsModel
@@ -107,7 +108,9 @@ public class ServiceCallModel : Auditable
     public string? ServiceCode { get; set; }
     public string? ServiceName { get; set; }
     public string? ConsultUserId { get; set; } // ds mã nhân viên tư vấn
-    public string? ImplementUserId { get; set; } // ds mã nhân viên tư vấn
+    public string? ConsultUserName { get; set; } // ds Tên nhân viên tư vấn
+    public string? ImplementUserId { get; set; } // ds mã nhân viên thực hiện
+    public string? ImplementUserName { get; set; } // ds Tên nhân viên thực hiện
     public string? ChemicalFormula { get; set; } // công thức mực
     public string? StatusOutBound { get; set; } //trạng thái xuất kho
     public string? StatusId { get; set; }
@@ -116,11 +119,10 @@ public class ServiceCallModel : Auditable
     public string? SkinType { get; set; }
     public int QtyWarranty { get; set; }
     public double Amount { get; set; }
-    public string Remark { get; set; }
-    public List<string> ListUserImplements { get; set; }
+    public string Remark { get; set; } = "";
+    public List<string> ListUserImplements { get; set; } = new List<string>();
 
     public DateTime? DateCreateOutBound { get; set; }
-
 
 }
 

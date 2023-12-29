@@ -154,7 +154,11 @@
                     <HLabel Value="Cần bảo hành Dịch vụ: " />
                     <span>@($" {ItemSelected.ServiceCode} - {ItemSelected.ServiceName}")</span>
                 </div>
-                <div class="col-md-12 col-sm-12">
+                <div class="col-md-4 col-sm-12">
+                    <HLabel Value="Ngày cuối bảo hành: " />
+                    <span class="text-cyan">@ItemSelected.DateEndWarranty?.ToString(DefaultConstants.FORMAT_DATE)</span>
+                </div>
+                <div class="col-md-8 col-sm-12">
                     <HLabel Value="Ghi chú lần trước: " />
                     <span>@ItemSelected.RemarkOld</span>
                 </div>

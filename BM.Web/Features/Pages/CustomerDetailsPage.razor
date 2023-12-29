@@ -243,7 +243,7 @@
         </div>
     </div>
     <TelerikToolBar Class="border-bottom-0">
-        <ToolBarButton ImageUrl="../assets/refresh.png">Làm mới</ToolBarButton>
+        <ToolBarButton ImageUrl="../assets/refresh.png" OnClick="@(async()=>await ShowPopupHandler(nameof(DocumentModel.Point)))">Làm mới</ToolBarButton>
         <ToolBarButton ImageUrl="../assets/save-folder.png" OnClick="@SaveNumberOfPointUsedHandler">Lưu & đóng</ToolBarButton>
     </TelerikToolBar>
     <div class="h-table-content" style="height: 300px;">

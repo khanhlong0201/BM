@@ -216,6 +216,7 @@ namespace BM.Web.Features.Controllers
                     oLine.ChemicalFormula = item.ChemicalFormula + "";
                     oLine.ListUserAdvise = item.ConsultUserId?.Split(",")?.ToList();
                     oLine.ListUserImplements = item.ImplementUserId?.Split(",")?.ToList();
+                    oLine.DateEndWarranty = item.DateEndWarranty;
                     oLine.StatusOutBound = item.StatusOutBound;
                     oLine.IsOutBound = item.IsOutBound;
                     oLine.ListPromotionSuppliess = item.ListPromotionSupplies?.Split(",")?.ToList() ?? new List<string>();
@@ -1032,6 +1033,8 @@ namespace BM.Web.Features.Controllers
                     DocumentUpdate.FaceBook,
                     oItem.ChemicalFormula,
                     ConsultUserId = oItem.ListUserAdvise == null || !oItem.ListUserAdvise.Any() ? "" : string.Join(", ", oItem.ListUserAdvise),
+                    ConsultUserName = oItem.ListUserAdvise == null || !oItem.ListUserAdvise.Any() || ListUsers == null || !ListUsers.Any() ? "" 
+                        : string.Join(", ",  ListUsers.Where(m => oItem.ListUserAdvise.Contains(m.Code + "")).Select(m=>m.Name)),
                     oItem.ServiceCode,
                     oItem.ServiceName,
                     DocumentUpdate.StatusBefore,

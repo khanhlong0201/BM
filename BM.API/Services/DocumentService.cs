@@ -180,6 +180,7 @@ public class DocumentService : IDocumentService
                 ,T1.ListPromotionSupplies
                 ,isnull(T3.Point, 0) as TotalPoint, isnull(T0.Point, 0) as Point
                 ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo]) as [TotalDebtAmount]
+                ,DATEADD(DAY, T1.WarrantyPeriod * 30,cast(T1.DateCreate as Date)) as [DateEndWarranty]
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
       inner join [dbo].[Branchs] as T2 with(nolock) on T0.BranchId = T2.BranchId
@@ -248,7 +249,8 @@ public class DocumentService : IDocumentService
                     oLine.JServiceCall = Convert.ToString(item["JServiceCall"]);
                     oLine.IsOutBound = Convert.ToBoolean(item["IsOutBound"]);
                     oLine.ListPromotionSupplies = Convert.ToString(item["ListPromotionSupplies"]) +"";
-                    oLine.ListPromotionSuppliess = Convert.ToString(item["ListPromotionSupplies"])?.Split(",")?.ToList() ?? new List<string>();
+                    oLine.ListPromotionSuppliess = oLine.ListPromotionSupplies.Split(",")?.ToList() ?? new List<string>();
+                    if (!Convert.IsDBNull(dr["DateEndWarranty"])) oLine.DateEndWarranty = Convert.ToDateTime(dr["DateEndWarranty"]);
                     lstDetails.Add(oLine);
                 }
                 data = new Dictionary<string, string>()
@@ -826,7 +828,7 @@ public class DocumentService : IDocumentService
                                                        , T2.DateCreate, iif(isnull(IsDelay, 0) = 1, DateDelay, DATEADD(DAY, @NumDay ,cast(T2.DateCreate as Date))) as DateStart
                                                        , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
                                                        , '{nameof(EnumType.DebtReminder)}' as [Type] -- Nhắc nhợ
-                                                       , '' as [ServiceCode], '' as [ServiceName], -1 as [BaseLine]
+                                                       , '' as [ServiceCode], '' as [ServiceName], -1 as [BaseLine], null as [DateEndWarranty]
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                              cross apply (select top 1 DateCreate, Remark, IsDelay, DateDelay from [dbo].[CustomerDebts] as T00 with(nolock) 
@@ -843,6 +845,7 @@ public class DocumentService : IDocumentService
 		                                               , T0.VoucherNo, T1.CusNo, T1.FullName, T1.Phone1, T0.Debt as TotalDebtAmount
 		                                               , '{nameof(EnumType.WarrantyReminder)}' as [Type] -- Nhắc bảo hành
                                                        , T2.[ServiceCode], T3.[ServiceName], T2.[Id] as [BaseLine]
+                                                       , DATEADD(DAY, T2.WarrantyPeriod * 30,cast(T2.DateCreate as Date)) as [DateEndWarranty]
                                                     from [dbo].[Drafts] as T0 with(nolock)
                                               inner join [dbo].[Customers] as T1 with(nolock) on T0.CusNo = T1.CusNo
                                               inner join [dbo].[DraftDetails] as T2 with(nolock) on T2.DocEntry = T0.DocEntry
@@ -1649,6 +1652,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
         if (!Convert.IsDBNull(record["ServiceName"])) model.ServiceName = Convert.ToString(record["ServiceName"]);
         if (!Convert.IsDBNull(record["BaseLine"])) model.BaseLine = Convert.ToInt32(record["BaseLine"]);
+        if (!Convert.IsDBNull(record["DateEndWarranty"])) model.DateEndWarranty = Convert.ToDateTime(record["DateEndWarranty"]);
         model.End = model.Start;
         model.Title = $"Nhắc nợ - {model.FullName}";
         model.IsAllDay = true;

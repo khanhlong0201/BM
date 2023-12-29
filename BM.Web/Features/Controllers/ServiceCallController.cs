@@ -133,6 +133,7 @@ namespace BM.Web.Features.Controllers
                             DocumentUpdate.Zalo = oServiceCall.Zalo;
                             DocumentUpdate.FaceBook = oServiceCall.FaceBook;
                             DocumentUpdate.ConsultUserId = oServiceCall.ConsultUserId;
+                            DocumentUpdate.ConsultUserName = oServiceCall.ConsultUserName;
                             DocumentUpdate.ServiceCode = oServiceCall.ServiceCode;
                             DocumentUpdate.ServiceName = oServiceCall.ServiceName;
                             DocumentUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
@@ -172,11 +173,14 @@ namespace BM.Web.Features.Controllers
 
                     // danh sách nhân viên
                     var listUsers = await _masterDataService!.GetDataUsersAsync();
-                    if (listUsers != null && listUsers.Any()) ListUsers = listUsers.Select(m => new ComboboxModel()
+                    if (listUsers != null && listUsers.Any())
                     {
-                        Code = m.EmpNo,
-                        Name = $"{m.EmpNo}-{m.FullName}"
-                    });
+                        ListUsers = listUsers.Select(m => new ComboboxModel()
+                        {
+                            Code = m.EmpNo,
+                            Name = $"{m.EmpNo}-{m.FullName}"
+                        });
+                    }
 
                 }
                 catch (Exception ex)
