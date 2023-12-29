@@ -143,7 +143,7 @@ public class MasterDataService : IMasterDataService
             sqlParameters[0] = new SqlParameter("@UserId", pUserid);
             data = await _context.GetDataAsync(@"Select [Id], [EmpNo], [UserName], [Password], [LastPassword], [FullName], [PhoneNumber]
                     , [Email], [Address], [DateOfBirth], [DateOfWork], [IsAdmin], [BranchId], [DateCreate], [UserCreate], [DateUpdate], [UserUpdate] , [ListServiceType]
-                    from [dbo].[Users] where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId)"
+                    from [dbo].[Users] where [IsDelete] = 0 and (@UserId = -1 or Id = @UserId) and EmpNo not like 'SP0%'" // không lấy lên tk Support
                     , DataRecordToUserModel, sqlParameters, commandType: CommandType.Text);
         }
         catch (Exception) { throw; }

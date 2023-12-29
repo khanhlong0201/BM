@@ -257,7 +257,7 @@ namespace BM.Web.Features.Controllers
                 DebtsGuestPay = 0;
                 VoucherNo = pDocument.VoucherNo;
                 pDocEntry = pDocument.DocEntry;
-                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocument.DocEntry, nameof(EnumType.DebtReminder), "");
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocument.DocEntry, nameof(EnumType.DebtReminder), "N");
                 if(ListCusDebts != null && ListCusDebts.Any())
                 {
                     TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;
@@ -311,6 +311,7 @@ namespace BM.Web.Features.Controllers
                 oItem.TotalDebtAmount = TotalDebtAmount - DebtsGuestPay;
                 oItem.GuestsPay = DebtsGuestPay;
                 oItem.Remark = DebtRemark;
+                oItem.Type = nameof(EnumType.DebtReminder);
                 // call api 
                 bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
                 if (isSuccess)
@@ -341,7 +342,7 @@ namespace BM.Web.Features.Controllers
                 DebtRemark = string.Empty;
                 TotalDebtAmount = 0;
                 DebtsGuestPay = 0;
-                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry, nameof(EnumType.DebtReminder), "");
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry, nameof(EnumType.DebtReminder), "N");
                 if (ListCusDebts != null && ListCusDebts.Any())
                 {
                     TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;

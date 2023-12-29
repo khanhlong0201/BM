@@ -1,5 +1,6 @@
 ﻿using BM.Models;
 using BM.Models.Shared;
+using BM.Web.Commons;
 using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
@@ -30,6 +31,14 @@ namespace BM.Web.Features.Controllers
         public List<CustomerDebtsModel>? ListPointByCusNo { get; set; }
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
+
+        public bool IsShowDialogDebts { get; set; }
+        public List<CustomerDebtsModel>? ListCusDebts { get; set; }
+        public double DebtsGuestPay { get; set; } // Số tiền nợ khách trả
+        public double TotalDebtAmount { get; set; } // Tổng số tiền nợ còn lại
+        public string? VoucherNo { get; set; }
+        public int pDocEntry { get; set; }
+        public string? DebtRemark { get; set; }
         #endregion
         #endregion
 
@@ -219,6 +228,128 @@ namespace BM.Web.Features.Controllers
             {
                 await ShowLoader(false);
                 await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        /// <summary>
+        /// Xem lịch sử thanh toán
+        /// </summary>
+        /// <param name="pDocument"></param>
+        protected async void OpenDialogDebtsHandler(DocumentModel pDocument, bool pIsShowVoucher = false)
+        {
+            try
+            {
+                VoucherNo = string.Empty;
+                pDocEntry = 0;
+                if (pDocument == null) return;
+                await ShowLoader();
+                DebtRemark = string.Empty;
+                TotalDebtAmount = 0;
+                DebtsGuestPay = 0;
+                VoucherNo = pDocument.VoucherNo;
+                pDocEntry = pDocument.DocEntry;
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocument.DocEntry, nameof(EnumType.DebtReminder), "N");
+                if (ListCusDebts != null && ListCusDebts.Any())
+                {
+                    TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;
+                    DebtsGuestPay = TotalDebtAmount;
+                }
+                IsShowDialogDebts = true;
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "OpenDialogDebtsHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        /// <summary>
+        /// load lại dữ liệu lịch sử trả nợ
+        /// </summary>
+        protected async Task ReloadDataDebtsByDocHandler()
+        {
+            try
+            {
+                DebtRemark = string.Empty;
+                TotalDebtAmount = 0;
+                DebtsGuestPay = 0;
+                ListCusDebts = await _documentService!.GetCustomerDebtsByDocAsync(pDocEntry, nameof(EnumType.DebtReminder), "N");
+                if (ListCusDebts != null && ListCusDebts.Any())
+                {
+                    TotalDebtAmount = ListCusDebts.OrderByDescending(m => m.Id).First().TotalDebtAmount;
+                    DebtsGuestPay = TotalDebtAmount;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "ReloadDataDebtsByDoc");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+                await ShowLoader(false);
+            }
+        }
+
+        /// <summary>
+        /// lưu thông tin thanh toán
+        /// </summary>
+        protected async void SavePaymentHandler()
+        {
+            try
+            {
+                if (TotalDebtAmount <= 0)
+                {
+                    ShowInfo($"Đơn hàng [{VoucherNo}] đã hoàn tất thanh toán. Vui lòng kiểm tra lại thông tin!");
+                    return;
+                }
+                if (ListCusDebts == null || !ListCusDebts.Any()) return;
+                if (DebtsGuestPay <= 0)
+                {
+                    ShowWarning("Vui lòng nhập số tiền khách trả!");
+                    return;
+                }
+                string messageDept = "";
+                CustomerDebtsModel oFirstItem = ListCusDebts[0];
+                if (DebtsGuestPay < TotalDebtAmount)
+                {
+                    messageDept = $"Vẫn còn nợ {string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, (TotalDebtAmount - DebtsGuestPay))}đ." +
+                        $" Số tiền sẽ được lưu vào công nợ của khách hàng [{oFirstItem.FullName}].";
+                }
+                bool isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn thanh toán đơn hàng này?", "Thông báo");
+                if (!isConfirm) return;
+                await ShowLoader();
+                CustomerDebtsModel oItem = new CustomerDebtsModel();
+                oItem.CusNo = oFirstItem.CusNo;
+                oItem.DocEntry = pDocEntry;
+                oItem.TotalDebtAmount = TotalDebtAmount - DebtsGuestPay;
+                oItem.GuestsPay = DebtsGuestPay;
+                oItem.Remark = DebtRemark;
+                oItem.Type = nameof(EnumType.DebtReminder);
+                // call api 
+                bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId);
+                if (isSuccess)
+                {
+                    await ReloadDataDebtsByDocHandler();
+                    // call lấy danh sách chi tiết
+                    ListDocHis = await _documentService!.GetDocByCusNoAsync(CustomerUpdate.CusNo + "");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "SalesDocListController", "SavePaymentHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+                await ShowLoader(false);
             }
         }
         #endregion
