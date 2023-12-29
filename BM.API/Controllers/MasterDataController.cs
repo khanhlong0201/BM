@@ -368,6 +368,13 @@ namespace BM.API.Controllers
                     StatusCode = StatusCodes.Status400BadRequest,
                     Message = $"Tài khoản không thuộc chi nhánh {branch?.BranchName+""}"
                 });
+                if (oUser.IsDeleted == true )
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = $"Tài khoản này đã bị xóa. Bạn hãy liên hệ Quản Trị Viên để nhận tài khoản khác !"
+                });
+
                 var claims = new[]
                 {
                     new Claim("UserId", oUser.Id + ""),

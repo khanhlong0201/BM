@@ -886,10 +886,10 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-                queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId, t1.BranchName
+                queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId, t1.BranchName, t0.IsDelete as IsDeleted
                                     from dbo.[Users] t0 
                                     inner join Branchs t1 on t0.BranchId = t1.BranchId
-                                                    where t0.UserName = @UserName and t0.Password = @Password and t0.IsDelete = 0";
+                                                    where t0.UserName = @UserName and t0.Password = @Password";
             //setParameter();
             sqlParameters = new SqlParameter[2];
             sqlParameters[0] = new SqlParameter("@UserName", pRequest.UserName);
@@ -1636,6 +1636,7 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["IsAdmin"])) user.IsAdmin = Convert.ToBoolean(record["IsAdmin"]);
         if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["BranchName"])) user.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["IsDeleted"])) user.IsDeleted = Convert.ToBoolean(record["IsDeleted"]);
         return user;
     }
 
