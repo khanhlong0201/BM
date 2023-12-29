@@ -1,4 +1,5 @@
 ﻿using BM.Models;
+using BM.Web.Commons;
 using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
@@ -208,6 +209,36 @@ namespace BM.Web.Features.Controllers
         #endregion
 
         #region Protected Functions
+        protected async void DeleteDataHandler()
+        {
+            try
+            {
+                if (SelectedEnums == null || !SelectedEnums.Any())
+                {
+                    ShowWarning(DefaultConstants.MESSAGE_NO_CHOSE_DATA);
+                    return;
+                }
+                var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
+                if (!confirm) return;
+                await ShowLoader();
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Enums), "", string.Join(",", SelectedEnums.Select(m => m.EnumId)), pUserId);
+                if (isSuccess)
+                {
+                    await getDataEnums();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger!.LogError(ex, "UserController", "DeleteDataHandler");
+                ShowError(ex.Message);
+            }
+            finally
+            {
+                await ShowLoader(false);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
         protected async void ReLoadDataHandler()
         {
             try

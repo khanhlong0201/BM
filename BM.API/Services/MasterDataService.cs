@@ -886,7 +886,7 @@ public class MasterDataService : IMasterDataService
         try
         {
             await _context.Connect();
-                queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId, t1.BranchName
+                queryString = @"select top 1 t0.Id, t0.EmpNo, t0.UserName, t0.FullName, t0.Email, t0.IsAdmin, t0.BranchId, t1.BranchName, t0.IsDelete as IsDeleted
                                     from dbo.[Users] t0 
                                     inner join Branchs t1 on t0.BranchId = t1.BranchId
                                                     where t0.UserName = @UserName and t0.Password = @Password";
@@ -1039,6 +1039,7 @@ public class MasterDataService : IMasterDataService
                                             ,t1.Type
 											,t1.SuppliesType as SuppliesTypeCode
 											,t5.EnumName as SuppliesTypeName
+                                            , (t0.QtyInv * t0.Price)  as Total
                                         FROM [dbo].[Inventory] t0 
                                         inner join Supplies t1 on t0.SuppliesCode = t1.SuppliesCode
                                         inner join Enums t2 on t0.EnumId = t2.EnumId and t2.EnumType ='Unit'
@@ -1635,6 +1636,7 @@ public class MasterDataService : IMasterDataService
         if (!Convert.IsDBNull(record["IsAdmin"])) user.IsAdmin = Convert.ToBoolean(record["IsAdmin"]);
         if (!Convert.IsDBNull(record["BranchId"])) user.BranchId = Convert.ToString(record["BranchId"]);
         if (!Convert.IsDBNull(record["BranchName"])) user.BranchName = Convert.ToString(record["BranchName"]);
+        if (!Convert.IsDBNull(record["IsDeleted"])) user.IsDeleted = Convert.ToBoolean(record["IsDeleted"]);
         return user;
     }
 
@@ -1759,6 +1761,7 @@ public class MasterDataService : IMasterDataService
         }
         if (!Convert.IsDBNull(record["SuppliesTypeCode"])) inv.SuppliesTypeCode = Convert.ToString(record["SuppliesTypeCode"]);
         if (!Convert.IsDBNull(record["SuppliesTypeName"])) inv.SuppliesTypeName = Convert.ToString(record["SuppliesTypeName"]);
+        if (!Convert.IsDBNull(record["Total"])) inv.Total = Convert.ToDecimal(record["Total"]);
         return inv;
     }
 
