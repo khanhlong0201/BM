@@ -221,7 +221,7 @@ namespace BM.Web.Features.Controllers
                 var confirm = await _rDialogs!.ConfirmAsync($" {DefaultConstants.MESSAGE_CONFIRM_DELETE} ");
                 if (!confirm) return;
                 await ShowLoader();
-                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Branchs), "", string.Join(",", SelectedEnums.Select(m => m.EnumId)), pUserId);
+                bool isSuccess = await _masterDataService!.DeleteDataAsync(nameof(EnumTable.Enums), "", string.Join(",", SelectedEnums.Select(m => m.EnumId)), pUserId);
                 if (isSuccess)
                 {
                     await getDataEnums();
