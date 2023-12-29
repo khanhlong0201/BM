@@ -37,28 +37,28 @@
                          Type="ChartSeriesType.Bar"
                          Name="Chi nhánh Cái Tắt"
                          Field="@nameof(ReportModel.Total_01)">
-                          <ChartTooltip Visible="true">
-                           <Template> 
-                             @if (DataReport != null)
-                               {
-                                  double doubleValue = Convert.ToDouble(((context.DataItem) as ReportModel).Total_01);  // Sử dụng DataItem để lấy giá trị của dòng hiện tại
-                                  <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
-                               }
-                          </Template>
+                         <ChartTooltip Visible="true">
+                               <Template> 
+                                    @if (DataReport != null)
+                                    {
+                                      double doubleValue = Convert.ToDouble(((context.DataItem) as ReportModel)!.Total_01);  // Sử dụng DataItem để lấy giá trị của dòng hiện tại
+                                      <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
+                                    }
+                              </Template>
                          </ChartTooltip>
             </ChartSeries>
             <ChartSeries Data="@DataReport"
                          Type="ChartSeriesType.Bar"
-                         Name="Chi nhánh Hậu giang"
+                         Name="Chi nhánh Cần thơ"
                          Field="@nameof(ReportModel.Total_02)">
                          <ChartTooltip Visible="true">
-                           <Template> 
-                             @if (DataReport != null)
-                               {
-                                  double doubleValue = Convert.ToDouble(((context.DataItem) as ReportModel).Total_02);  // Sử dụng DataItem để lấy giá trị của dòng hiện tại
-                                  <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
-                               }
-                          </Template>
+                               <Template> 
+                                    @if (DataReport != null)
+                                    {
+                                      double doubleValue = Convert.ToDouble(((context.DataItem) as ReportModel)!.Total_02);  // Sử dụng DataItem để lấy giá trị của dòng hiện tại
+                                      <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
+                                    }
+                              </Template>
                          </ChartTooltip>
             </ChartSeries>
         </ChartSeriesItems>
