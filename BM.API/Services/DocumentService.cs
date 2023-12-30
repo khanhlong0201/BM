@@ -211,6 +211,7 @@ public class DocumentService : IDocumentService
                 oHeader.SkinType = Convert.ToString(dr["SkinType"]) ?? DATA_CUSTOMER_EMPTY;
                 oHeader.GuestsPay = Convert.ToDouble(dr["GuestsPay"]);
                 oHeader.Debt = Convert.ToDouble(dr["Debt"]);
+                oHeader.Total= Convert.ToDouble(dr["Total"]);
                 oHeader.DocEntry = Convert.ToInt32(dr["DocEntry"]);
                 oHeader.BaseEntry = Convert.ToInt32(dr["BaseEntry"]);
                 oHeader.DiscountCode = Convert.ToString(dr["DiscountCode"]);
@@ -1196,6 +1197,8 @@ public class DocumentService : IDocumentService
                        else N'Chờ xử lý' end as StatusName
                        ,  IIF(isnull(T6.DocEntry,0) <> 0,N'Rồi',N'Chưa') as StatusOutBound
                        , t6.DateCreate as DateCreateOutBound
+                       ,(select STRING_AGG(CONCAT(EmpNo,'-',FullName), ', ') from [Users] as T00 with(nolock) where CHARINDEX(',' + T00.EmpNo + ',', ',' + T1.ConsultUserId + ',', 0) > 0) as ConsultUserName
+                       ,T2.Total as [Amount], T2.GuestsPay, T2.Debt
                   from [dbo].[ServiceCalls] as T0 with(nolock)
             inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.BaseEntry = T1.DocEntry and T0.BaseLine = T1.Id
             inner join [dbo].[Drafts] as T2 with(nolock) on T1.DocEntry = T2.DocEntry
@@ -1705,6 +1708,7 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["FullName"])) model.FullName = Convert.ToString(record["FullName"]);
         if (!Convert.IsDBNull(record["Phone1"])) model.Phone1 = Convert.ToString(record["Phone1"]);
         if (!Convert.IsDBNull(record["ConsultUserId"])) model.ConsultUserId = Convert.ToString(record["ConsultUserId"]);
+        if (!Convert.IsDBNull(record["ConsultUserName"])) model.ConsultUserName = Convert.ToString(record["ConsultUserName"]);
         if (!Convert.IsDBNull(record["StatusName"])) model.StatusName = Convert.ToString(record["StatusName"]);
         if (!Convert.IsDBNull(record["VoucherNoBase"])) model.VoucherNoBase = Convert.ToString(record["VoucherNoBase"]);
         if (!Convert.IsDBNull(record["ServiceCode"])) model.ServiceCode = Convert.ToString(record["ServiceCode"]);
@@ -1721,6 +1725,9 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["FaceBook"])) model.FaceBook = Convert.ToString(record["FaceBook"]);
         if (!Convert.IsDBNull(record["StatusOutBound"])) model.StatusOutBound = Convert.ToString(record["StatusOutBound"]);
         if (!Convert.IsDBNull(record["DateCreateOutBound"])) model.DateCreateOutBound = Convert.ToDateTime(record["DateCreateOutBound"]);
+        if (!Convert.IsDBNull(record["Amount"])) model.Amount = Convert.ToDouble(record["Amount"]);
+        if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
+        if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
         return model;
     }
     #endregion

@@ -837,8 +837,8 @@ namespace BM.Web.Features.Controllers
                         htmlTd += @$"<td style=""border: 1px solid #dddddd;text-align: center;padding:1px;"">
                                         <span style=""font-size: 10.5px !important"">{oStateOfHealth.EnumName}</span>
                                     </td>
-                                    <td style=""border: 1px solid #dddddd; width: 40px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 15px;width: 15px;"" /> </td>
-                                    <td style=""border: 1px solid #dddddd; width: 61px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 15px;width: 15px;"" /></td> ";
+                                    <td style=""border: 1px solid #dddddd; width: 38px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 12px;width: 12px;"" /> </td>
+                                    <td style=""border: 1px solid #dddddd; width: 59px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 12px;width: 12px;"" /></td> ";
                     }
                     htmlStateOfHealth += @$"<tr>{htmlTd}</tr> ";
                 }
@@ -1049,6 +1049,9 @@ namespace BM.Web.Features.Controllers
                     oItem.StatusOutBound,
                     DocumentUpdate.BranchId,
                     DocumentUpdate.BranchName,
+                    Amount = DocumentUpdate.Total,
+                    DocumentUpdate.GuestsPay,
+                    DocumentUpdate.Debt,
 
                 };
                 if(await _localStorage!.ContainKeyAsync(nameof(EnumTable.ServiceCalls))) await _localStorage!.RemoveItemAsync(nameof(EnumTable.ServiceCalls));

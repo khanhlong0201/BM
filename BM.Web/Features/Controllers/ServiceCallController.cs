@@ -143,6 +143,9 @@ namespace BM.Web.Features.Controllers
                             DocumentUpdate.SkinType = oServiceCall.SkinType;
                             DocumentUpdate.WarrantyPeriod = oServiceCall.WarrantyPeriod;
                             DocumentUpdate.QtyWarranty = oServiceCall.QtyWarranty;
+                            DocumentUpdate.Amount = oServiceCall.Amount;
+                            DocumentUpdate.GuestsPay = oServiceCall.GuestsPay;
+                            DocumentUpdate.Debt = oServiceCall.Debt;
 
                             //phiếu xuất kho
                             OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode + "";
@@ -237,6 +240,7 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.Zalo = oServiceCall.Zalo;
                 DocumentUpdate.FaceBook = oServiceCall.FaceBook;
                 DocumentUpdate.ConsultUserId = oServiceCall.ConsultUserId;
+                DocumentUpdate.ConsultUserName = oServiceCall.ConsultUserName;
                 DocumentUpdate.ServiceCode = oServiceCall.ServiceCode;
                 DocumentUpdate.ServiceName = oServiceCall.ServiceName;
                 DocumentUpdate.ChemicalFormula = oServiceCall.ChemicalFormula;
@@ -246,7 +250,11 @@ namespace BM.Web.Features.Controllers
                 DocumentUpdate.SkinType = oServiceCall.SkinType;
                 DocumentUpdate.WarrantyPeriod = oServiceCall.WarrantyPeriod;
                 DocumentUpdate.QtyWarranty = oServiceCall.QtyWarranty;
+                DocumentUpdate.Amount = oServiceCall.Amount;
+                DocumentUpdate.GuestsPay = oServiceCall.GuestsPay;
+                DocumentUpdate.Debt = oServiceCall.Debt;
                 ListUserImplements = oServiceCall.ImplementUserId?.Split(",")?.ToList();
+
 
                 //phiếu xuất kho
                 OutBoundUpdate.ServiceCode = oServiceCall.ServiceCode + "";
@@ -487,7 +495,8 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-WarrantyPeriod}", $"{DocumentUpdate.WarrantyPeriod}");
                 sHtmlExport = sHtmlExport.Replace("{bm-QtyWarranty}", $"{DocumentUpdate.QtyWarranty}");
                 sHtmlExport = sHtmlExport.Replace("{bm-ServiceName}", $"{DocumentUpdate.ServiceCode} - {DocumentUpdate.ServiceName}");
-                sHtmlExport = sHtmlExport.Replace("{bm-Amount}", $"Gói trước {DocumentUpdate.Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}");
+                sHtmlExport = sHtmlExport.Replace("{bm-Amount}", @$"Tổng đon hàng củ: {DocumentUpdate.Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ. 
+                Khách trả: {DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)}đ. Còn nợ: {DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
                 sHtmlExport = sHtmlExport.Replace("{bm-Weakness}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-Accept}", $"");
                 sHtmlExport = sHtmlExport.Replace("{bm-ChemicalFormula}", $"");
@@ -504,8 +513,8 @@ namespace BM.Web.Features.Controllers
                         htmlTd += @$"<td style=""border: 1px solid #dddddd;text-align: center;padding:1px;"">
                                         <span style=""font-size: 10.5px !important"">{oStateOfHealth.EnumName}</span>
                                     </td>
-                                    <td style=""border: 1px solid #dddddd; width: 40px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 15px;width: 15px;"" /> </td>
-                                    <td style=""border: 1px solid #dddddd; width: 61px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 15px;width: 15px;"" /></td> ";
+                                    <td style=""border: 1px solid #dddddd; width: 38px; padding: 1px; text-align: center; font-size: 11px !important"">Có <input type=""checkbox"" style=""height: 12px;width: 12px;"" /> </td>
+                                    <td style=""border: 1px solid #dddddd; width: 59px; padding: 1px; text-align: center; font-size: 11px !important"">Không <input type=""checkbox"" style=""height: 12px;width: 12px;"" /></td> ";
                     }
                     htmlStateOfHealth += @$"<tr>{htmlTd}</tr> ";
                 }
@@ -539,11 +548,11 @@ namespace BM.Web.Features.Controllers
                 itemFilter.ToDate = DateTime.Now;
                 itemFilter.Type = nameof(OutBoundType.ByWarranty);
                 List<OutBoundModel>? ListOutBound = await _documentService!.GetDataOutBoundsAsync(itemFilter);
+                ListSuppplies = new List<SuppliesModel>();
                 if (ListOutBound != null && ListOutBound.Count > 0)
                 {
                     OutBoundUpdate = new OutBoundModel();
                     OutBoundUpdate = ListOutBound.First();
-                    ListSuppplies = new List<SuppliesModel>();
                     if (OutBoundUpdate.SuppliesQtyList != null)
                     {
                         List<SuppliesModel> lstSuppplies = JsonConvert.DeserializeObject<List<SuppliesModel>>(OutBoundUpdate.SuppliesQtyList);

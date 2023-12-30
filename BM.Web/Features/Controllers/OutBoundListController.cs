@@ -66,6 +66,7 @@ namespace BM.Web.Features.Controllers
                 ListBreadcrumbs = new List<BreadcrumbModel>
                 {
                     new BreadcrumbModel() { Text = "Trang chủ", IsShowIcon = true, Icon = "fa-solid fa-house-chimney" },
+                    new BreadcrumbModel() { Text = "Theo dõi" },
                     new BreadcrumbModel() { Text = "Theo dõi phiếu xuất kho" },
                 };
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
