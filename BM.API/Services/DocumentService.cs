@@ -1071,17 +1071,43 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             string queryString = "";
+            bool isUpdated = false;
             ServiceCallModel oServiceCall = JsonConvert.DeserializeObject<ServiceCallModel>(pRequest.Json + "")!;
             SqlParameter[] sqlParameters;
-            async Task ExecQuery()
+            async Task<bool> ExecQuery()
             {
                 var data = await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 if (data != null && data.Rows.Count > 0)
                 {
                     response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
                     response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+                    return response.StatusCode == 0;
+                }
+                return false;
+            }
+
+            async Task saveWarrantyReminder()
+            {
+                if (oServiceCall.StatusId == nameof(DocStatus.Closed))
+                {
+                    // lấy mã
+                    int iIdDebts = await _context.ExecuteScalarAsync("select isnull(max(Id), 0) + 1 from [dbo].[CustomerDebts] with(nolock)");
+                    queryString = @"Insert into [dbo].[CustomerDebts] ([Id],[DocEntry],[CusNo], [GuestsPay],[TotalDebtAmount],[DateCreate]
+                                                ,[UserCreate],[Remark],[IsDelay],[Type],[BaseLine])
+                                                values (@Id, @DocEntry, @CusNo, 0, 0, @DateTimeNow, @UserId, @Remark, cast(0 as bit), @Type, @BaseLine)";
+                    sqlParameters = new SqlParameter[8];
+                    sqlParameters[0] = new SqlParameter("@Id", iIdDebts);
+                    sqlParameters[1] = new SqlParameter("@DocEntry", oServiceCall.BaseEntry);
+                    sqlParameters[2] = new SqlParameter("@CusNo", oServiceCall.CusNo);
+                    sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+                    sqlParameters[4] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
+                    sqlParameters[5] = new SqlParameter("@Remark", $"Đã bảo hành. Số phiếu [{oServiceCall.VoucherNo}]");
+                    sqlParameters[6] = new SqlParameter("@Type", nameof(EnumType.WarrantyReminder));
+                    sqlParameters[7] = new SqlParameter("@BaseLine", oServiceCall.BaseLine);
+                    await _context.AddOrUpdateAsync(queryString, sqlParameters, CommandType.Text);
                 }
             }
+
             switch (pRequest.Type)
             {
                 case nameof(EnumType.Add):
@@ -1109,7 +1135,15 @@ public class DocumentService : IDocumentService
                     sqlParameters[11] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[12] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
                     sqlParameters[13] = new SqlParameter("@BranchId", oServiceCall.BranchId);
-                    await ExecQuery();
+
+                    await _context.BeginTranAsync();
+                    isUpdated = await ExecQuery();
+                    if(isUpdated)
+                    {
+                        await saveWarrantyReminder();
+                        await _context.CommitTranAsync();
+                    }    
+                    else await _context.RollbackAsync();
                     break;
                 case nameof(EnumType.Update):
                     queryString = @"Update [dbo].[ServiceCalls]
@@ -1127,7 +1161,15 @@ public class DocumentService : IDocumentService
                     sqlParameters[6] = new SqlParameter("@ChemicalFormula", oServiceCall.ChemicalFormula);
                     sqlParameters[7] = new SqlParameter("@UserId", pRequest.UserId);
                     sqlParameters[8] = new SqlParameter("@DateTimeNow", _dateTimeService.GetCurrentVietnamTime());
-                    await ExecQuery();
+
+                    await _context.BeginTranAsync();
+                    isUpdated = await ExecQuery();
+                    if (isUpdated)
+                    {
+                        await saveWarrantyReminder();
+                        await _context.CommitTranAsync();
+                    }
+                    else await _context.RollbackAsync();
                     break;
                 default:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -1140,6 +1182,7 @@ public class DocumentService : IDocumentService
         {
             response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.Message = ex.Message;
+            await _context.RollbackAsync();
         }
         finally
         {
