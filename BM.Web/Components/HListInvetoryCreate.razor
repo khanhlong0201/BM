@@ -1,5 +1,4 @@
-﻿@inherits BMControllerBase;
-<TelerikToolBar Class="border-bottom-0">
+﻿<TelerikToolBar Class="border-bottom-0">
 @*    <ToolBarButton ImageUrl="../assets/add-new-icon.png" OnClick="@(()=> AddLineToListInvotory())">Thêm mới</ToolBarButton>*@
     <ToolBarButton ImageUrl="../assets/remove_grid.png" OnClick="@(()=> ConfirmDeleteHandler())">Xóa dòng</ToolBarButton>
 </TelerikToolBar>
@@ -64,12 +63,12 @@
 @code{
     [Inject]  ToastService? _toastService { get; init; }
 
-    [Parameter] public string BranchId { get; set; }
+    [Parameter] public string BranchId { get; set; } = "";
 
     [Parameter]
-    public List<SuppliesModel> ListSupplies { get; set; }
+    public List<SuppliesModel> ListSupplies { get; set; } = new List<SuppliesModel>();
 
-    List<InvetoryModel> listSelect { get; set; }
+    List<InvetoryModel> listSelect { get; set; } = new List<InvetoryModel>();
     [Parameter]
     public List<InvetoryModel> ListSelectReturn {
         get => listSelect;
@@ -83,7 +82,7 @@
     public EventCallback<List<InvetoryModel>> ListSelectReturnChanged { get; set; }
 
     IEnumerable<InvetoryModel> selectedInv { get; set; } = new List<InvetoryModel>();
-    TelerikGrid<InvetoryModel> grid;
+    TelerikGrid<InvetoryModel>? grid;
 
     public HConfirm? _rDialogs { get; set; }
     /// <summary>
@@ -98,21 +97,23 @@
             if (supplies == null) return;
             if(listSelect !=null && listSelect.Count > 0)
             {
-                var itemSupplies = listSelect.Where(d => d.SuppliesCode == supplies).FirstOrDefault();
+                var itemSupplies = listSelect.Where(d => d.SuppliesCode == supplies).First();
                 if (itemSupplies!=null)
                 {
-                     _toastService.ShowWarning("Vật tư đã tồn tại trên lưới, bạn vui lòng chọn vật tư khác !");
+                    _toastService!.ShowWarning("Vật tư đã tồn tại trên lưới, bạn vui lòng chọn vật tư khác !");
                     return;
                 }
             }
-            invetory.SuppliesCode = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesCode;
-            invetory.SuppliesName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().SuppliesName;
-            invetory.Price = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().Price;
-            invetory.EnumId = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().EnumId;
-            invetory.EnumName = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault().EnumName;
+            SuppliesModel? oItem = ListSupplies.Where(d => d.SuppliesCode == supplies).FirstOrDefault();
+            if (oItem == null) return;
+            invetory.SuppliesCode = oItem.SuppliesCode;
+            invetory.SuppliesName = oItem.SuppliesName;
+            invetory.Price = oItem.Price;
+            invetory.EnumId = oItem.EnumId;
+            invetory.EnumName = oItem.EnumName;
             grid?.Rebind();
             await InvokeAsync(StateHasChanged);        
-        }catch (Exception ex)
+        }catch (Exception)
         {
             throw;
         }
@@ -129,37 +130,37 @@
         {
             if (listSelect != null && listSelect.Any())
             {
-                var select = listSelect.LastOrDefault();
+                var select = listSelect.Last();
                 if(select.SuppliesCode + "" == "")
                 {
-                    _toastService.ShowWarning("Vui lòng chọn vật tư !");
+                    _toastService!.ShowWarning("Vui lòng chọn vật tư !");
                     return;
                 }
                 if(select.QtyInv <=0)
                 {
-                    _toastService.ShowWarning("Vui lòng nhập số lượng !");
+                    _toastService!.ShowWarning("Vui lòng nhập số lượng !");
                     return;
                 }
                  if(select.Price <=0)
                 {
-                    _toastService.ShowWarning("Vui lòng nhập giá !");
+                    _toastService!.ShowWarning("Vui lòng nhập giá !");
                     return;
                 }
             }
             if(ListSupplies!=null && ListSupplies.Count == 0)
             {
-                _toastService.ShowWarning("Bạn đã chọn hết vật tư, bạn cần thêm vật tư mới để nhập vào kho !");
+                _toastService!.ShowWarning("Bạn đã chọn hết vật tư, bạn cần thêm vật tư mới để nhập vào kho !");
                     return;
             }
             InvetoryModel emptyInv = new InvetoryModel {Absid = -1, SuppliesCode= "",EnumId = "",EnumName = "",   QtyInv = 1, Price =0, BranchId= BranchId };
-            listSelect.Add(emptyInv);
+            listSelect?.Add(emptyInv);
             var temp = new List<InvetoryModel>();
             temp.Add(emptyInv);
             selectedInv = temp.AsEnumerable<InvetoryModel>();
             grid?.Rebind();
             await InvokeAsync(StateHasChanged);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }
@@ -206,7 +207,7 @@
                  await InvokeAsync(StateHasChanged);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }      

@@ -318,6 +318,11 @@ namespace BM.Web.Features.Controllers
         {
             try
             {
+                if(ListSupplies == null || !ListSupplies.Any())
+                {
+                    ShowWarning("Không tìm thấy thông tin Vật tư. Vui lòng làm mới mại trang!");
+                    return;
+                }    
                 IsShowIntoInv = true;
                 ListInvetoryCreate = new List<InvetoryModel>();
                 foreach(var item in ListSupplies)
