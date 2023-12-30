@@ -731,14 +731,24 @@ namespace BM.Web.Features.Controllers
                 string tblServices = "";
                 for(int i=0; i < ListSalesOrder.Count;i++)
                 {
+                    string ConsultUserName = string.Empty;
+                    string ImplementUserName = string.Empty;
+                    if(ListUsers != null && ListUsers.Any())
+                    {
+                        ConsultUserName = ListSalesOrder[i].ListUserAdvise == null || !ListSalesOrder[i].ListUserAdvise!.Any() ? "" 
+                            : string.Join(", ", ListUsers.Where(m => ListSalesOrder[i].ListUserAdvise!.Contains(m.Code + "")).Select(m => m.Name));
+                        ImplementUserName = ListSalesOrder[i].ListUserImplements == null || !ListSalesOrder[i].ListUserImplements!.Any() ? ""
+                            : string.Join(", ", ListUsers.Where(m => ListSalesOrder[i].ListUserImplements!.Contains(m.Code + "")).Select(m => m.Name));
+
+                    }
                     tblServices += @$" <tr>
                         <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{(i + 1)}</td>
                         <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
                         <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Price.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
                         <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Qty}</span></td>
                         <td style=""border: 1px solid #dddddd;text-align: right;padding: 8px;""><span>{ListSalesOrder[i].Amount.ToString(DefaultConstants.FORMAT_CURRENCY)}đ</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
-                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ListSalesOrder[i].ServiceName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ConsultUserName}</span></td>
+                        <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;""><span>{ImplementUserName}</span></td>
                         <td style=""border: 1px solid #dddddd;text-align: left;padding: 8px;max-width: 150px""><span>{ListSalesOrder[i].ChemicalFormula}</span></td>
                     </tr> ";
                 }
@@ -747,6 +757,7 @@ namespace BM.Web.Features.Controllers
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-total}", $"{pSumTotal.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-payment}", $"{DocumentUpdate.GuestsPay.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
                 sHtmlExport = sHtmlExport.Replace("{bm-cus-debts}", $"{DocumentUpdate.Debt.ToString(DefaultConstants.FORMAT_CURRENCY)}đ");
+                sHtmlExport = sHtmlExport.Replace("{bm-cus-points}", $"{DocumentUpdate.Point.ToString(DefaultConstants.FORMAT_CURRENCY)} điểm");
 
                 //in
                 await _jsRuntime!.InvokeVoidAsync("printHtml", sHtmlExport);

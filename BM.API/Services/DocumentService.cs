@@ -172,6 +172,7 @@ public class DocumentService : IDocumentService
             	         when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
                          when '{nameof(DocStatus.Cancled)}' then N'Đã hủy phiếu'
                          else N'Chờ xử lý' end as StatusName
+                       , (select STRING_AGG(CONCAT(EmpNo,'-',FullName), ', ') from [Users] as T000 with(nolock) where CHARINDEX(',' + T000.EmpNo + ',', ',' + T00.ImplementUserId + ',', 0) > 0) as ImplementUserName
 					from [dbo].[ServiceCalls] as T00 with(nolock) 
 			  inner join [dbo].[Branchs] as T04 with(nolock) on T00.BranchId = T04.BranchId
 			       where T00.BaseEntry = T0.DocEntry and T00.IsDelete = 0 and T00.StatusId <> 'Cancled'
