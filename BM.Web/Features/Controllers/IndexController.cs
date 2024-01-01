@@ -90,7 +90,7 @@ namespace BM.Web.Features.Controllers
             ListSchedulers = new List<SheduleModel>();
             SearchModel pSearch = new SearchModel();
             pSearch.FromDate = new DateTime(StartDate.Year, StartDate.Month, 23); // lấy tháng trươc liền kề ngày 23
-            pSearch.FromDate.Value.AddMonths(-1);
+            pSearch.FromDate.Value.AddMonths(-1); //
             pSearch.ToDate = new DateTime(StartDate.Year, StartDate.Month, 1).AddMonths(1).AddDays(7); // lấy tháng này + 1 tháng và 7 ngày tiếp
             pSearch.BranchId = pBranchId;
             ListSchedulers = await _documentService!.GetDataReminderByMonthAsync(pSearch);
