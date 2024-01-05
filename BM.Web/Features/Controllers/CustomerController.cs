@@ -154,6 +154,10 @@ namespace BM.Web.Features.Controllers
                         ListSkinsType.ForEach(item =>
                         {
                             if (lstSkinType.Contains(item.Code + "")) item.IsCheck = true;
+                            else
+                            {
+                                item.IsCheck = false;
+                            }
                         });
                     }    
                     IsCreate = false;
