@@ -498,6 +498,7 @@ public class MasterDataService : IMasterDataService
 										   ,(select string_agg(EnumName, ', ') from [dbo].[Enums] as T00 with(nolock) 
 										      where T00.EnumType = 'SkinType' and T0.SkinType like '%""'+T00.EnumId+'""%') as [SkinType]
                                            ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo] and T01.StatusId = 'Closed') as [TotalDebtAmount]
+                                           ,'' as 'SkinTypeName'
 					                  from [dbo].[Customers] as T0 with(nolock)
                                  left join [dbo].[Branchs] as T2 with(nolock) on T0.[BranchId] = T2.[BranchId]
 								where T0.[IsDelete] = 0 and [CusNo] = @CusNo";
