@@ -58,10 +58,10 @@
                     <GridColumn Field=@nameof(SuppliesModel.SuppliesTypeName) Width="160px" Title="Tên loại vật tư" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.TypeName) Width="160px" Title="Kiểu" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.EnumName) Width="120px" Title="Đơn vị tính" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.QtyIntoInv) Width="200px" Title="Tổng số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.QtyOutBound) Width="200px" Title="Tổng số lượng xuất kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="200px" Title="Tổng số lượng trong kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-                    <GridColumn Field=@nameof(SuppliesModel.Price) Width="110px" Title="Giá hiện tại" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyIntoInv) Width="200px" Title="Tổng số lượng nhập kho" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyOutBound) Width="200px" Title="Tổng số lượng xuất kho" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.QtyInv) Width="200px" Title="Tổng số lượng trong kho" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(SuppliesModel.Price) Width="110px" Title="Giá hiện tại" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
 @*                    <GridColumn Field=@nameof(SuppliesModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="100px" Title="Ngày tạo" Filterable="false"></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.UserNameCreate) Width="160px" Title="Người tạo" ></GridColumn>
                     <GridColumn Field=@nameof(SuppliesModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE" Width="100px" Title="Ngày cập nhật" Filterable="false"></GridColumn>
@@ -124,9 +124,9 @@
                     </GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.SuppliesName) Width="170px" Title="Tên vật tư"></GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="170px" Title="Đơn vị tính" ></GridColumn>
-                    <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="160px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
-                    <GridColumn Field=@nameof(InvetoryModel.Price) Width="200px" Title="Giá nhập kho/Đơn vị tính" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
-                    <GridColumn Field=@nameof(InvetoryModel.Total) Width="200px" Title="Tổng tiền" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                    <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="160px" Title="Số lượng nhập kho" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.Price) Width="200px" Title="Giá nhập kho/Đơn vị tính" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.Total) Width="200px" Title="Tổng tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
                         <FooterTemplate>
                             Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
                         </FooterTemplate>
