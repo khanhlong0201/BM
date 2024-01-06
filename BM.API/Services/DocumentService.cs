@@ -818,7 +818,11 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             DateTime dateTime = _dateTimeService.GetCurrentVietnamTime();
-            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23);
+            if (pSearchData.FromDate == null)
+            {
+                pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month, 1);
+                pSearchData.FromDate.Value.AddMonths(-1).AddDays(-7); //
+            }
             if (pSearchData.ToDate == null) pSearchData.ToDate = new DateTime(dateTime.Year, dateTime.Month, 1).AddMonths(1).AddDays(7);
             int numDay = int.Parse(_configuration.GetSection("Configs:NumberOfReminderDays").Value);
             SqlParameter[] sqlParameters = new SqlParameter[4];
