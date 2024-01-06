@@ -1,15 +1,11 @@
-﻿using Blazored.LocalStorage;
-using BM.Models;
+﻿using BM.Models;
 using BM.Models.Shared;
 using BM.Web.Commons;
-using BM.Web.Components;
 using BM.Web.Models;
 using BM.Web.Services;
 using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
 using Telerik.Blazor;
 using Telerik.Blazor.Components;
 
@@ -18,27 +14,32 @@ namespace BM.Web.Features.Controllers
     public class IndexController : BMControllerBase
     {
         #region Dependency Injection
+
         [Inject] private ILogger<IndexController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
-        [Inject] NavigationManager? _navigationManager { get; set; }
-        #endregion
+        [Inject] private NavigationManager? _navigationManager { get; set; }
+
+        #endregion Dependency Injection
 
         #region Properties
+
         public DateTime StartDate { get; set; }
         public DateTime StartTime { get; set; }
         public SchedulerView CurrView { get; set; } = SchedulerView.Month;
         public IEnumerable<SheduleModel>? ListSchedulers { get; set; }
         public bool IsShowDetails { get; set; }
         public SheduleModel ItemSelected = new SheduleModel();
+
         [CascadingParameter]
         public DialogFactory? _rDialogs { get; set; }
 
         [CascadingParameter]
         public EventCallback<List<SheduleModel>> NotifySheduler { get; set; }
-        #endregion
 
+        #endregion Properties
 
         #region Override Functions
+
         protected override async Task OnInitializedAsync()
         {
             try
@@ -65,7 +66,7 @@ namespace BM.Web.Features.Controllers
                 try
                 {
                     StartDate = _dateTimeService!.GetCurrentVietnamTime();
-                    StartTime = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day, 23,0,0);
+                    StartTime = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day, 23, 0, 0);
                     await _progressService!.SetPercent(0.4);
                     await getDataRemiderByMonth();
                 }
@@ -81,7 +82,8 @@ namespace BM.Web.Features.Controllers
                 }
             }
         }
-        #endregion
+
+        #endregion Override Functions
 
         #region Private Functions
 
@@ -98,12 +100,13 @@ namespace BM.Web.Features.Controllers
             // lấy tất cả các thông báo nhắc nở/ liệu trình ngày hiện tại
             DateTime toDay = _dateTimeService!.GetCurrentVietnamTime();
             var listShedulersToday = ListSchedulers?.Where(m => m.Start.Date == toDay.Date);
-            if(listShedulersToday != null && listShedulersToday.Any()) await NotifySheduler.InvokeAsync(listShedulersToday.ToList());
+            if (listShedulersToday != null && listShedulersToday.Any()) await NotifySheduler.InvokeAsync(listShedulersToday.ToList());
         }
 
-        #endregion
+        #endregion Private Functions
 
         #region Protected Functions
+
         protected void OnItemRender(SchedulerItemRenderEventArgs args)
         {
             try
@@ -115,9 +118,11 @@ namespace BM.Web.Features.Controllers
                     case nameof(EnumType.DebtReminder): // nhắc nợ
                         args.Class = "bg-red text-red-fg";
                         break;
+
                     case nameof(EnumType.WarrantyReminder): // nhắc bảo hành
                         args.Class = "bg-teal text-teal-fg";
                         break;
+
                     default:
                         break;
                 }
@@ -138,7 +143,7 @@ namespace BM.Web.Features.Controllers
                 ItemSelected.GuestsPay = ItemSelected.TotalDebtAmount;
                 ItemSelected.Remark = string.Empty;
                 IsShowDetails = true;
-                
+
                 StateHasChanged();
             }
             catch (Exception ex)
@@ -225,12 +230,12 @@ namespace BM.Web.Features.Controllers
                 }
                 else if (ItemSelected.Type == nameof(EnumType.WarrantyReminder))
                 {
-                    if(!ItemSelected.IsDelay)
+                    if (!ItemSelected.IsDelay)
                     {
                         // cho đồng bộ với thanh toán nợ
                         ShowWarning("Vui lòng check vào ô Khách hẹn lại!");
                         return;
-                    }    
+                    }
                     string messageDept = string.Empty;
                     if (ItemSelected.IsDelay)
                     {
@@ -239,7 +244,7 @@ namespace BM.Web.Features.Controllers
                             : $" Khách hẹn lại ngày [{ItemSelected.DateDelay.Value.ToString(DefaultConstants.FORMAT_DATE)}]";
                     }
                     isConfirm = await _rDialogs!.ConfirmAsync($"{messageDept} Bạn có chắc muốn lưu thông tin nhắc bảo hành dịch vụ này?", "Thông báo");
-                }    
+                }
                 if (!isConfirm) return;
                 await ShowLoader();
                 CustomerDebtsModel oItem = new CustomerDebtsModel();
@@ -252,7 +257,7 @@ namespace BM.Web.Features.Controllers
                 oItem.DateDelay = ItemSelected.DateDelay;
                 oItem.Type = ItemSelected.Type;
                 oItem.BaseLine = ItemSelected.BaseLine;
-                // call api 
+                // call api
                 bool isSuccess = await _documentService!.UpdateCustomerDebtsAsync(JsonConvert.SerializeObject(oItem), pUserId, $"{oItem.Type}");
                 if (isSuccess)
                 {
@@ -271,7 +276,7 @@ namespace BM.Web.Features.Controllers
                 await ShowLoader(false);
             }
         }
-        #endregion
 
+        #endregion Protected Functions
     }
 }

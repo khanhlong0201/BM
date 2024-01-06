@@ -105,6 +105,7 @@
                 </GridSettings>
                 <GridAggregates>
                     <GridAggregate Field=@nameof(InvetoryModel.SuppliesCode) Aggregate="@GridAggregateType.Count" />
+                    <GridAggregate Field=@nameof(InvetoryModel.Total) Aggregate="@GridAggregateType.Sum" />
                 </GridAggregates>
                 <GridColumns>
 @*                    <GridCheckboxColumn Width="30px" SelectAll="@true"></GridCheckboxColumn>*@
@@ -125,7 +126,11 @@
                     <GridColumn Field=@nameof(InvetoryModel.EnumName) Width="170px" Title="Đơn vị tính" ></GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.QtyInv) Width="160px" Title="Số lượng nhập kho" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY" ></GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.Price) Width="200px" Title="Giá nhập kho/Đơn vị tính" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
-                    <GridColumn Field=@nameof(InvetoryModel.Total) Width="200px" Title="Tổng tiền" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+                    <GridColumn Field=@nameof(InvetoryModel.Total) Width="200px" Title="Tổng tiền" TextAlign="@ColumnTextAlign.Right" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                        <FooterTemplate>
+                            Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
+                        </FooterTemplate>
+                    </GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.DateCreate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="140px" Title="Thời gian nhập kho" Filterable="false"></GridColumn>
                     <GridColumn Field=@nameof(InvetoryModel.UserNameCreate) Width="160px" Title="Người nhập kho" ></GridColumn>
                    @* <GridColumn Field=@nameof(InvetoryModel.DateUpdate) DisplayFormat="@DefaultConstants.FORMAT_GRID_DATE_TIME" Width="160px" Title="Thời gian sửa nhập kho" Filterable="false"></GridColumn>*@
