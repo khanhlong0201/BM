@@ -381,7 +381,7 @@ public class MasterDataService : IMasterDataService
             await _context.Connect();
             data = await _context.GetDataAsync(@$"select [CusNo],[FullName],[Phone1],[Phone2],[CINo],[Email],[FaceBook],[Zalo],T0.[Address],[DateOfBirth],[SkinType]
                       ,T0.[BranchId], T1.BranchName as [BranchName],[Remark],T0.[DateCreate],T0.[UserCreate],T0.[DateUpdate],T0.[UserUpdate],T0.[Point]
-					  ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo]) as [TotalDebtAmount]
+					  ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T01 with(nolock) where T0.[CusNo] = T01.[CusNo] and T01.StatusId = '{nameof(DocStatus.Closed)}') as [TotalDebtAmount]
                       ,(select STRING_AGG(EnumName, ', ') from [Enums] as T00 with(nolock) 
 					                                      where EnumType = '{nameof(EnumType.SkinType)}' and T0.[SkinType] like '%""'+T00.EnumId+'""%') as [SkinTypeName]
 			     from [dbo].[Customers] as T0 with(nolock) 

@@ -180,7 +180,7 @@ public class DocumentService : IDocumentService
 				,   isnull(T4.IsOutBound,cast(0 as bit)) as IsOutBound
                 ,T1.ListPromotionSupplies
                 ,isnull(T3.Point, 0) as TotalPoint, isnull(T0.Point, 0) as Point
-                ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo]) as [TotalDebtAmount]
+                ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo] and T001.StatusId = '{nameof(DocStatus.Closed)}') as [TotalDebtAmount]
                 ,DATEADD(DAY, T1.WarrantyPeriod * 30,cast(T1.DateCreate as Date)) as [DateEndWarranty]
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
