@@ -792,6 +792,12 @@ public class DocumentService : IDocumentService
                         case "DoanhThuQuiThangTheoNhanVienThucHien":
                             data.Add(DataRecordDoanhThuQuiThangTheoNhanVienThucHienToReportModel(row));
                             break;
+                        case "DoanhThuTheoNhanVienThucHien":
+                            data.Add(DataRecordDoanhThuTheoNhanVienThucHienToReportModel(row));
+                            break;
+                        case "DoanhThuTheoNhanVienTuVan":
+                            data.Add(DataRecordDoanhThuTheoNhanVienTuVanToReportModel(row));
+                            break;
                         default:
                             break;
                     }
@@ -1772,6 +1778,40 @@ public class DocumentService : IDocumentService
         if (!Convert.IsDBNull(record["Amount"])) model.Amount = Convert.ToDouble(record["Amount"]);
         if (!Convert.IsDBNull(record["GuestsPay"])) model.GuestsPay = Convert.ToDouble(record["GuestsPay"]);
         if (!Convert.IsDBNull(record["Debt"])) model.Debt = Convert.ToDouble(record["Debt"]);
+        return model;
+    }
+
+    private ReportModel DataRecordDoanhThuTheoNhanVienThucHienToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ImplementUserId"])) model.ImplementUserId = Convert.ToString(row["ImplementUserId"]);
+        if (!Convert.IsDBNull(row["ImplementUserName"])) model.ImplementUserName = Convert.ToString(row["ImplementUserName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["LineTotal"])) model.LineTotal = Convert.ToDouble(row["LineTotal"]);
+        if (!Convert.IsDBNull(row["Qty"])) model.Qty = Convert.ToInt16(row["Qty"]);
+        if (!Convert.IsDBNull(row["Price"])) model.Price = Convert.ToDouble(row["Price"]);
+        return model;
+    }
+
+    private ReportModel DataRecordDoanhThuTheoNhanVienTuVanToReportModel(DataRow row)
+    {
+        // Mapping các cột của DataTable sang properties của ReportModel
+        ReportModel model = new();
+        if (!Convert.IsDBNull(row["BranchName"])) model.BranchName = Convert.ToString(row["BranchName"]);
+        if (!Convert.IsDBNull(row["ConsultUserId"])) model.ConsultUserId = Convert.ToString(row["ConsultUserId"]);
+        if (!Convert.IsDBNull(row["ConsultUserName"])) model.ConsultUserName = Convert.ToString(row["ConsultUserName"]);
+        if (!Convert.IsDBNull(row["ServiceCode"])) model.ServiceCode = Convert.ToString(row["ServiceCode"]);
+        if (!Convert.IsDBNull(row["ServiceName"])) model.ServiceName = Convert.ToString(row["ServiceName"]);
+        if (!Convert.IsDBNull(row["EnumId"])) model.EnumId = Convert.ToString(row["EnumId"]);
+        if (!Convert.IsDBNull(row["EnumName"])) model.EnumName = Convert.ToString(row["EnumName"]);
+        if (!Convert.IsDBNull(row["LineTotal"])) model.LineTotal = Convert.ToDouble(row["LineTotal"]);
+        if (!Convert.IsDBNull(row["Qty"])) model.Qty = Convert.ToInt16(row["Qty"]);
+        if (!Convert.IsDBNull(row["Price"])) model.Price = Convert.ToDouble(row["Price"]);
         return model;
     }
     #endregion
