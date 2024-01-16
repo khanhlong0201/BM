@@ -650,6 +650,46 @@
             </FooterTemplate>
             </GridColumn>
         }
+         else if(pReportType == nameof(ReportType.@BaoCaoKPINhanVien) && pKind == nameof(Kind.TuNgayDenNgay) && pUserType == nameof(UserType.ConsultUser)){
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ConsultUserId) Width="150px" Title="Mã nhân viên tư vấn"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ConsultUserName) Width="160px" Title="Tên nhân viên tư vấn"></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumId) Width="150px" Title="Mã loại dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumName) Width="170px" Title="Tên loại dịch vụ "></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceCode) Width="150px" Title="Mã dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceName) Width="160px" Title="Tên dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.Qty) Width="150px" Title="Tổng số lượng" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.Price) Width="150px" Title="Giá" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.LineTotal) Width="170px" Title="Thành tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <FooterTemplate>
+                Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
+            </FooterTemplate>
+            </GridColumn>
+        }
+          else if(pReportType == nameof(ReportType.@BaoCaoKPINhanVien) && pKind == nameof(Kind.TuNgayDenNgay) && pUserType == nameof(UserType.ImplementUser)){
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.BranchName) Width="170px" MaxResizableWidth="100" Title="Tên chi nhánh">
+                <FooterTemplate>
+                    Số dòng: @context.Count
+                </FooterTemplate>
+            </GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ImplementUserId) Width="150px" Title="Mã nhân viên thực hiện"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ImplementUserName) Width="160px" Title="Tên nhân viên thực hiện"></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumId) Width="150px" Title="Mã loại dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Visible="false" Field=@nameof(ReportModel.EnumName) Width="170px" Title="Tên loại dịch vụ "></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceCode) Width="150px" Title="Mã dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.ServiceName) Width="160px" Title="Tên dịch vụ"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.Qty) Width="150px" Title="Tổng số lượng" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.Price) Width="150px" Title="Giá" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY"></GridColumn>
+            <GridColumn Filterable="false" Field=@nameof(ReportModel.LineTotal) Width="170px" Title="Thành tiền" DisplayFormat="@DefaultConstants.FORMAT_GRID_CURRENCY">
+                <FooterTemplate>
+                Tổng tiền: @string.Format(DefaultConstants.FORMAT_GRID_CURRENCY, context.Sum)
+            </FooterTemplate>
+            </GridColumn>
+        }
         </GridColumns>
     </TelerikGrid>
     }
