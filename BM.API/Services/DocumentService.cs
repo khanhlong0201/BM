@@ -180,7 +180,7 @@ public class DocumentService : IDocumentService
 				,   isnull(T4.IsOutBound,cast(0 as bit)) as IsOutBound
                 ,T1.ListPromotionSupplies
                 ,isnull(T3.Point, 0) as TotalPoint, isnull(T0.Point, 0) as Point
-                ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo]) as [TotalDebtAmount]
+                ,(select isnull(sum(Debt), 0) from [dbo].[Drafts] as T001 with(nolock) where T0.[CusNo] = T001.[CusNo] and T001.StatusId = '{nameof(DocStatus.Closed)}') as [TotalDebtAmount]
                 ,DATEADD(DAY, T1.WarrantyPeriod * 30,cast(T1.DateCreate as Date)) as [DateEndWarranty]
             from [dbo].[Drafts] as T0 with(nolock) 
       inner join [dbo].[DraftDetails] as T1 with(nolock) on T0.DocEntry = T1.DocEntry
@@ -824,7 +824,11 @@ public class DocumentService : IDocumentService
         {
             await _context.Connect();
             DateTime dateTime = _dateTimeService.GetCurrentVietnamTime();
-            if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month - 1, 23);
+            if (pSearchData.FromDate == null)
+            {
+                pSearchData.FromDate = new DateTime(dateTime.Year, dateTime.Month, 1);
+                pSearchData.FromDate.Value.AddMonths(-1).AddDays(-7); //
+            }
             if (pSearchData.ToDate == null) pSearchData.ToDate = new DateTime(dateTime.Year, dateTime.Month, 1).AddMonths(1).AddDays(7);
             int numDay = int.Parse(_configuration.GetSection("Configs:NumberOfReminderDays").Value);
             SqlParameter[] sqlParameters = new SqlParameter[4];

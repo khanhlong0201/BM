@@ -126,7 +126,7 @@ namespace BM.Web.Features.Controllers
                     {
                         var oCustomer = await _masterDataService!.GetCustomerByIdAsync(DocumentUpdate.CusNo + "");
                         if (oCustomer == null) return;
-                        DocumentUpdate.BranchName = oCustomer.BranchName ?? DATA_CUSTOMER_EMPTY;
+                        DocumentUpdate.BranchName = pBranchName ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.FullName = oCustomer.FullName ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.CINo = oCustomer.CINo ?? DATA_CUSTOMER_EMPTY;
                         DocumentUpdate.Phone1 = oCustomer.Phone1 ?? DATA_CUSTOMER_EMPTY;

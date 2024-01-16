@@ -19,6 +19,7 @@ public partial class MainLayout
     [Inject] private ILogger<MainLayout>? _logger { get; init; }
     [Inject] private LoaderService? _loaderService { get; init; }
     [Inject] private ICliMasterDataService? _masterDataService { get; init; }
+    [Inject] private ICliDocumentService? _documentService { get; init; }
     public List<BreadcrumbModel>? ListBreadcrumbs { get; set; }
     public List<SheduleModel>? ListShedulers { get; set; }
     public string PageActive { get; set; } = "trang-chu";
@@ -30,6 +31,8 @@ public partial class MainLayout
     public string EmpNo { get; set; } = "";
     public string UserName { get; set; } = "";
     public int UserId { get; set; } = -1;
+    public string pBranchId { get; set; } = "";
+    public string pBranchName { get; set; } = "";
     public UserProfileModel UserUpdate { get; set; } = new UserProfileModel();
     EventCallback<List<BreadcrumbModel>> BreadcrumbsHandler =>
         EventCallback.Factory.Create(this, (Action<List<BreadcrumbModel>>)NotifyBreadcrumb);
@@ -141,10 +144,35 @@ public partial class MainLayout
                 UserName = oUser.User.Claims.FirstOrDefault(m => m.Type == "UserName")?.Value + "";
                 UserId  = int.Parse(oUser.User.Claims.FirstOrDefault(m => m.Type == "UserId")?.Value + "");
                 RoleName = isAdmin ? $"{EmpNo} - Admin" : $"{EmpNo} - Nhân viên";
+                pBranchId = oUser.User.Claims.FirstOrDefault(m => m.Type == "BranchId")?.Value + "";
+                pBranchName = oUser.User.Claims.FirstOrDefault(m => m.Type == "BranchName")?.Value + "";
+                await getDataRemiderByMonth();
                 await InvokeAsync(StateHasChanged);
             }
         }
         catch (Exception) { }
     }
 
+    /// <summary>
+    /// lấy lên danh sách nhắc nợ
+    /// </summary>
+    /// <returns></returns>
+    private async Task getDataRemiderByMonth()
+    {
+        try
+        {
+            SearchModel pSearch = new SearchModel();
+            DateTime StartDate = DateTime.Now;
+            pSearch.FromDate = new DateTime(StartDate.Year, StartDate.Month, 1); // lấy tháng trươc liền kề ngày 23
+            pSearch.FromDate.Value.AddMonths(-1).AddDays(-7); //
+            pSearch.ToDate = new DateTime(StartDate.Year, StartDate.Month, 1).AddMonths(1).AddDays(7); // lấy tháng này + 1 tháng và 7 ngày tiếp
+            pSearch.BranchId = pBranchId;
+            var ListSchedulers = await _documentService!.GetDataReminderByMonthAsync(pSearch);
+            // lấy tất cả các thông báo nhắc nở/ liệu trình ngày hiện tại
+            var listShedulersToday = ListSchedulers?.Where(m => m.Start.Date == StartDate.Date)?.ToList();
+            if (listShedulersToday != null && listShedulersToday.Any()) ListShedulers = listShedulersToday;
+        }
+        catch (Exception) { }
+
+    }
 }

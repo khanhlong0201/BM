@@ -38,7 +38,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetBranchs");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
@@ -82,7 +86,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetDataUsers");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
@@ -125,7 +133,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetEnumsByType");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -167,7 +179,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetCustomers");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -191,7 +207,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetCustomers");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -233,7 +253,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetServices");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -275,7 +299,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetPricesByService");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -317,7 +345,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetPricesByService");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -410,7 +442,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "Login");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
         }
 
@@ -426,7 +462,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetSupplies");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
@@ -471,7 +511,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetSupplies");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
@@ -515,7 +559,11 @@ namespace BM.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "MasterDataController", "GetInvetory");
-                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ex.Message
+                });
             }
 
         }
