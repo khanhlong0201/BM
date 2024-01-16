@@ -37,7 +37,7 @@
                          Type="ChartSeriesType.Bar"
                          Name="Chi nhánh Cái Tắt"
                          Field="@nameof(ReportModel.Total_01)">
-                         <ChartTooltip Visible="true">
+                         @* <ChartTooltip Visible="true">
                                <Template> 
                                     @if (DataReport != null)
                                     {
@@ -45,13 +45,14 @@
                                       <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
                                     }
                               </Template>
-                         </ChartTooltip>
+                         </ChartTooltip> *@
+                         <ChartSeriesLabels Visible="true" Format="{0: #,###.## } VNĐ"></ChartSeriesLabels>
             </ChartSeries>
             <ChartSeries Data="@DataReport"
                          Type="ChartSeriesType.Bar"
                          Name="Chi nhánh Cần thơ"
                          Field="@nameof(ReportModel.Total_02)">
-                         <ChartTooltip Visible="true">
+                         @* <ChartTooltip Visible="true">
                                <Template> 
                                     @if (DataReport != null)
                                     {
@@ -59,7 +60,8 @@
                                       <span>@string.Format("{0: #,###.## } VNĐ", doubleValue)</span>
                                     }
                               </Template>
-                         </ChartTooltip>
+                         </ChartTooltip> *@
+                <ChartSeriesLabels Visible="true" Format="{0: #,###.## } VNĐ"></ChartSeriesLabels>
             </ChartSeries>
         </ChartSeriesItems>
         <ChartValueAxes>
