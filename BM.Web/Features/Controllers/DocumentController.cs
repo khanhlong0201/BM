@@ -253,7 +253,7 @@ namespace BM.Web.Features.Controllers
                     ListSalesOrder.Add(oLine);
                 }       
             }
-            await InvokeAsync(StateHasChanged);
+            //await InvokeAsync(StateHasChanged);
         }
 
         //lưu phiếu xuất kho cho vật tư khuyến mãi
