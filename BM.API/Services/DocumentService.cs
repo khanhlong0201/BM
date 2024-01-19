@@ -760,13 +760,14 @@ public class DocumentService : IDocumentService
             await _context.Connect();
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
             if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
-            SqlParameter[] sqlParameters = new SqlParameter[6];
+            SqlParameter[] sqlParameters = new SqlParameter[7];
             sqlParameters[0] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[1] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[2] = new SqlParameter("@BranchId", pSearchData.BranchId);
             sqlParameters[3] = new SqlParameter("@TypeTime", pSearchData.TypeTime);
             sqlParameters[4] = new SqlParameter("@Type", pSearchData.Type);
             sqlParameters[5] = new SqlParameter("@UserId", pSearchData.UserId);
+            sqlParameters[6] = new SqlParameter("@Year", pSearchData.Year);
             var results = await _context.GetDataSetAsync(Constants.STORE_REPORT_ALL, sqlParameters, commandType: CommandType.StoredProcedure);
             if (results.Tables != null && results.Tables.Count > 0)
             {

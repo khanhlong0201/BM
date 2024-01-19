@@ -37,6 +37,8 @@ namespace BM.Web.Features.Controllers
 
         public List<ReportChartModel> ListChart { get; set; } = new List<ReportChartModel>();
 
+        public List<int>? ListYears { get; set; }
+        public int pYearDefault { get; set; }
         public string TilteReport = "BIỂU ĐỒ DOANH THU";
 
         public string pKind = "";
@@ -171,6 +173,13 @@ namespace BM.Web.Features.Controllers
                     new ComboboxModel() {Code = nameof(ChartReportType.Chart), Name = "Biểu đồ"},
                 };
 
+                ListYears = new List<int>();
+                pYearDefault = DateTime.Now.Year;
+                for (int i = 2023; i < (DateTime.Now.Year + 1); i++)
+                {
+                    ListYears.Add(i);
+                }
+
                 pReportType = nameof(ReportType.DoanhThuDichVuLoaiDichVu);
                 var uri = _navManager!.ToAbsoluteUri(_navManager.Uri);
                 switch (uri.AbsolutePath.ToString())
@@ -202,6 +211,8 @@ namespace BM.Web.Features.Controllers
 
                 await NotifyBreadcrumb.InvokeAsync(ListBreadcrumbs);
                 _navManager.LocationChanged += LocationChanged;
+
+
 
             }
             catch (Exception ex)
@@ -414,6 +425,7 @@ namespace BM.Web.Features.Controllers
 
 
             //ItemFilter.IsAdmin = pIsAdmin;
+            ItemFilter.Year = pYearDefault;
             ListReports = await _documentService!.GetDataReportAsync(ItemFilter);
 
 

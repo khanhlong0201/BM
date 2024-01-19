@@ -48,6 +48,7 @@ public class RequestReportModel
     public string? TypeTime { get; set; } // quí or tháng
     public string? Type { get; set; } // loại báo cáo ( doanh thu theo ldv hay doanh thu theo dv)
     public int UserId { get; set; }
+    public int Year  { get; set; }
 }
 
 
