@@ -78,7 +78,7 @@ namespace BM.Web.Features.Controllers
             {
                 try
                 {
-                    ItemFilter.StatusId = nameof(DocStatus.Pending);
+                    ItemFilter.StatusId = nameof(DocStatus.All);
                     ItemFilter.FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
                     ItemFilter.ToDate = _dateTimeService!.GetCurrentVietnamTime();
                     // đọc giá tri câu query
