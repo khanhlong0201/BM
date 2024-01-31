@@ -926,7 +926,7 @@ public class MasterDataService : IMasterDataService
             SqlParameter[] sqlParameters = new SqlParameter[1];
             sqlParameters[0] = new SqlParameter("@Type", pSearchData.Type + "");
 
-                data = await _context.GetDataAsync(@$"SELECT t0.[SuppliesCode] ,t0.[SuppliesName] ,t0.[EnumId] ,t1.EnumName  ,t0.[DateCreate] ,t0.[UserCreate] ,t0.[DateUpdate] ,t0.[UserUpdate] ,t3.FullName as 'UserNameCreate',t4.FullName as 'UserNameUpdate'
+                data = await _context.GetDataAsync(@$"SELECT distinct t0.[SuppliesCode] ,t0.[SuppliesName] ,t0.[EnumId] ,t1.EnumName  ,t0.[DateCreate] ,t0.[UserCreate] ,t0.[DateUpdate] ,t0.[UserUpdate] ,t3.FullName as 'UserNameCreate',t4.FullName as 'UserNameUpdate'
 	                      , (select isnull(sum(t1.QtyInv),0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0) as QtyIntoInv
 	                      --, (select top 1 isnull(t1.Price,0) from Inventory t1 where t0.SuppliesCode = t1.SuppliesCode and t1.IsDelete = 0 order by t1.DateCreate desc) as Price
 					       , ISNULL(t5.QtyOutBound,0) as QtyOutBound
@@ -961,7 +961,7 @@ public class MasterDataService : IMasterDataService
 														    EnumName NVARCHAR(255)
 													    )  where IsDelete = 0 group by SuppliesCode,SuppliesName,EnumId, EnumName, BranchId ) t3 on t2.BranchId = t3.BranchId
 													    and t2.SuppliesCode = t3.SuppliesCode and t2.EnumId = t3.EnumId) t5 on t0.SuppliesCode = t5.SuppliesCode and t0.EnumId = t5.EnumId
-                        left join Enums t6 on t0.SuppliesType = t6.EnumId
+                        inner join Enums t6 on t0.SuppliesType = t6.EnumId
                         where t0.IsDelete = 0 and t1.EnumType ='Unit' and (@TYPE=''  OR CHARINDEX(','+T0.[Type]+',',','+@TYPE+',')>0) order by t0.[DateCreate] desc"
                        , DataRecordToSuppliesModel, sqlParameters, commandType: CommandType.Text);
             
