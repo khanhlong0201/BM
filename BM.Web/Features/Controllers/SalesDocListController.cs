@@ -22,6 +22,7 @@ namespace BM.Web.Features.Controllers
         [Inject] private ILogger<SalesDocListController>? _logger { get; init; }
         [Inject] private ICliDocumentService? _documentService { get; init; }
         [Inject] private NavigationManager? _navManager { get; init; }
+        [Inject] private ICliMasterDataService? _masterDataService { get; init; }
         #endregion
 
         #region Properties
@@ -42,6 +43,7 @@ namespace BM.Web.Features.Controllers
         public string? VoucherNo { get; set; }
         public int pDocEntry { get; set; }
         public string? DebtRemark { get; set; }
+        public List<BranchModel>? ListBranchs { get; set; }
         #endregion
 
         #region Override Functions
@@ -81,6 +83,8 @@ namespace BM.Web.Features.Controllers
                     ItemFilter.StatusId = nameof(DocStatus.All);
                     ItemFilter.FromDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
                     ItemFilter.ToDate = _dateTimeService!.GetCurrentVietnamTime();
+                    ItemFilter.BranchId = nameof(DocStatus.All);
+                    if (!pIsAdmin) ItemFilter.BranchId = pBranchId;
                     // đọc giá tri câu query
                     var uri = _navManager?.ToAbsoluteUri(_navManager.Uri);
                     if (uri != null && QueryHelpers.ParseQuery(uri.Query).Count > 0)
@@ -91,6 +95,13 @@ namespace BM.Web.Features.Controllers
                     }
                     //
                     await _progressService!.SetPercent(0.4);
+                    ListBranchs = new List<BranchModel>() { new BranchModel ()
+                    {
+                        BranchId = nameof(DocStatus.All),
+                        BranchName = "Tất cả chi nhánh"
+                    } };
+                    var lstBranchs = await _masterDataService!.GetDataBranchsAsync();
+                    if(lstBranchs != null && lstBranchs.Any()) ListBranchs.AddRange(lstBranchs);
                     await getDataDocuments();
                 }
                 catch (Exception ex)
