@@ -196,6 +196,15 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
+                if(ListServices !=null && ListServices.Count > 0)
+                {
+                    var checkTrungTen = ListServices.Where(d => d.ServiceName == ServiceUpdate.ServiceName).FirstOrDefault();
+                    if (checkTrungTen != null)
+                    {
+                        ShowWarning($"Tên dịch vụ [{ServiceUpdate.ServiceName}] đã tồn tại. Vui lòng nhập tên khác !");
+                        return; 
+                    }
+                }
                 ServiceUpdate.ListPromotionSupplies = ServiceUpdate.ListPromotionSuppliess == null || !ServiceUpdate.ListPromotionSuppliess.Any() ? "" : string.Join(",", ServiceUpdate.ListPromotionSuppliess);
                 await ShowLoader();
                 bool isSuccess = await _masterDataService!.UpdateServiceAsync(JsonConvert.SerializeObject(ServiceUpdate), sAction, pUserId);

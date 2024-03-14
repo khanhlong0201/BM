@@ -348,6 +348,15 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
+                if (ListSupplies != null && ListSupplies.Count > 0)
+                {
+                    var checkTrungTen = ListSupplies.Where(d => d.SuppliesName == SuppliesUpdate.SuppliesName).FirstOrDefault();
+                    if (checkTrungTen != null)
+                    {
+                        ShowWarning($"Tên vật tư [{SuppliesUpdate.SuppliesName}] đã tồn tại. Vui lòng nhập tên khác !");
+                        return;
+                    }
+                }
                 await ShowLoader();
                 bool isSuccess = await _masterDataService!.UpdateSuppliesAsync(JsonConvert.SerializeObject(SuppliesUpdate), sAction, pUserId);
                 if (isSuccess)

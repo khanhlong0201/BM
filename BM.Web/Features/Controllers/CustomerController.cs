@@ -179,6 +179,16 @@ namespace BM.Web.Features.Controllers
                 string sAction = IsCreate ? nameof(EnumType.Add) : nameof(EnumType.Update);
                 var checkData = _EditContext!.Validate();
                 if (!checkData) return;
+                var checkTrungTen = ListCustomers.Where(d => d.FullName == CustomerUpdate.FullName).FirstOrDefault();
+                if (ListCustomers != null && ListCustomers.Count > 0)
+                {
+                    if (checkTrungTen != null)
+                    {
+                        ShowWarning($"Tên khách hàng [{CustomerUpdate.FullName}] đã tồn tại. Vui lòng nhập tên khác !");
+                        return;
+                    }
+                }
+
                 await ShowLoader();
                 string skinType = JsonConvert.SerializeObject(ListSkinsType?.Where(m => m.IsCheck).Select(m => m.Code).ToArray());
                 CustomerUpdate.SkinType = skinType;
