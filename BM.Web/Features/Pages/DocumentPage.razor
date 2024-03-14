@@ -234,9 +234,22 @@
                                             <p class="strong mb-0">@oItem.ServiceCode</p>
                                             <div class="text-secondary">@oItem.ServiceName</div>
                                             <div class="text-secondary">Đơn giá gốc: @oItem.PriceOld.ToString(DefaultConstants.FORMAT_CURRENCY)đ</div>
-                                            <div class="text-secondary">
+                                            <div class="text-secondary mb-1">
                                                 Bảo hành:
-                                                @($"{Math.Round(oItem.WarrantyPeriod, 2)} tháng/{@oItem.QtyWarranty} lần")
+                                                @if(!pIsLockPage)
+                                                {
+                                                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1" Width="40px" @bind-Value="@oItem.WarrantyPeriod" Arrows="false" />
+                                                    @("tháng /")
+                                                    <TelerikNumericTextBox Format="@DefaultConstants.FORMAT_CURRENCY" Step="1" Width="40px"
+                                                               @bind-Value="@oItem.QtyWarranty" Arrows="false" />
+                                                    @("lần")
+                                                }
+                                                else
+                                                {
+                                                    @($"{Math.Round(oItem.WarrantyPeriod, 2)} tháng/{@oItem.QtyWarranty} lần")
+                                                }
+                                                
+                                                
                                             </div>
                                             @if(DocumentUpdate.StatusId == nameof(DocStatus.Closed) && oItem.WarrantyPeriod > 0)
                                             {

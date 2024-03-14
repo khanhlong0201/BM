@@ -112,14 +112,17 @@ public class DocumentService : IDocumentService
         try
         {
             await _context.Connect();
+            string pCondition = string.Empty;  
             if (pSearchData.FromDate == null) pSearchData.FromDate = new DateTime(2023, 01, 01);
             if (pSearchData.ToDate == null) pSearchData.ToDate = _dateTimeService.GetCurrentVietnamTime();
-            SqlParameter[] sqlParameters = new SqlParameter[5];
+            SqlParameter[] sqlParameters = new SqlParameter[6];
             sqlParameters[0] = new SqlParameter("@StatusId", pSearchData.StatusId);
             sqlParameters[1] = new SqlParameter("@FromDate", pSearchData.FromDate.Value);
             sqlParameters[2] = new SqlParameter("@ToDate", pSearchData.ToDate.Value);
             sqlParameters[3] = new SqlParameter("@IsAdmin", pSearchData.IsAdmin);
             sqlParameters[4] = new SqlParameter("@UserId", pSearchData.UserId);
+            sqlParameters[5] = new SqlParameter("@BranchId", pSearchData.BranchId);
+
             data = await _context.GetDataAsync(@$"select [DocEntry],[DiscountCode],[Total],[GuestsPay],[NoteForAll],[StatusId],[Debt],[BaseEntry],[VoucherNo]
                             ,T1.[BranchId],T1.[BranchName],T0.[CusNo],T2.[FullName],T2.[Phone1],T2.[Remark]
                             ,case [StatusId]  when '{nameof(DocStatus.Closed)}' then N'Hoàn thành'
@@ -131,7 +134,7 @@ public class DocumentService : IDocumentService
                 inner join [dbo].[Customers] as T2 with(nolock) on T0.CusNo = T2.CusNo
                      where cast(T0.[DateCreate] as Date) between cast(@FromDate as Date) and cast(@ToDate as Date)
                            and (@StatusId = 'All' or (@StatusId <> 'All' and T0.[StatusId] = @StatusId))
-                           and (@IsAdmin = 1 or (@IsAdmin <> 1 and T0.[UserCreate] = @UserId))
+                           and (@BranchId = 'All' or (@BranchId <> 'All' and T0.[BranchId] = @BranchId))
                   order by [DocEntry] desc"
                     , DataRecordToDocumentModel, sqlParameters, commandType: CommandType.Text);
         }
