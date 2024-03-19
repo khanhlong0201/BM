@@ -1,0 +1,28 @@
+﻿@page "/config"
+@inherits ConfigController;
+@attribute [Authorize(Roles = "administrator, manager")]
+
+<div class="h-content-filter">
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div>
+                <HLabel For="txtFullName" Value="Số lệnh (Hoàn thành):" IsRequired="true" />
+                <TelerikTextBox @bind-Value="@VoucherNo" Id="txtVoucherNo" />
+            </div>
+            <div class="mt-2">
+                <HLabel For="txtFullName" Value="Lý do hủy:" IsRequired="true" />
+                <TelerikTextBox @bind-Value="@Reason" Id="txtReason" />
+            </div>
+            <div class="mt-2">
+                <HLabel For="txtFullName" Value="Khóa bí mật:" IsRequired="true" />
+                <TelerikTextBox @bind-Value="@PrivateKey" Id="txtPrivateKey" />
+            </div>
+            <div class="mt-2">
+                <TelerikButton Class="h-button--login" OnClick="@CancledDocHandler"
+                    ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)">
+                    Hủy đơn hàng
+                </TelerikButton>
+            </div>
+        </div>
+    </div>
+</div>

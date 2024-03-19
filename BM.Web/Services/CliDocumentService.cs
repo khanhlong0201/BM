@@ -26,6 +26,7 @@ public interface ICliDocumentService
     Task<List<ServiceCallModel>?> GetServiceCallsAsync(SearchModel pSearch);
     Task<bool> CheckDataExistsAsync(RequestModel pRequest);
     Task<bool> UpdatePointByCusNoAsync(string pJson, int pUserId);
+    Task<bool> UpdateConfigAsync(RequestModel pRequest);
 }
 public class CliDocumentService : CliServiceBase, ICliDocumentService
 {
@@ -721,6 +722,45 @@ public class CliDocumentService : CliServiceBase, ICliDocumentService
                 if (httpResponse.IsSuccessStatusCode)
                 {
                     _toastService.ShowSuccess($"Quy đổi điểm của khách hàng thành công!");
+                    return true;
+                }
+                _toastService.ShowError($"{oResponse.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UpdatePointByCusNoAsync");
+            _toastService.ShowError(ex.Message);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// CẬP NHẬT CẤU HÌNH
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdateConfigAsync(RequestModel request)
+    {
+        try
+        {
+            //var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+            HttpResponseMessage httpResponse = await PostAsync(EndpointConstants.URL_DOCUMENT_CONFIG, request);
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _toastService.ShowInfo(DefaultConstants.MESSAGE_LOGIN_EXPIRED);
+                return false;
+            }
+            var checkContent = ValidateJsonContent(httpResponse.Content);
+            if (!checkContent) _toastService.ShowError(DefaultConstants.MESSAGE_INVALID_DATA);
+            else
+            {
+                var content = await httpResponse.Content.ReadAsStringAsync();
+                ResponseModel oResponse = JsonConvert.DeserializeObject<ResponseModel>(content)!;
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    _toastService.ShowSuccess($"{oResponse.Message}");
                     return true;
                 }
                 _toastService.ShowError($"{oResponse.Message}");

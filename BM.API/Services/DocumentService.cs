@@ -27,6 +27,7 @@ public interface IDocumentService
     Task<IEnumerable<ServiceCallModel>> GetServiceCallsAsync(SearchModel pSearchData);
     Task<ResponseModel> CheckExistsDataAsync(RequestModel pRequest);
     Task<ResponseModel> UpdatePointByCusNo(RequestModel pRequest);
+    Task<ResponseModel> ConfigUpdate(RequestModel pRequest);
 }
 public class DocumentService : IDocumentService
 {
@@ -1420,6 +1421,39 @@ public class DocumentService : IDocumentService
         }
         return response;
     }
+
+    public async Task<ResponseModel> ConfigUpdate(RequestModel pRequest)
+    {
+        ResponseModel response = new ResponseModel();
+        try
+        {
+            await _context.Connect();
+            string queryString = string.Empty;
+            SqlParameter[] sqlParameters = new SqlParameter[4];
+            sqlParameters[0] = new SqlParameter("@Json", $"{pRequest.Json}");
+            sqlParameters[1] = new SqlParameter("@JsonDetail", $"{pRequest.JsonDetail}");
+            sqlParameters[2] = new SqlParameter("@Type", $"{pRequest.Type}");
+            sqlParameters[3] = new SqlParameter("@UserId", pRequest.UserId);
+            var data = await _context.AddOrUpdateAsync("BM_CONFIG_UPDATE", sqlParameters);
+            if (data != null && data.Rows.Count > 0)
+            {
+                response.StatusCode = int.Parse(data.Rows[0]["StatusCode"]?.ToString() ?? "-1");
+                response.Message = data.Rows[0]["ErrorMessage"]?.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
+            response.Message = ex.Message;
+            await _context.RollbackAsync();
+        }
+        finally
+        {
+            await _context.DisConnect();
+        }
+        return response;
+    }    
+
     #region Private Funtions
     /// <summary>
     /// đọc kết quả từ stroed báo cáo doanh thu quí tháng theo dịch vụ
