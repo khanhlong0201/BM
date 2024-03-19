@@ -5,6 +5,7 @@ using BM.Web.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using Telerik.Blazor;
 
 namespace BM.Web.Features.Controllers
@@ -95,6 +96,8 @@ namespace BM.Web.Features.Controllers
                     ShowWarning("Khóa bí mật không hợp lệ. Vui lòng liên hệ IT để được hổ trợ");
                     return;
                 }
+                bool isConfirm = await _rDialogs!.ConfirmAsync($"Bạn có chắc muốn hủy đơn hàng này không?", "Thông báo"); ;
+                if (!isConfirm) return;
                 await ShowLoader();
                 RequestModel request = new RequestModel();
                 request.UserId = pUserId;
