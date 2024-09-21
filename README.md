@@ -1,3 +1,4 @@
+https://webtrangkim.sunnytalab.com.vn/login?returnUrl=
 Website quản lý thông tin của cơ sở kinh doanh thẩm mỹ phun xăm chân mày và làm đẹp (Beauty).
 - Tính Năng: nhắc nợ, nhắc hẹn, quản lý hồ sơ khách hàng, quản lý đơn hàng, theo dõi bảo hành, quản lý vật tư tồn kho, xem cáo cáo theo từng chi nhánh,..
 - Web: được viết với Blazor có nhúng KendoUI, 
